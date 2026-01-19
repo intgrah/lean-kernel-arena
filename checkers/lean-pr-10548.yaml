@@ -1,5 +1,4 @@
 version: "2026-01-10"
-disable: true
 description: |
   The official Lean 4 kernel checker implementation, with the changes from
   [PR #10548](https://github.com/leanprover/lean4/pull/10548).
