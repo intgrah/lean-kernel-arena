@@ -550,8 +550,10 @@ def load_test_descriptions() -> list[dict]:
 
 
 def load_checkers() -> list[dict]:
-    """Load all checker definitions."""
-    return load_yaml_files(get_project_root() / "checkers", "checker")
+    """Load all checker definitions, filtering out disabled ones."""
+    all_checkers = load_yaml_files(get_project_root() / "checkers", "checker")
+    # Filter out disabled checkers
+    return [checker for checker in all_checkers if not checker.get("disable", False)]
 
 
 def find_test_by_name(name: str) -> dict | None:

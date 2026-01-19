@@ -38,6 +38,10 @@
     "run": {
       "type": "string", 
       "description": "Shell command to run the checker. $IN variable points to input test file"
+    },
+    "disable": {
+      "type": "boolean",
+      "description": "If true, this checker will be ignored and not built or run"
     }
   },
   "required": ["run"],
