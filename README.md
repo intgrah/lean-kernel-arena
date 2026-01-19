@@ -64,7 +64,8 @@ Contributions are welcome! We especially encourage:
 
 **We need more tests with tricky corner cases!** Tests that expose bugs or edge cases in existing checkers are particularly valuable.
 
-To contribute a test, create a YAML file in the `tests/` directory. Tests can be defined in several ways:
+To contribute a test, create a YAML file in the `tests/` directory.  See `schemas/test.json` for the complete specification.  Tests can be defined in several ways:
+
 
 #### Module-based test (from a Lean repository)
 ```yaml
@@ -104,18 +105,40 @@ file: tests/my-export.ndjson
 outcome: reject
 ```
 
-See `schemas/test.json` for the complete specification.
+#### Multiple test generation
+
+For advanced use cases where you want to generate many test cases from a single source, use `multiple: true`. This is only valid with the `run` field and generates multiple `.ndjson` files organized into `good/` and `bad/` subdirectories:
+
+```yaml
+description: |
+  Generate multiple test cases from a Lean project
+dir: my-test-project  # or use url/ref/rev for git repos
+multiple: true
+run: |
+  lake clean
+  lake build MyProject
+```
+
+Your `run` command should generate test files in the direcory `$OUT`, as either `good/<name>.ndjson` or `bad/<name>.ndjson`.  You can put a `<name>.info.json` file next to it with a `{"description": "…"}`.
+
+This approach is useful for systematic testing across many related scenarios or when implementing tutorial-style test suites.
 
 ### Contributing Checkers
 
 We welcome more alternative kernel implementations, including incomplete ones, especially if they explore a particular corner of the design space (e.g. trimmed for performance, simplicity, verifiability, using a particular term representation, type checking or reduction strategy or a different host langauge).
 
-The book [Type Checking in Lean4](https://ammkrn.github.io/type_checking_in_lean4/) is a good reference on writing a Lean kernel.
+The following resources may be useful:
+
+* The thesis [The Type Theory of Lean](https://github.com/digama0/lean-type-theory/releases) by Mario Carneiro is a thorough description of Lean's theory.
+* The book [Type Checking in Lean4](https://ammkrn.github.io/type_checking_in_lean4/) by Chris Bailey has good advice on on writing a Lean kernel.
+* On the [arena website](https://arena.lean-lang.org/) you can download a zipfile with the arena tests (excluding large ones).
+* The [source of the tutorial tests](https://github.com/leanprover/lean-kernel-arena/blob/master/tutorial/Tutorial.lean) suggests a sequence in which to implement tests.
 
 To add a new checker implementation:
 
-1. Create a YAML file in the `checkers/` directory
+1. Create a YAML file in the `checkers/` directory.
 2. Define how to build and run your checker
+   See `schemas/checker.json` for the complete specification.
 
 Example:
 
@@ -138,17 +161,21 @@ The `run` command receives the test file path via the `$IN` environment variable
 - `1`: Proof rejected (invalid)
 - `2`: Declined (checker cannot handle this proof)
   
-  A declined test is simply ignored for the purpose of completeness and correctness. For example, a checker that does not support `native_decide` can decline to process a proof involving the `Lean.trustCompiler axiom`. This is different than rejecting the proof (it may be valid after all) or erroring out (which indicates a bug in the checker).
+  A declined test is simply ignored for the purpose of completeness and correctness. For example, a checker that does not support `native_decide` can decline to process a proof involving the `Lean.trustCompiler` axiom. This is different from rejecting the proof (you are not claiming that the proof is not valid) or erroring out (which indicates a bug in the checker).
   
 - anything else: an error in the checker
 
 The arena does not automatically update the checkers; please submit new releases manually.
 
-See `schemas/checker.json` for the complete specification.
-
 ## Fair Play
 
 Checkers are not run in a sandbox. We assume good faith from all contributors. The goal is to collaboratively improve Lean kernel implementations, not to exploit the test environment. Malicious submissions will be rejected.
+
+## On `Init.Prelude`
+
+The official Lean kernel assumes that `Init.Prelude` is **the* prelude shipped with Lean, and does not support other declarations here. Therefore the tests in the arena satisfy that declarations from `Init.Prelude` are either completely absent, or come from an official release or release candidate. The lean version in the test header can be used to recognize the version, should that be useful to some checker. Checkers are free to do additional checks on these declarations, but are not expected to accept or reject declarations that are not part of an official release.
+
+Some checkers perform extra checks here. If there is interest in testing this functionality, we can label such tests and let the official kernel decline handling them.
 
 ## Questions?
 
