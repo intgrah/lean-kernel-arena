@@ -1601,8 +1601,8 @@ def cmd_build_site(args: argparse.Namespace) -> int:
         observed_instructions_per_second = 0
         print("No instruction count measurements available for conversion rate calculation")
     
-    # Use fixed hardcoded conversion rate of 6 Tinst/s
-    instructions_per_second = 6_000_000_000_000  # 6 trillion instructions per second
+    # Use fixed hardcoded conversion rate of 6 Ginst/s
+    instructions_per_second = 6_000_000_000  # 6 billion instructions per second
     
     # Compute stats for each checker
     for checker in checkers:
