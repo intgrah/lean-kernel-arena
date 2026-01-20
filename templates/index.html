@@ -29,6 +29,9 @@
 </section>
 
 <section>
+    <header>
+        <h3>Checkers</h3>
+    </header>
     {% if checkers %}
     <div style="overflow-x:auto">
     <table class="striped">
@@ -80,6 +83,75 @@
     </div>
     {% else %}
     <p class="text-grey">No checkers defined.</p>
+    {% endif %}
+</section>
+
+<section>
+    <header>
+        <h3>Tests</h3>
+    </header>
+    {% if tests %}
+    <div style="overflow-x:auto">
+    <table class="striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th class="text-right">Size</th>
+                <th class="text-right">Lines</th>
+                <th class="text-center">Expected</th>
+                {% for checker in checkers %}
+                <th class="text-center"><a href="checker/{{ checker.name }}/">{{ checker.name }}</a></th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for test in tests %}
+            <tr>
+                <td>{{ test.name }}</td>
+                <td class="text-right">{{ test.size_str }}</td>
+                <td class="text-right">{{ test.lines_str }}</td>
+                <td class="text-center">
+                    {% if test.outcome == 'accept' %}✅{% elif test.outcome == 'reject' %}❌{% else %}⚠️ {{ test.outcome }}{% endif %}
+                </td>
+                {% for checker in checkers %}
+                    {% set key = (checker.name, test.name) %}
+                    {% set result = test_results.get(key) %}
+                    <td class="text-center {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
+                        {% if result %}
+                        <a href="checker/{{ checker.name }}/#test-{{ test.name }}" style="text-decoration: none; color: inherit; display: block;">
+                            {% if test.outcome == 'accept' and result.status == 'accepted' and test.get('large') %}
+                                {# Show performance comparison for large, accepted tests #}
+                                {% set official_key = ('official', test.name) %}
+                                {% set official_result = test_results.get(official_key) %}
+                                {% if official_result and official_result.status == 'accepted' %}
+                                    {% set official_cpu_time = convert_instructions_to_time(official_result.get('instructions', 0), instructions_per_second) if official_result.get('instructions', 0) > 0 and instructions_per_second > 0 else official_result.cpu_time %}
+                                    {% set current_cpu_time = convert_instructions_to_time(result.get('instructions', 0), instructions_per_second) if result.get('instructions', 0) > 0 and instructions_per_second > 0 else result.cpu_time %}
+                                    {% if official_cpu_time and official_cpu_time >= 0.05 and current_cpu_time %}
+                                        {% set percent_change = ((current_cpu_time - official_cpu_time) / official_cpu_time * 100) | round(0) | int %}
+                                        {% if percent_change > 0 %}+{{ percent_change }}%{% elif percent_change < 0 %}{{ percent_change }}%{% else %}0%{% endif %}
+                                    {% else %}
+                                        ✅
+                                    {% endif %}
+                                {% else %}
+                                    ✅
+                                {% endif %}
+                            {% else %}
+                                {# Show result status for other tests #}
+                                {% if result.status == 'accepted' %}✅{% elif result.status == 'rejected' %}❌{% elif result.status == 'declined' %}🚫{% else %}💥{% endif %}
+                            {% endif %}
+                        </a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p class="text-grey">No tests available.</p>
     {% endif %}
 </section>
 

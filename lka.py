@@ -1642,6 +1642,7 @@ def cmd_build_site(args: argparse.Namespace) -> int:
     data = {
         "tests": tests,
         "checkers": checkers,
+        "test_results": results,  # Pass results dict with (checker, test) keys
         "format_duration": format_duration,
         "format_memory": format_memory,
         "format_instructions": format_instructions,
