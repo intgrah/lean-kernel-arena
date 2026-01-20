@@ -1111,7 +1111,7 @@ def cmd_build_checker(args: argparse.Namespace) -> int:
 
 
 # =============================================================================
-# run-checker command
+# run command
 # =============================================================================
 
 
@@ -1196,7 +1196,7 @@ def run_checker_on_test(checker: dict, test: dict, build_dir: Path, tests_dir: P
 
 
 def cmd_run_checker(args: argparse.Namespace) -> int:
-    """Handle the run-checker command."""
+    """Handle the run command."""
     build_dir = get_project_root() / "_build" / "checkers"
     tests_dir = get_project_root() / "_build" / "tests"
     results_dir = get_project_root() / "_results"
@@ -1781,9 +1781,9 @@ def main() -> int:
         help="Name or glob pattern of the checker to build (default: all checkers)",
     )
 
-    # run-checker command
+    # run command
     run_checker_parser = subparsers.add_parser(
-        "run-checker",
+        "run",
         help="Run checkers on tests",
     )
     run_checker_parser.add_argument(
@@ -1819,7 +1819,7 @@ def main() -> int:
         return cmd_build_test(args)
     elif args.command == "build-checker":
         return cmd_build_checker(args)
-    elif args.command == "run-checker":
+    elif args.command == "run":
         return cmd_run_checker(args)
     elif args.command == "build-site":
         return cmd_build_site(args)

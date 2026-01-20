@@ -45,7 +45,7 @@ Using Nix, use `nix develop` obtain a shell that provides the necessary dependen
 ./lka.py build-checker
 
 # Run all checkers on all tests
-./lka.py run-checker
+./lka.py run
 
 # Generate the website
 ./lka.py build-site
@@ -54,7 +54,7 @@ Using Nix, use `nix develop` obtain a shell that provides the necessary dependen
 python3 -m http.server 8880 --directory _out
 ```
 
-The `build-test`, `build-checker` and `run-checker` commands can be instructed to build or run specific checkers or tests only.
+The `build-test`, `build-checker` and `run` commands can be instructed to build or run specific checkers or tests only.
 
 ## Contributing
 
