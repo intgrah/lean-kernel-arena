@@ -1,4 +1,5 @@
 version: v4.27.0-rc1
+serious: false
 description: |
   The official Lean 4 kernel in **parse-only mode**.
   

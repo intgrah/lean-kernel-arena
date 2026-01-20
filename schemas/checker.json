@@ -42,6 +42,10 @@
     "disable": {
       "type": "boolean",
       "description": "If true, this checker will be ignored and not built or run"
+    },
+    "serious": {
+      "type": "boolean",
+      "description": "If false, this checker is omitted from the main comparison tables (default: true)"
     }
   },
   "required": ["run"],

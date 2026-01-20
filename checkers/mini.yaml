@@ -1,4 +1,5 @@
 version: "-"
+serious: false
 description: |
   A small, naive and incomplete implementation of a Lean kernel from scratch.
   

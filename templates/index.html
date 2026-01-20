@@ -100,7 +100,9 @@
                 <th class="text-right">Lines</th>
                 <th class="text-center">Expected</th>
                 {% for checker in checkers %}
+                {% if checker.get('serious', true) %}
                 <th class="text-center"><a href="checker/{{ checker.name }}/">{{ checker.name }}</a></th>
+                {% endif %}
                 {% endfor %}
             </tr>
         </thead>
@@ -114,6 +116,7 @@
                     {% if test.outcome == 'accept' %}✅{% elif test.outcome == 'reject' %}❌{% else %}⚠️ {{ test.outcome }}{% endif %}
                 </td>
                 {% for checker in checkers %}
+                    {% if checker.get('serious', true) %}
                     {% set key = (checker.name, test.name) %}
                     {% set result = test_results.get(key) %}
                     <td class="text-center {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
@@ -144,6 +147,7 @@
                             -
                         {% endif %}
                     </td>
+                    {% endif %}
                 {% endfor %}
             </tr>
             {% endfor %}
