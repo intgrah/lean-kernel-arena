@@ -1,8 +1,4 @@
 description: |
   The `Init.Prelude` module export.
-
-  It also includes `Init.Data.String.Bootstrap` as some kernels expect the `String.ofList` function
-  to exist to make sense of string literals. This is temporary until we can benefit from
-  [Lean PR #12029](https://github.com/leanprover/lean4/pull/12029).
 leanfile: tests/init_prelude_module.lean
 outcome: accept
