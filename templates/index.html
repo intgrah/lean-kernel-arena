@@ -16,6 +16,16 @@
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+.rotated-header {
+    writing-mode: sideways-lr;
+    white-space: nowrap;
+}
+.official-column {
+    border-right: 2px solid #6c757d;
+}
+table thead th {
+    vertical-align: bottom;
+}
 {% endblock %}
 
 {% block content %}
@@ -95,13 +105,16 @@
     <table class="striped">
         <thead>
             <tr>
-                <th>Name</th>
-                <th class="text-right">Size</th>
-                <th class="text-right">Lines</th>
-                <th class="text-center">Expected</th>
+                <th style="vertical-align: bottom;">Name</th>
+                <th class="text-right" style="vertical-align: bottom;">Size</th>
                 {% for checker in checkers %}
-                {% if checker.get('serious', true) %}
-                <th class="text-center"><a href="checker/{{ checker.name }}/">{{ checker.name }}</a></th>
+                {% if checker.get('serious', true) and checker.name == 'official' %}
+                <th class="text-center official-column" style="vertical-align: bottom;"><a href="checker/{{ checker.name }}/" class="rotated-header">{{ checker.name }}</a></th>
+                {% endif %}
+                {% endfor %}
+                {% for checker in checkers %}
+                {% if checker.get('serious', true) and checker.name != 'official' %}
+                <th class="text-center" style="vertical-align: bottom;"><a href="checker/{{ checker.name }}/" class="rotated-header">{{ checker.name }}</a></th>
                 {% endif %}
                 {% endfor %}
             </tr>
@@ -111,12 +124,34 @@
             <tr>
                 <td>{{ test.name }}</td>
                 <td class="text-right">{{ test.size_str }}</td>
-                <td class="text-right">{{ test.lines_str }}</td>
-                <td class="text-center">
-                    {% if test.outcome == 'accept' %}✅{% elif test.outcome == 'reject' %}❌{% else %}⚠️ {{ test.outcome }}{% endif %}
-                </td>
                 {% for checker in checkers %}
-                    {% if checker.get('serious', true) %}
+                    {% if checker.get('serious', true) and checker.name == 'official' %}
+                    {% set key = (checker.name, test.name) %}
+                    {% set result = test_results.get(key) %}
+                    <td class="text-center official-column {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
+                        {% if result %}
+                        <a href="checker/{{ checker.name }}/#test-{{ test.name }}" style="text-decoration: none; color: inherit; display: block;">
+                            {% if test.outcome == 'accept' and result.status == 'accepted' and test.get('large') %}
+                                {# Show absolute virtual time for official checker on large tests #}
+                                {% set official_cpu_time = convert_instructions_to_time(result.get('instructions', 0), instructions_per_second) if result.get('instructions', 0) > 0 and instructions_per_second > 0 else result.cpu_time %}
+                                {% if official_cpu_time and official_cpu_time >= 0.05 %}
+                                    {{ format_duration(official_cpu_time) }}
+                                {% else %}
+                                    ✅
+                                {% endif %}
+                            {% else %}
+                                {# Show result status for other tests #}
+                                {% if result.status == 'accepted' %}✅{% elif result.status == 'rejected' %}❌{% elif result.status == 'declined' %}🚫{% else %}💥{% endif %}
+                            {% endif %}
+                        </a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                {% endfor %}
+                {% for checker in checkers %}
+                    {% if checker.get('serious', true) and checker.name != 'official' %}
                     {% set key = (checker.name, test.name) %}
                     {% set result = test_results.get(key) %}
                     <td class="text-center {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
