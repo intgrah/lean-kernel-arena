@@ -5,7 +5,6 @@ description: |
   The project also houses some metatheory regarding the Lean system, in the same general direction as the MetaCoq project.
 
   The lean4lean checker checks that primitive definitions from the prelude are as expected. For that reason, it is tied to a specific Lean version. The arena uses a wrapper script to switch to the appropriate version for the tests we have here.
-
 dir: lean4lean
 build: ./lean4lean-wrapper.py build
 run: ./lean4lean-wrapper.py run "$IN"
