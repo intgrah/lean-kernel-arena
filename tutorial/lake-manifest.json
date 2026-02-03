@@ -5,7 +5,7 @@
    "type": "git",
    "subDir": null,
    "scope": "",
-   "rev": "88097c7ed05c5f1fbf660fdd53b9b1ac36096b5e",
+   "rev": "717edcb4fd22466347ac70a8067274efbfe4473f",
    "name": "Lean4Export",
    "manifestFile": "lake-manifest.json",
    "inputRev": "joachim/parser",
