@@ -498,7 +498,7 @@ def setup_lean4export(toolchain: str) -> Path | None:
 
         lean4export_tmp_dir.mkdir(parents=True, exist_ok=True)
 
-        clone_cmd = ["git", "clone", "--branch", "arena_json_output",
+        clone_cmd = ["git", "clone", "--branch", "joachim/parser",
                     "https://github.com/leanprover/lean4export",
                     str(lean4export_tmp_dir)]
         result = run_cmd(clone_cmd)

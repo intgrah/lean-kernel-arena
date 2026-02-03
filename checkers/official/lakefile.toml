@@ -9,7 +9,7 @@ root = "Main"
 [[require]]
 scope = "leanprover"
 name = "lean4export"
-rev = "joachim_parse_fixes"
+rev = "joachim/parser"
 
 [[require]]
 scope = "leanprover"
