@@ -29,13 +29,34 @@ good_def betaReduction2 : ∀ (p : Prop), simpleLambda Prop (Prop → Prop) := f
 bad_def nonTypeType : simpleLambda := unchecked Prop
 
 /-- Some level computation -/
-good_def levelComp1 : Type 0 := Sort (imax 1 0)
+good_decl (.defnDecl {
+    name := `levelComp1
+    levelParams := []
+    type := .sort 1
+    value := .sort (.imax 1 0)
+    hints := .opaque
+    safety := .safe
+  })
 
 /-- Some level computation -/
-good_def levelComp2 : Type 1 := Sort (max 1 0)
+good_decl (.defnDecl {
+    name := `levelComp2
+    levelParams := []
+    type := .sort 2
+    value := .sort (.imax 0 1)
+    hints := .opaque
+    safety := .safe
+  })
 
 /-- Some level computation -/
-good_def levelComp3 : Type 2 := Sort (imax 2 1)
+good_decl (.defnDecl {
+    name := `levelComp3
+    levelParams := []
+    type := .sort 3
+    value := .sort (.imax 2 1)
+    hints := .opaque
+    safety := .safe
+  })
 
 def levelParamF.{u} : Sort u → Sort u → Sort u := fun α β => α
 
