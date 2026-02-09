@@ -858,7 +858,11 @@ def create_test(test: dict, output_dir: Path) -> bool:
 
         result = run_cmd(run_cmd_str, cwd=work_dir, shell=True, env=env)
         if result.returncode != 0:
-            print(f"  Script failed: {result.stderr}")
+            print(f"  Script failed")
+            if result.stdout:
+                print(f"  stdout: {result.stdout.replace('\n', '\n          ')}")
+            if result.stderr:
+                print(f"  stderr: {result.stderr.replace('\n', '\n          ')}")
             return False
 
     if multiple:
@@ -1247,9 +1251,6 @@ def cmd_run_checker(args: argparse.Namespace) -> int:
         print("No built tests found.")
         return 0
 
-    # Sort tests by line count for consistent processing order
-    tests = sort_tests_by_line_count(tests)
-
     results = []
     for checker in checkers:
         for test in tests:
@@ -1329,6 +1330,7 @@ def load_tests() -> list[dict]:
         except Exception as e:
             print(f"Warning: Could not read stats file {stats_file}: {e}")
 
+    tests.sort(key=lambda t: t["name"])
     return tests
 
 

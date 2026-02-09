@@ -1,5 +1,6 @@
 import Lean
 import Tutorial.TestCaseEnv
+import Tutorial.AddConstInfo
 
 open Lean Elab Term Command
 open Lean.Parser.Command
@@ -11,7 +12,7 @@ def addTestCaseDeclCore (descr? : Option String) (decl : Lean.Declaration) (outc
     withOptions (fun o => debug.skipKernelTC.set o true) do
       addDecl decl
   registerTestCase {
-    decl := decl.getNames.head!
+    decls := decl.getNames.toArray
     outcome := outcome
     description := descr?
   }
@@ -73,6 +74,7 @@ def elabRawTestDecl (descr? : Option (TSyntax `Lean.Parser.Command.plainDocComme
   let descrStr? := descrStr?.map (·.trimAscii.copy)
   let expectedType := Lean.mkConst ``Lean.Declaration
   let declExpr ← elabTerm decl (some expectedType)
+  let declExpr ← instantiateMVars declExpr
   let decl ← Lean.Meta.MetaM.run' <| unsafe Meta.evalExpr (α := Lean.Declaration) expectedType declExpr
   addTestCaseDeclCore descrStr? decl outcome
 
@@ -81,6 +83,31 @@ elab descr?:(plainDocComment)? "good_decl " decl:term : command => do
 
 elab descr?:(plainDocComment)? "bad_decl " decl:term : command => do
   elabRawTestDecl descr? decl .bad
+
+def addTestCaseCIsCore (descr? : Option String) (cis : Array Lean.ConstantInfo) (outcome : Outcome) : CoreM Unit := do
+  addConstInfos cis
+  registerTestCase {
+    decls := cis.map (·.name)
+    outcome := outcome
+    description := descr?
+  }
+
+
+open TSyntax.Compat in -- due to plainDocComments vs. docComment
+def elabRawTestCIs (descr? : Option (TSyntax `Lean.Parser.Command.plainDocComment)) (cis : Term) (outcome : Outcome) : CommandElabM Unit := liftTermElabM do
+  let descrStr? ← descr?.mapM (getDocStringText ·)
+  let descrStr? := descrStr?.map (·.trimAscii.copy)
+  let expectedType := mkApp (Lean.mkConst ``Array [0]) (Lean.mkConst ``Lean.ConstantInfo)
+  let cisExpr ← elabTerm cis (some expectedType)
+  let cisExpr ← instantiateMVars cisExpr
+  let cis ← Lean.Meta.MetaM.run' <| unsafe Meta.evalExpr (α := Array Lean.ConstantInfo) expectedType cisExpr
+  addTestCaseCIsCore descrStr? cis outcome
+
+elab descr?:(plainDocComment)? "good_consts " ci:term : command => do
+  elabRawTestCIs descr? ci .good
+
+elab descr?:(plainDocComment)? "bad_consts " ci:term : command => do
+  elabRawTestCIs descr? ci .bad
 
 section Unchecked
 
