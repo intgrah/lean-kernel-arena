@@ -135,34 +135,69 @@ good_thm natDefRec :
   · rfl
   · intro; rfl
 
-/-
-Cannot get these past the kernel, even with `debug.skipKernelTC`.
-
 /-- An inductive type with a non-sort type -/
-bad_decl (.inductDecl
-  []
-  0
-  [{name := `inductBadType
-    type := .const `simpleLambda []
-    ctors := [{
-      name := `mk
-      type := .const `inductBadType []
-    }]
+bad_consts #[
+  .inductInfo {
+      name := `inductBadNonSort
+      levelParams := []
+      type := .const `simpleLambda []
+      numParams := 0
+      numIndices := 0
+      all := [`inductBadNonSort]
+      ctors := []
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
   }]
-  false)
 
+axiom aType : Type
 
-/-- An inductive type with duplicate level parameters -/
-bad_decl (.inductDecl
-  [`u, `u]
-  0
-  [{name := `inductLevelParam
-    type := .sort 1
-    ctors := [{
-      name := `mk
-      type := .const `inductLevelParam [.param `u, .param `u]
-    }]
+/-- Another inductive type with a non-sort type -/
+bad_consts #[
+  .inductInfo {
+      name := `inductBadNonSort2
+      levelParams := []
+      type := .const `aType []
+      numParams := 0
+      numIndices := 0
+      all := [`inductBadNonSort2]
+      ctors := []
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
   }]
-  false)
 
--/
+/-- An inductive with duplicate level params -/
+bad_consts #[
+  .inductInfo {
+      name := `inductLevelParam
+      levelParams := [`u, `u]
+      type := .sort 1
+      numParams := 0
+      numIndices := 0
+      all := [`inductLevelParam]
+      ctors := []
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }]
+
+/-- An inductive with too few parameters in the type -/
+
+bad_consts #[
+  .inductInfo {
+      name := `inductTooFewParams
+      levelParams := []
+      type := .forallE `x (.sort 0) (.sort 0) .default
+      numParams := 2
+      numIndices := 0
+      all := [`inductTooFewParams]
+      ctors := []
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }]

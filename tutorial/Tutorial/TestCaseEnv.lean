@@ -6,7 +6,7 @@ open Lean
 inductive Outcome where | good | bad
 
 structure TestCase where
-  decl : Name
+  decls : Array Name
   outcome : Outcome
   description : Option String
 
@@ -27,7 +27,7 @@ def registerTestCase (testCase : TestCase) : CoreM Unit := do
   let some outdir ← IO.getEnv "OUT" | return ()
   let outdir := System.FilePath.mk outdir
   let nStr := if n < 10 then "0" ++ toString n else toString n
-  let testname := s!"{nStr}_{testCase.decl.toString}"
+  let testname := s!"{nStr}_{testCase.decls.back!.toString}"
   let subdir := match testCase.outcome with
     | Outcome.good => "good"
     | Outcome.bad  => "bad"
@@ -38,6 +38,6 @@ def registerTestCase (testCase : TestCase) : CoreM Unit := do
   let h ← IO.FS.Handle.mk filename .write
   let stream := IO.FS.Stream.ofHandle h
   IO.withStdout stream do
-    exportDeclsFromEnv (← getEnv) #[testCase.decl]
+    exportDeclsFromEnv (← getEnv) testCase.decls
   if let some descr := testCase.description then
     IO.FS.writeFile infofilename <| Json.pretty <| .mkObj [ ("description", .str descr) ]
