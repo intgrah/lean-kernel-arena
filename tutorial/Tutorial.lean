@@ -152,6 +152,7 @@ bad_consts #[
   }]
 
 axiom aType : Type
+axiom aProp : Prop
 
 /-- Another inductive type with a non-sort type -/
 bad_consts #[
@@ -201,3 +202,105 @@ bad_consts #[
       isUnsafe := false
       isReflexive := false
   }]
+
+meta def dummyRecInfo (indName : Lean.Name) : Lean.ConstantInfo :=
+  .recInfo {
+      name := indName ++ `rec
+      levelParams := []
+      type := .sort 0
+      all := [indName]
+      numParams := 0
+      numIndices := 0
+      numMotives := 0
+      numMinors := 0
+      rules := []
+      k := false
+      isUnsafe := false
+  }
+
+/-- An inductive with a constructor with wrong parameters -/
+bad_consts #[
+  .ctorInfo {
+      name := `inductWrongCtorParams.mk
+      levelParams := []
+      type := .forallE `x (.sort 1) ((Lean.mkConst `inductWrongCtorParams).app (.const `aProp [])) .default
+      numParams := 1
+      induct := `inductWrongCtorParams
+      cidx := 0
+      numFields := 0
+      isUnsafe := false
+  },
+  -- The exporter insists on some recursor to exist
+  dummyRecInfo `inductWrongCtorParams,
+  .inductInfo {
+      name := `inductWrongCtorParams
+      levelParams := []
+      type := .forallE `x (.sort 0) (.sort 1) .default
+      numParams := 1
+      numIndices := 0
+      all := [`inductWrongCtorParams]
+      ctors := [`inductWrongCtorParams.mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }
+  ]
+
+/-- An inductive with a constructor with wrong parameters in result (they are swapped) -/
+bad_consts #[
+  .ctorInfo {
+      name := `inductWrongCtorResParams.mk
+      levelParams := []
+      type := .forallE `x (.sort 0) (.forallE `y (.sort 0) (Lean.mkApp2 (Lean.mkConst `inductWrongCtorResParams) (.bvar 0) (.bvar 1)) .default) .default
+      numParams := 2
+      induct := `inductWrongCtorResParams
+      cidx := 0
+      numFields := 0
+      isUnsafe := false
+  },
+  -- The exporter insists on some recursor to exist
+  dummyRecInfo `inductWrongCtorResParams,
+  .inductInfo {
+      name := `inductWrongCtorResParams
+      levelParams := []
+      type := .forallE `x (.sort 0) (.forallE `y (.sort 0) (.sort 1) .default) .default
+      numParams := 2
+      numIndices := 0
+      all := [`inductWrongCtorResParams]
+      ctors := [`inductWrongCtorResParams.mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }
+  ]
+
+/-- An inductive with a constructor with wrong level parameters in result (they are swapped) -/
+bad_consts #[
+  .ctorInfo {
+      name := `inductWrongCtorResLevel.mk
+      levelParams := [`u1, `u2]
+      type := .forallE `x (.sort 0) (.forallE `y (.sort 0) (Lean.mkApp2 (Lean.mkConst `inductWrongCtorResLevel [.param `u2,.param `u1]) (.bvar 1) (.bvar 0)) .default) .default
+      numParams := 2
+      induct := `inductWrongCtorResLevel
+      cidx := 0
+      numFields := 0
+      isUnsafe := false
+  },
+  -- The exporter insists on some recursor to exist
+  dummyRecInfo `inductWrongCtorResLevel,
+  .inductInfo {
+      name := `inductWrongCtorResLevel
+      levelParams := [`u1,`u2]
+      type := .forallE `x (.sort 0) (.forallE `y (.sort 0) (.sort 1) .default) .default
+      numParams := 2
+      numIndices := 0
+      all := [`inductWrongCtorResLevel]
+      ctors := [`inductWrongCtorResLevel.mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }
+  ]

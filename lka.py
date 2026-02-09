@@ -858,7 +858,11 @@ def create_test(test: dict, output_dir: Path) -> bool:
 
         result = run_cmd(run_cmd_str, cwd=work_dir, shell=True, env=env)
         if result.returncode != 0:
-            print(f"  Script failed: {result.stderr}")
+            print(f"  Script failed")
+            if result.stdout:
+                print(f"  stdout: {result.stdout.replace('\n', '\n          ')}")
+            if result.stderr:
+                print(f"  stderr: {result.stderr.replace('\n', '\n          ')}")
             return False
 
     if multiple:

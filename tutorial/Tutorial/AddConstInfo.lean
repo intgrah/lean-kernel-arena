@@ -15,4 +15,5 @@ public def addConstInfos [Monad m] [MonadEnv m]  (cis : Array Lean.ConstantInfo)
     modifyEnv (fun env => { env with
       base.public.constants.map₁ := env.base.public.constants.map₁.insert ci.name ci
       base.private.constants.map₁ := env.base.private.constants.map₁.insert ci.name ci
+      checked := env.checked.map (fun e => { e with constants := e.constants.insert ci.name ci })
     })
