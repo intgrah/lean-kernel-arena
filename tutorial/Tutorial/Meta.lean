@@ -45,8 +45,8 @@ def elabAndAddTestCaseDecl (descr? : Option (TSyntax ``plainDocComment)) (name :
     | `(declId| $n:ident .{ $[$ls:ident],* }) => pure (n.getId, ls.toList.map (·.getId))
     | _ => throwUnsupportedSyntax
   withLevelNames lparams do
-    let typeExpr ← elabTerm type none
-    let valueExpr ← elabTerm value (some typeExpr)
+    let typeExpr ← elabTermAndSynthesize type none
+    let valueExpr ← elabTermAndSynthesize value (some typeExpr)
     Term.synthesizeSyntheticMVarsNoPostponing
     let typeExpr ← instantiateMVars typeExpr
     if typeExpr.hasMVar then

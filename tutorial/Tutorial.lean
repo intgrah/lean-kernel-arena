@@ -492,6 +492,39 @@ good_def punitRec.{u,w} : ∀ {motive : PUnit.{u} → Sort w} (mk : motive ⟨�
 good_def eqRec.{u, u_1} : ∀ {α : Sort u_1} {a : α} {motive : (a' : α) → a = a' → Sort u} (refl : motive a (.refl a)) {a' : α}
   (t : a = a'), motive a' t := @Eq.rec
 
+inductive BoolProp : Prop where
+  | a : BoolProp
+  | b : BoolProp
+
+/-- Inductive predicates eliminiate into Prop if they have more than one construtor. -/
+good_def boolPropRec : ∀ {motive : BoolProp → Prop} (a : motive BoolProp.a) (b : motive BoolProp.b) (x : BoolProp), motive x := @BoolProp.rec
+
+/-- Inductive predicates eliminiate into Prop if they have one constructors and it carries data. -/
+good_def existsRec.{u} : ∀ {α : Sort u} {p : α → Prop} {motive : Exists p → Prop} (intro : ∀ (w : α) (h : p w), motive ⟨w,h⟩)
+  (t : Exists p), motive t := @Exists.rec
+
+
+inductive SortElimProp (b : Bool) : Bool → Bool → Prop
+  | mk (b1 b2 : Bool) : SortElimProp b b2 b1
+
+/--
+Inductive predicates eliminiate into Sort if they have one constructors and it carries data, but the data is
+known from the type, e.g. a parameter or an index
+-/
+good_def sortElimPropRec.{u} : ∀ {b : Bool} {motive : ∀ b1 b2, SortElimProp b b1 b2 → Sort u}
+  (mk : ∀ b1 b2, motive b2 b1 (.mk b1 b2)) (b1 b2 : Bool) (x : SortElimProp b b1 b2), motive b1 b2 x := @SortElimProp.rec
+
+inductive SortElimProp2 (b : Bool) : Bool → Bool → Prop
+  | mk (b1 b2 : Bool) : SortElimProp2 b b2 (id b1)
+
+/--
+Inductive predicates eliminiate into Sort if they have one constructors and it carries data, but the data is
+known from the type, e.g. a parameter or an index. However, it must occur directliy in the result type,
+with no intervening reduction.
+-/
+good_def sortElimProp2Rec : ∀ {b : Bool} {motive : ∀ b1 b2, SortElimProp2 b b1 b2 → Prop}
+  (mk : ∀ b1 b2, motive b2 b1 (.mk b1 b2)) (b1 b2 : Bool) (x : SortElimProp2 b b1 b2), motive b1 b2 x := @SortElimProp2.rec
+
 /-! Now actually reducing the recursor -/
 
 good_thm natDefRec :
