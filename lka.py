@@ -1140,6 +1140,7 @@ def run_checker_on_test(checker: dict, test: dict, build_dir: Path, tests_dir: P
             "checker": checker_name,
             "test": test_name,
             "status": "error",
+            "correctness": "error",
             "message": f"Test file not found: {test_file}",
             "exit_code": -1,
             "wall_time": 0,
@@ -1183,10 +1184,24 @@ def run_checker_on_test(checker: dict, test: dict, build_dir: Path, tests_dir: P
     else:
         status = "error"
 
+    # Determine correctness based on expected outcome
+    expected_outcome = test.get("outcome")
+    if status == "declined":
+        correctness = "declined"
+    elif status == "error":
+        correctness = "error"
+    elif expected_outcome == "accept" and status == "accepted":
+        correctness = "correct"
+    elif expected_outcome == "reject" and status == "rejected":
+        correctness = "correct"
+    else:
+        correctness = "incorrect"
+
     result_data = {
         "checker": checker_name,
         "test": test_name,
         "status": status,
+        "correctness": correctness,
         "exit_code": exit_code,
         "wall_time": result.wall_time,
         "cpu_time": result.cpu_time,
@@ -1257,20 +1272,43 @@ def cmd_run_checker(args: argparse.Namespace) -> int:
             print(f"Running {checker['name']} on {test['name']}...", end="\n" if VERBOSE else " ", flush=True)
             result = run_checker_on_test(checker, test, build_dir, tests_dir, results_dir)
             results.append(result)
-            print(f"[{result['status']}, {format_duration(result['wall_time'])}]", flush=True)
+            
+            # Choose emoji based on correctness
+            correctness = result.get('correctness', 'error')
+            if correctness == 'correct':
+                emoji = '✅'
+            elif correctness == 'incorrect':
+                emoji = '❌'
+            elif correctness == 'declined':
+                emoji = '⊘'
+            else:  # error
+                emoji = '⚠️'
+            
+            print(f"[{result['status']}, {format_duration(result['wall_time'])}] {emoji}", flush=True)
 
     # Summary
     print("\n" + "=" * 60)
     print("Summary:")
     print("=" * 60)
 
-    status_counts = {"accepted": 0, "rejected": 0, "declined": 0, "error": 0}
+    correctness_counts = {"correct": 0, "incorrect": 0, "declined": 0, "error": 0}
     for r in results:
-        status_counts[r["status"]] = status_counts.get(r["status"], 0) + 1
+        correctness = r.get("correctness", "error")
+        correctness_counts[correctness] = correctness_counts.get(correctness, 0) + 1
 
-    for status, count in status_counts.items():
+    # Print in order: correct, incorrect, declined, error
+    for correctness in ["correct", "incorrect", "declined", "error"]:
+        count = correctness_counts.get(correctness, 0)
         if count > 0:
-            print(f"  {status}: {count}")
+            if correctness == "correct":
+                emoji = "✅"
+            elif correctness == "incorrect":
+                emoji = "❌"
+            elif correctness == "declined":
+                emoji = "⊘"
+            else:  # error
+                emoji = "⚠️"
+            print(f"  {correctness}: {count} {emoji}")
 
     return 0
 
