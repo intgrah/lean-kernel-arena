@@ -1273,18 +1273,29 @@ def cmd_run_checker(args: argparse.Namespace) -> int:
             result = run_checker_on_test(checker, test, build_dir, tests_dir, results_dir)
             results.append(result)
             
+            # Choose emoji based on status
+            status = result.get('status', 'error')
+            if status == 'accepted':
+                status_emoji = '👍'
+            elif status == 'rejected':
+                status_emoji = '👎'
+            elif status == 'declined':
+                status_emoji = '⊘'
+            else:  # error
+                status_emoji = '⚠️'
+            
             # Choose emoji based on correctness
             correctness = result.get('correctness', 'error')
             if correctness == 'correct':
-                emoji = '✅'
+                correctness_emoji = '✅'
             elif correctness == 'incorrect':
-                emoji = '❌'
+                correctness_emoji = '❌'
             elif correctness == 'declined':
-                emoji = '⊘'
+                correctness_emoji = '⊘'
             else:  # error
-                emoji = '⚠️'
+                correctness_emoji = '⚠️'
             
-            print(f"[{result['status']}, {format_duration(result['wall_time'])}] {emoji}", flush=True)
+            print(f"[{status_emoji} {correctness_emoji} {format_duration(result['wall_time'])}]", flush=True)
 
     # Summary
     print("\n" + "=" * 60)
