@@ -156,6 +156,15 @@ inductive N : Type where | zero : N | succ : N → N
 /-- A recursive inductive data type -/
 good_def natDef : Type := N
 
+inductive Color where | r | b
+inductive RBTree (α : Type u) : Color → N → Type u where
+  | leaf : RBTree α .b .zero
+  | red {n} : RBTree α .b n -> α -> RBTree α .b n -> RBTree α .r n
+  | black {c1 c2 n} : RBTree α c1 n -> α -> RBTree α c2 n -> RBTree α .b n.succ
+
+/-- A recursive indexed data type -/
+good_def rbTreeDef.{u} : Type u → Color → N → Type u := RBTree
+
 /-! Now a bunch of illformed inductive types. -/
 
 /-- An inductive type with a non-sort type -/
@@ -467,6 +476,59 @@ bad_consts
   }
   ]
 
+inductive PredWithTypeField : Prop where
+  | mk (α : Type) : PredWithTypeField
+
+/--
+An inductive proposition can have constructors with fields of arbitrary level.
+-/
+good_def predWithTypeField : Prop := PredWithTypeField
+
+inductive TypeWithTypeField : Type 1 where
+  | mk (α : Type) : TypeWithTypeField
+
+/--
+An inductive type can have fields of level up to that of the inductive.
+-/
+good_def typeWithTypeField : Type 1 := TypeWithTypeField
+
+inductive TypeWithTypeFieldPoly : Type (u + 1) where
+  | mk (α : Type u) : TypeWithTypeFieldPoly
+/--
+An inductive type can have fields of level up to that of the inductive (polymorphic variant).
+-/
+good_def typeWithTypeFieldPoly.{u} : Type (u + 1) := TypeWithTypeFieldPoly
+
+/--
+An inductive type can have fields of from higher universes.
+-/
+bad_consts
+  let n := `typeWithTooHighTypeField
+  #[ .inductInfo {
+      name := n
+      levelParams := []
+      type := .sort 1
+      numParams := 0
+      numIndices := 0
+      all := [n]
+      ctors := [n ++ `mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  },
+  dummyRecInfo n,
+  .ctorInfo {
+      name := n ++ `mk
+      levelParams := []
+      type := arrow (.sort 1) (Lean.mkConst n)
+      numParams := 0
+      induct := n
+      cidx := 0
+      numFields := 1
+      isUnsafe := false
+  }
+  ]
 
 /-! Now statically checking the recursors -/
 
@@ -491,6 +553,25 @@ good_def punitRec.{u,w} : ∀ {motive : PUnit.{u} → Sort w} (mk : motive ⟨�
 /-- Asserting the type of the generated recursor -/
 good_def eqRec.{u, u_1} : ∀ {α : Sort u_1} {a : α} {motive : (a' : α) → a = a' → Sort u} (refl : motive a (.refl a)) {a' : α}
   (t : a = a'), motive a' t := @Eq.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def nRec.{u}  : ∀ {motive : N → Sort u} (zero : motive N.zero) (succ : (a : N) → motive a → motive a.succ) (t : N), motive t := @N.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def rbTreeRef.{u} : ∀ {α : Type u}
+  {motive : (a : Color) → (a_1 : N) → RBTree α a a_1 → Sort u},
+   motive Color.b N.zero RBTree.leaf →
+      ({n : N} →
+          (a : RBTree α Color.b n) →
+            (a_1 : α) →
+              (a_2 : RBTree α Color.b n) →
+                motive Color.b n a → motive Color.b n a_2 → motive Color.r n (a.red a_1 a_2)) →
+        ({c1 c2 : Color} →
+            {n : N} →
+              (a : RBTree α c1 n) →
+                (a_1 : α) →
+                  (a_2 : RBTree α c2 n) → motive c1 n a → motive c2 n a_2 → motive Color.b n.succ (a.black a_1 a_2)) →
+          {a : Color} → {a_1 : N} → (t : RBTree α a a_1) → motive a a_1 t := @RBTree.rec
 
 inductive BoolProp : Prop where
   | a : BoolProp
