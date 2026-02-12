@@ -145,6 +145,9 @@ good_def andType : Prop → Prop → Prop := And
 /-- A parametrized product type (with level parameters)-/
 good_def prodType : Type → Type → Type := Prod
 
+/-- A parametrized product type (with more general level parameters)-/
+good_def pprodType : Type → Type → Type := PProd
+
 /-- Level-polymorphic unit type -/
 good_def pUnitType : Type := PUnit
 
@@ -168,7 +171,7 @@ good_def rbTreeDef.{u} : Type u → Color → N → Type u := RBTree
 /-! Now a bunch of illformed inductive types. -/
 
 /-- An inductive type with a non-sort type -/
-bad_consts
+bad_raw_consts
   let n := `inductBadNonSort
   #[ .inductInfo {
       name := n
@@ -188,7 +191,7 @@ axiom aType : Type
 axiom aProp : Prop
 
 /-- Another inductive type with a non-sort type -/
-bad_consts
+bad_raw_consts
   let n := `inductBadNonSort2
   #[ .inductInfo {
       name := n
@@ -205,7 +208,7 @@ bad_consts
   }]
 
 /-- An inductive with duplicate level params -/
-bad_consts
+bad_raw_consts
   let n := `inductLevelParam
   #[ .inductInfo {
       name := n
@@ -223,7 +226,7 @@ bad_consts
 
 /-- An inductive with too few parameters in the type -/
 
-bad_consts
+bad_raw_consts
   let n := `inductTooFewParams
   #[ .inductInfo {
       name := n
@@ -241,7 +244,7 @@ bad_consts
 
 
 /-- An inductive with a constructor with wrong parameters -/
-bad_consts
+bad_raw_consts
   let n := `inductWrongCtorParams
   #[ .ctorInfo {
       name := n ++ `mk
@@ -271,7 +274,7 @@ bad_consts
   ]
 
 /-- An inductive with a constructor with wrong parameters in result (they are swapped) -/
-bad_consts
+bad_raw_consts
   let n := `inductWrongCtorResParams
   #[ .ctorInfo {
       name := n ++ `mk
@@ -301,7 +304,7 @@ bad_consts
   ]
 
 /-- An inductive with a constructor with wrong level parameters in result (they are swapped) -/
-bad_consts
+bad_raw_consts
   let n := `inductWrongCtorResLevel
   #[ .ctorInfo {
       name := n ++ `mk
@@ -332,7 +335,7 @@ bad_consts
   ]
 
 /-- A constructor with an unexpected occurrence of the type in index position of a return type. -/
-bad_consts
+bad_raw_consts
   let n := `inductInIndex
   #[ .ctorInfo {
       name := n ++ `mk
@@ -362,7 +365,7 @@ bad_consts
   ]
 
 /-- The classic example of an inductive with negative recursive occurrence -/
-bad_consts
+bad_raw_consts
   let n := `indNeg
   #[ .ctorInfo {
       name := n ++ `mk
@@ -414,7 +417,7 @@ good_decl
 When checking inductives, we expect the kernel to **not** reduce the type of the constructor itself;
 that should be all manifest `forall`s
 -/
-bad_consts
+bad_raw_consts
   let n := `reduceCtorType
   #[ .inductInfo {
       name := n
@@ -447,7 +450,7 @@ When checking inductives, we expect the kernel to **not** reduce the type of the
 further than head normal form. Recursive occurrences nested inside the head normal form are considered
 negative occurrences, even if they could be reduced to disappear.
 -/
-bad_consts
+bad_raw_consts
   let n := `indNegReducible
   #[ .ctorInfo {
       name := n ++ `mk
@@ -502,7 +505,7 @@ good_def typeWithTypeFieldPoly.{u} : Type (u + 1) := TypeWithTypeFieldPoly
 /--
 An inductive type can have fields of from higher universes.
 -/
-bad_consts
+bad_raw_consts
   let n := `typeWithTooHighTypeField
   #[ .inductInfo {
       name := n
@@ -546,6 +549,9 @@ good_def andRec.{u} : ∀ (p q : Prop) {motive : And p q → Sort u} (mk : ∀ p
 
 /-- Asserting the type of the generated recursor -/
 good_def prodRec.{u,v,w} : ∀ (α : Type u) (β : Type v) {motive : Prod α β → Sort u} (mk : ∀ p q, motive (.mk p q)) (x : Prod α β), motive x := @Prod.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def pprodRec.{u,v,w} : ∀ (α : Sort u) (β : Sort v) {motive : PProd α β → Sort u} (mk : ∀ p q, motive (.mk p q)) (x : PProd α β), motive x := @PProd.rec
 
 /-- Asserting the type of the generated recursor -/
 good_def punitRec.{u,w} : ∀ {motive : PUnit.{u} → Sort w} (mk : motive ⟨⟩) (x : PUnit), motive x := @PUnit.rec
@@ -608,14 +614,43 @@ good_def sortElimProp2Rec : ∀ {b : Bool} {motive : ∀ b1 b2, SortElimProp2 b 
 
 /-! Now actually reducing the recursor -/
 
-good_thm natDefRec :
-    ∀ (motive : N → Prop) (zero : motive N.zero) (succ: ∀ n, motive n → motive (N.succ n)),
-    let r := @N.rec motive zero succ;
-    (r .zero = zero) ∧ (∀ n, r (.succ n) = succ n (r n)) := by
-  intros
-  constructor
-  · rfl
-  · intro; rfl
+def Bool.match : Bool → Unit
+  | false => ()
+  | true => ()
+
+def boolRecEqns := And.intro Bool.match.match_1.eq_1 Bool.match.match_1.eq_2
+
+/-- Reduction behavior of `Bool.rec` -/
+good_consts #[``boolRecEqns]
+
+def Prod.match : (α × β) → Unit
+  | (.mk _ _) => ()
+
+def prodRecEqns := @Prod.match.match_1.eq_1
+
+/-- Reduction behavior of `Prod.rec` -/
+good_consts #[``prodRecEqns]
+
+def N.id : N → N
+  | N.zero => N.zero
+  | N.succ n => N.succ (N.id n)
+
+def nRecEqns := And.intro N.id.match_1.eq_1 N.id.match_1.eq_2
+
+def listRecEqns := And.intro @List.foldr_nil @List.foldr_cons
+
+/-- Reduction behavior of `List.rec` -/
+good_consts #[``listRecEqns]
+
+def RBTree.id {α : Type} {c : Color} {n : N} : RBTree α c n → RBTree α c n
+  | .leaf => .leaf
+  | .red l a r => .red (RBTree.id l) a (RBTree.id r)
+  | .black l a r => .black (RBTree.id l) a (RBTree.id r)
+
+def rbTreeRecEqns := And.intro @RBTree.id.eq_1 (And.intro @RBTree.id.eq_2 @RBTree.id.eq_3)
+
+/-- Reduction behavior of `RBTree.rec` -/
+good_consts #[``rbTreeRecEqns]
 
 -- TODO:
 -- * level constraints on constructors

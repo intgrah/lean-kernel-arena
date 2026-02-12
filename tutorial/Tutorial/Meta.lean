@@ -104,11 +104,25 @@ def elabRawTestCIs (descr? : Option (TSyntax `Lean.Parser.Command.plainDocCommen
   let cis ← Lean.Meta.MetaM.run' <| unsafe Meta.evalExpr (α := Array Lean.ConstantInfo) expectedType cisExpr
   addTestCaseCIsCore descrStr? cis outcome
 
-elab descr?:(plainDocComment)? "good_consts " ci:term : command => do
+elab descr?:(plainDocComment)? "good_raw_consts " ci:term : command => do
   elabRawTestCIs descr? ci .good
 
-elab descr?:(plainDocComment)? "bad_consts " ci:term : command => do
+elab descr?:(plainDocComment)? "bad_raw_consts " ci:term : command => do
   elabRawTestCIs descr? ci .bad
+
+open TSyntax.Compat in -- due to plainDocComments vs. docComment
+def elabRawTestConsts (descr? : Option (TSyntax `Lean.Parser.Command.plainDocComment)) (cis : Term) (outcome : Outcome) : CommandElabM Unit := liftTermElabM do
+  let descrStr? ← descr?.mapM (getDocStringText ·)
+  let descrStr? := descrStr?.map (·.trimAscii.copy)
+  let expectedType := mkApp (Lean.mkConst ``Array [0]) (Lean.mkConst ``Lean.Name)
+  let namesExpr ← elabTerm cis (some expectedType)
+  let namesExpr ← instantiateMVars namesExpr
+  let names ← Lean.Meta.MetaM.run' <| unsafe Meta.evalExpr (α := Array Lean.Name) expectedType namesExpr
+  let cis ← names.mapM Lean.getConstInfo
+  addTestCaseCIsCore descrStr? cis outcome
+
+elab descr?:(plainDocComment)? "good_consts " ci:term : command => do
+  elabRawTestConsts descr? ci .good
 
 section Unchecked
 
