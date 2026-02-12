@@ -419,6 +419,12 @@ def run_cmd(
             status = "ok" if result.returncode == 0 else f"FAILED (exit {result.returncode})"
             print(f"      -> {status} in {format_duration(elapsed)}")
 
+    if VERBOSE:
+        if result.stdout:
+            print(f"      stdout: {result.stdout.replace('\n', '\n               ')}")
+        if result.stderr:
+            print(f"      stderr: {result.stderr.replace('\n', '\n               ')}")
+
     return result
 
 
