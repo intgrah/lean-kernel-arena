@@ -774,6 +774,57 @@ come after a dependent data field, even if that is not used by the the present p
 -/
 bad_raw_consts mkPropStructureTest `projProp6 (Lean.mkConst ``PUnit [0]) 5
 
+inductive ProjDataIndex : N → Prop
+  | mk (n : N) (p : True) : ProjDataIndex n
+
+noncomputable def projDataIndexRec := @ProjDataIndex.rec
+
+/--
+The recursor for `ProjDataIndex` allows elimination into sort.
+-/
+good_consts #[``projDataIndexRec]
+
+/--
+Projecting out data is not allowed, even if this data appears as an index
+and the recursor would allow it.
+-/
+bad_raw_consts
+  #[ .defnInfo {
+    name := `projIndexData
+    levelParams := []
+    type :=
+      arrow (Lean.mkConst ``N) <|
+      arrow ((Lean.mkConst ``ProjDataIndex).app (.bvar 0)) <|
+      (Lean.mkConst ``N)
+    value :=
+      .lam `x (binderInfo := .default) (Lean.mkConst ``N) <|
+      .lam `x (binderInfo := .default) ((Lean.mkConst ``ProjDataIndex).app (.bvar 0)) <|
+      .proj ``PropStructure 0 (.bvar 0)
+    hints := .opaque
+    safety := .safe
+  }]
+
+/--
+Projecting out data is not allowed, even if this data appears as an index
+and the recursor would allow it.
+
+This also forbits projecting out proofs that follow such fields.
+-/
+bad_raw_consts
+  #[ .defnInfo {
+    name := `projIndexData2
+    levelParams := []
+    type :=
+      arrow (Lean.mkConst ``N) <|
+      arrow ((Lean.mkConst ``ProjDataIndex).app (.bvar 0)) <|
+      (Lean.mkConst ``True)
+    value :=
+      .lam `x (binderInfo := .default) (Lean.mkConst ``N) <|
+      .lam `x (binderInfo := .default) ((Lean.mkConst ``ProjDataIndex).app (.bvar 0)) <|
+      .proj ``PropStructure 1 (.bvar 0)
+    hints := .opaque
+    safety := .safe
+  }]
 
 -- TODO:
 -- * reflexive inductives
