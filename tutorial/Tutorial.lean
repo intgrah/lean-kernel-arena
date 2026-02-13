@@ -671,5 +671,8 @@ good_thm RBTree.id_spec : ∀ {α : Type} {c : Color} {n : N} (t : RBTree α c n
     congr
 
 -- TODO:
--- * level constraints on constructors
 -- * reflexive inductives
+-- * projections
+-- * eta for functions
+-- * eta for structures
+-- * rule k
