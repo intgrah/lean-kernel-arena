@@ -830,8 +830,24 @@ bad_raw_consts
 good_def projRed : (Prod.mk true false).2 = false := rfl
 
 
+/--
+Rule k for Eq:
+The recursor reduces even if the major argument is not a constructor,
+as long replacing the major argument with a constructor is type correct.
+-/
+good_thm ruleK : ∀ (h : true = true) (a : Bool),
+  Eq.rec (motive := fun _ _ => Bool) a h = a :=
+  fun _ a => Eq.refl a
+
+/--
+Rule k for Eq should not fire if the types of the major argument
+do not match that of the constructor.
+-/
+bad_thm ruleKbad : ∀ (h : true = false) (a : Bool),
+  Eq.rec (motive := fun _ _ => Bool) a h = a :=
+  fun _ a => unchecked Eq.refl a
+
 -- TODO:
 -- * reflexive inductives
 -- * eta for functions
 -- * eta for structures
--- * rule k
