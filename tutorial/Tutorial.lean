@@ -861,6 +861,29 @@ bad_thm ruleKbad : ∀ (h : true = false) (a : Bool),
   Eq.rec (motive := fun _ _ => Bool) a h = a :=
   fun _ a => unchecked Eq.refl a
 
+/-- Type checking Nat literals -/
+good_decl (.defnDecl {
+  name := `aNatLit
+  levelParams := {}
+  type := Lean.mkConst ``Nat
+  value := .lit (.natVal 0)
+  hints := .opaque
+  safety := .safe
+})
+
+/-- Reducing Nat literals -/
+good_decl (.thmDecl {
+  name := `natLitEq
+  levelParams := {}
+  type := Lean.mkApp3 (Lean.mkConst ``Eq [1]) (Lean.mkConst ``Nat) (.lit (.natVal 3))
+    (Lean.mkApp (Lean.mkConst ``Nat.succ) <|
+     Lean.mkApp (Lean.mkConst ``Nat.succ) <|
+     Lean.mkApp (Lean.mkConst ``Nat.succ) <|
+     Lean.mkConst ``Nat.zero
+    )
+  value := Lean.mkApp2 (Lean.mkConst ``Eq.refl [1]) (Lean.mkConst ``Nat) (.lit (.natVal 3))
+})
+
 -- TODO:
 -- * reflexive inductives
 -- * eta for functions
