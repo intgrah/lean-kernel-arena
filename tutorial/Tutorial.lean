@@ -27,6 +27,20 @@ good_def betaReduction : constType Prop (Prop → Prop) := ∀ p : Prop, p
 /-- Lambda reduction under binder -/
 good_def betaReduction2 : ∀ (p : Prop), constType Prop (Prop → Prop) := fun p => p
 
+/-- The binding domain of a forall may need to be reduce before it is a sort -/
+good_def forallSortWhnf : Prop := ∀ (p : id Prop) (x : p),  p
+
+/-- The binding domain of a forall has to be a sort -/
+bad_decl (.defnDecl {
+  name := `forallSortBad
+  levelParams := []
+  type := .sort 0
+  value := arrow (Lean.mkApp2 (Lean.mkConst ``id [2]) (.sort 1) (.sort 0)) <|
+    arrow (.bvar 0) <| arrow (.bvar 0) <| .bvar 1
+  hints := .opaque
+  safety := .safe
+})
+
 /-- The type of a declaration has to be a type, not some other expression -/
 bad_def nonTypeType : constType := unchecked Prop
 
