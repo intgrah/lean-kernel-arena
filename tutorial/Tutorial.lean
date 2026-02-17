@@ -891,6 +891,19 @@ good_decl (.thmDecl {
   value := Lean.mkApp2 (Lean.mkConst ``Eq.refl [1]) (Lean.mkConst ``Nat) (.lit (.natVal 3))
 })
 
+/--
+Corner case for function eta:
+Does a defeq between a partially applied constructor with rule k an a free
+variable trigger eta expansion?
+
+Taking the official kernel as the specification, the answer is no. See <https://github.com/leanprover/lean4/issues/12520> for a discussion.
+-/
+bad_def etaRuleK : ∀ (a : true = true → Bool),
+  @Eq (true = true → Bool)
+    (@Eq.rec Bool true (fun _ _ => Bool) (a (Eq.refl true)) _)
+    a :=
+  fun a => unchecked Eq.refl a
+
 -- TODO:
 -- * reflexive inductives
 -- * eta for functions

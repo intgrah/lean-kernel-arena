@@ -5,10 +5,10 @@ import Tutorial.AddConstInfo
 open Lean Elab Term Command
 open Lean.Parser.Command
 
-def addTestCaseDeclCore (descr? : Option String) (decl : Lean.Declaration) (outcome : Outcome) : CoreM Unit := do
-  match outcome with
-  | .good => addDecl decl
-  | .bad =>
+def addTestCaseDeclCore (descr? : Option String) (decl : Lean.Declaration) (outcome : Outcome) (unchecked := false) : CoreM Unit := do
+  match unchecked, outcome with
+  | false, .good => addDecl decl
+  | _, _ =>
     withOptions (fun o => debug.skipKernelTC.set o true) do
       addDecl decl
   registerTestCase {
@@ -17,7 +17,7 @@ def addTestCaseDeclCore (descr? : Option String) (decl : Lean.Declaration) (outc
     description := descr?
   }
 
-def addTestCaseDecl (descr? : Option String) (declName : Name) (levelParams : List Name) (typeExpr : Expr) (valueExpr : Expr) (outcome : Outcome) (declKind : ConstantKind) : CoreM Unit := do
+def addTestCaseDecl (descr? : Option String) (declName : Name) (levelParams : List Name) (typeExpr : Expr) (valueExpr : Expr) (outcome : Outcome) (declKind : ConstantKind) (unchecked := false) : CoreM Unit := do
   let decl ← match declKind with
     | .defn => pure <| .defnDecl {
         name := declName
@@ -34,10 +34,10 @@ def addTestCaseDecl (descr? : Option String) (declName : Name) (levelParams : Li
         value := valueExpr
       }
     | _ => throwError "Unsupported declaration kind in test case: {repr declKind}"
-  addTestCaseDeclCore descr? decl outcome
+  addTestCaseDeclCore descr? decl outcome (unchecked := unchecked)
 
 open TSyntax.Compat in -- due to plainDocComments vs. docComment
-def elabAndAddTestCaseDecl (descr? : Option (TSyntax ``plainDocComment)) (name : TSyntax ``declId) (type : Term) (value : Term) (outcome : Outcome) (declKind : ConstantKind) : CommandElabM Unit := liftTermElabM do
+def elabAndAddTestCaseDecl (descr? : Option (TSyntax ``plainDocComment)) (name : TSyntax ``declId) (type : Term) (value : Term) (outcome : Outcome) (declKind : ConstantKind) (unchecked := false) : CommandElabM Unit := liftTermElabM do
   let descrStr? ← descr?.mapM (getDocStringText ·)
   let descrStr? := descrStr?.map (·.trimAscii.copy)
   let (declName, lparams) ← match name with
@@ -54,10 +54,13 @@ def elabAndAddTestCaseDecl (descr? : Option (TSyntax ``plainDocComment)) (name :
     let valueExpr ← instantiateMVars valueExpr
     if valueExpr.hasMVar then
       throwError "Failed to elaborate value, has remaining metavariables:{indentD valueExpr}"
-    addTestCaseDecl descrStr? declName lparams typeExpr valueExpr outcome declKind
+    addTestCaseDecl descrStr? declName lparams typeExpr valueExpr outcome declKind (unchecked := unchecked)
 
 elab descr?:(plainDocComment)? "good_def " name:declId ":" type:term ":=" value:term : command => do
   elabAndAddTestCaseDecl descr? name type value Outcome.good ConstantKind.defn
+
+elab descr?:(plainDocComment)? "good_unchecked_def " name:declId ":" type:term ":=" value:term : command => do
+  elabAndAddTestCaseDecl descr? name type value Outcome.good ConstantKind.defn (unchecked := true)
 
 elab descr?:(plainDocComment)? "bad_def " name:declId ":" type:term ":=" value:term : command => do
   elabAndAddTestCaseDecl descr? name type value Outcome.bad ConstantKind.defn
