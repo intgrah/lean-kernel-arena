@@ -891,6 +891,20 @@ good_decl (.thmDecl {
   value := Lean.mkApp2 (Lean.mkConst ``Eq.refl [1]) (Lean.mkConst ``Nat) (.lit (.natVal 3))
 })
 
+/-! Proof irrelevance and unit Eta -/
+
+/-- Proof irrelevance -/
+good_def proofIrrelevance : ∀ (p : Prop) (h1 h2 : p), h1 = h2 := fun _ _ _ => rfl
+
+/-- Unit eta -/
+good_def unitEta1 : ∀ (x y : Unit), x = y := fun _ _ => rfl
+
+/-- Unit eta -/
+good_def unitEta2.{u} : ∀ (x y : PUnit.{u}), x = y := fun _ _ => rfl
+
+/-- Unit eta -/
+good_def unitEta3 : ∀ (x y : PUnit.{0}), x = y := fun _ _ => rfl
+
 /--
 Corner case for function eta:
 Does a defeq between a partially applied constructor with rule k an a free
