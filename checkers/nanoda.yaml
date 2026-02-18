@@ -16,9 +16,9 @@ description: |
 
   The nanoda integration in the arena does not distinguish between a rejected proof and other forms
   of failure, so they are all repoted as “rejected”.
-url: https://github.com/ammkrn/nanoda_lib/
-ref: json_string
-rev: 2747659518c0d5debe1d05cb02ba9232cafa4897
+url: https://github.com/nomeata/nanoda_lib/
+ref: joachim/pred_of_nat_succ
+rev: 2425d79dd38ada0e863c6268837fe17d4b9d76e6
 build: |
   cargo build --release
   cat > config.json <<__END__
@@ -27,7 +27,7 @@ build: |
      "nat_extension": true,
      "string_extension": true,
      "unpermitted_axiom_hard_error": false,
-     "permitted_axioms": ["propext", "Classical.choice", "Quot.sound", "Lean.trustCompiler"],
+     "unsafe_permit_all_axioms": true,
      "num_threads": 4
    }
   __END__
