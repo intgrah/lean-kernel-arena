@@ -33,7 +33,6 @@ def initStateCached (env : Environment) (cliOptions : List String := []) : M Uni
   }
 
 def exportDeclsFromEnv (env : Lean.Environment) (constants : Array Name) : IO Unit := do
-  initSearchPath (← findSysroot)
   M.run env do
     initStateCached env
     dumpMetadata
