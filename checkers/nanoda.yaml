@@ -18,7 +18,7 @@ description: |
   of failure, so they are all repoted as “rejected”.
 url: https://github.com/nomeata/nanoda_lib/
 ref: joachim/pred_of_nat_succ
-rev: 2425d79dd38ada0e863c6268837fe17d4b9d76e6
+rev: f97900ce3aa35eabfbcba11fcc3ec793f8f7663c
 build: |
   cargo build --release
   cat > config.json <<__END__
