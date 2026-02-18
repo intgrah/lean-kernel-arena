@@ -1,8 +1,10 @@
--- Tutorial declarations for Lean type theory features
--- Each declaration exercises a specific feature of the type system
-
 import Tutorial.Meta
 set_option linter.unusedVariables false
+/-!
+Tutorial declarations for Lean type theory features
+Each declaration exercises a specific feature of the type system
+-/
+
 
 /-- Basic definition -/
 good_def basicDef : Type := Prop
@@ -17,16 +19,30 @@ good_def arrowType : Type := Prop → Prop
 good_def dependentType : Prop := ∀ (p: Prop), p
 
 /-- Lambda expression -/
-good_def simpleLambda : Type → Type → Type := fun x y => x
+good_def constType : Type → Type → Type := fun x y => x
 
 /-- Lambda reduction -/
-good_def betaReduction : simpleLambda Prop (Prop → Prop) := ∀ p : Prop, p
+good_def betaReduction : constType Prop (Prop → Prop) := ∀ p : Prop, p
 
 /-- Lambda reduction under binder -/
-good_def betaReduction2 : ∀ (p : Prop), simpleLambda Prop (Prop → Prop) := fun p => p
+good_def betaReduction2 : ∀ (p : Prop), constType Prop (Prop → Prop) := fun p => p
+
+/-- The binding domain of a forall may need to be reduce before it is a sort -/
+good_def forallSortWhnf : Prop := ∀ (p : id Prop) (x : p),  p
+
+/-- The binding domain of a forall has to be a sort -/
+bad_decl (.defnDecl {
+  name := `forallSortBad
+  levelParams := []
+  type := .sort 0
+  value := arrow (Lean.mkApp2 (Lean.mkConst ``id [2]) (.sort 1) (.sort 0)) <|
+    arrow (.bvar 0) <| arrow (.bvar 0) <| .bvar 1
+  hints := .opaque
+  safety := .safe
+})
 
 /-- The type of a declaration has to be a type, not some other expression -/
-bad_def nonTypeType : simpleLambda := unchecked Prop
+bad_def nonTypeType : constType := unchecked Prop
 
 /-- Some level computation -/
 good_decl (.defnDecl {
@@ -120,30 +136,64 @@ good_thm peano2.{u} : ∀ (t : PN → Prop) (v : (n : PN) → t n), t PN.lit2.{u
 good_thm peano3.{u} : ∀ (t : PN → Prop) (v : (n : PN) → t n), t PN.lit4.{u} :=
   fun t v => v (PN.lit2.mul PN.lit2)
 
+/-!
+Inductives. We begin with examples of good and bad inductive types and constructors.
+-/
+
+/-- A simple empty inductive type -/
+good_def empty : Type := Empty
+
+/-- A simple enumeration inductive type -/
+good_def boolType : Type := Bool
+
+structure TwoBool where
+  b1 : Bool
+  b2 : Bool
+
+/-- A simple product type -/
+good_def twoBool : Type := TwoBool
+
+/-- A parametrized product type (no level parameters) -/
+good_def andType : Prop → Prop → Prop := And
+
+/-- A parametrized product type (with level parameters)-/
+good_def prodType : Type → Type → Type := Prod
+
+/-- A parametrized product type (with more general level parameters)-/
+good_def pprodType : Type → Type → Type := PProd
+
+/-- Level-polymorphic unit type -/
+good_def pUnitType : Type := PUnit
+
+/-- Equality, as an important indexed non-recursive data type -/
+good_def eqType.{u_1} : {α : Sort u_1} → α → α → Prop := @Eq
 
 inductive N : Type where | zero : N | succ : N → N
 
-/-- A first simple but recursive inductive data type -/
+/-- A recursive inductive data type -/
 good_def natDef : Type := N
 
-good_thm natDefRec :
-    ∀ (motive : N → Prop) (zero : motive N.zero) (succ: ∀ n, motive n → motive (N.succ n)),
-    let r := @N.rec motive zero succ;
-    (r .zero = zero) ∧ (∀ n, r (.succ n) = succ n (r n)) := by
-  intros
-  constructor
-  · rfl
-  · intro; rfl
+inductive Color where | r | b
+inductive RBTree (α : Type u) : Color → N → Type u where
+  | leaf : RBTree α .b .zero
+  | red {n} : RBTree α .b n -> α -> RBTree α .b n -> RBTree α .r n
+  | black {c1 c2 n} : RBTree α c1 n -> α -> RBTree α c2 n -> RBTree α .b n.succ
+
+/-- A recursive indexed data type -/
+good_def rbTreeDef.{u} : Type u → Color → N → Type u := RBTree
+
+/-! Now a bunch of illformed inductive types. -/
 
 /-- An inductive type with a non-sort type -/
-bad_consts #[
-  .inductInfo {
-      name := `inductBadNonSort
+bad_raw_consts
+  let n := `inductBadNonSort
+  #[ .inductInfo {
+      name := n
       levelParams := []
-      type := .const `simpleLambda []
+      type := .const `constType []
       numParams := 0
       numIndices := 0
-      all := [`inductBadNonSort]
+      all := [n]
       ctors := []
       numNested := 0
       isRec := false
@@ -155,14 +205,15 @@ axiom aType : Type
 axiom aProp : Prop
 
 /-- Another inductive type with a non-sort type -/
-bad_consts #[
-  .inductInfo {
-      name := `inductBadNonSort2
+bad_raw_consts
+  let n := `inductBadNonSort2
+  #[ .inductInfo {
+      name := n
       levelParams := []
       type := .const `aType []
       numParams := 0
       numIndices := 0
-      all := [`inductBadNonSort2]
+      all := [n]
       ctors := []
       numNested := 0
       isRec := false
@@ -171,14 +222,15 @@ bad_consts #[
   }]
 
 /-- An inductive with duplicate level params -/
-bad_consts #[
-  .inductInfo {
-      name := `inductLevelParam
+bad_raw_consts
+  let n := `inductLevelParam
+  #[ .inductInfo {
+      name := n
       levelParams := [`u, `u]
       type := .sort 1
       numParams := 0
       numIndices := 0
-      all := [`inductLevelParam]
+      all := [n]
       ctors := []
       numNested := 0
       isRec := false
@@ -188,14 +240,15 @@ bad_consts #[
 
 /-- An inductive with too few parameters in the type -/
 
-bad_consts #[
-  .inductInfo {
-      name := `inductTooFewParams
+bad_raw_consts
+  let n := `inductTooFewParams
+  #[ .inductInfo {
+      name := n
       levelParams := []
       type := .forallE `x (.sort 0) (.sort 0) .default
       numParams := 2
       numIndices := 0
-      all := [`inductTooFewParams]
+      all := [n]
       ctors := []
       numNested := 0
       isRec := false
@@ -203,43 +256,30 @@ bad_consts #[
       isReflexive := false
   }]
 
-meta def dummyRecInfo (indName : Lean.Name) : Lean.ConstantInfo :=
-  .recInfo {
-      name := indName ++ `rec
-      levelParams := []
-      type := .sort 0
-      all := [indName]
-      numParams := 0
-      numIndices := 0
-      numMotives := 0
-      numMinors := 0
-      rules := []
-      k := false
-      isUnsafe := false
-  }
 
 /-- An inductive with a constructor with wrong parameters -/
-bad_consts #[
-  .ctorInfo {
-      name := `inductWrongCtorParams.mk
+bad_raw_consts
+  let n := `inductWrongCtorParams
+  #[ .ctorInfo {
+      name := n ++ `mk
       levelParams := []
-      type := .forallE `x (.sort 1) ((Lean.mkConst `inductWrongCtorParams).app (.const `aProp [])) .default
+      type := arrow (.sort 1) ((Lean.mkConst n).app (.const `aProp []))
       numParams := 1
-      induct := `inductWrongCtorParams
+      induct := n
       cidx := 0
       numFields := 0
       isUnsafe := false
   },
   -- The exporter insists on some recursor to exist
-  dummyRecInfo `inductWrongCtorParams,
+  dummyRecInfo n,
   .inductInfo {
-      name := `inductWrongCtorParams
+      name := n
       levelParams := []
-      type := .forallE `x (.sort 0) (.sort 1) .default
+      type := arrow (.sort 0) (.sort 1)
       numParams := 1
       numIndices := 0
-      all := [`inductWrongCtorParams]
-      ctors := [`inductWrongCtorParams.mk]
+      all := [n]
+      ctors := [n ++ `mk]
       numNested := 0
       isRec := false
       isUnsafe := false
@@ -248,27 +288,28 @@ bad_consts #[
   ]
 
 /-- An inductive with a constructor with wrong parameters in result (they are swapped) -/
-bad_consts #[
-  .ctorInfo {
-      name := `inductWrongCtorResParams.mk
+bad_raw_consts
+  let n := `inductWrongCtorResParams
+  #[ .ctorInfo {
+      name := n ++ `mk
       levelParams := []
-      type := .forallE `x (.sort 0) (.forallE `y (.sort 0) (Lean.mkApp2 (Lean.mkConst `inductWrongCtorResParams) (.bvar 0) (.bvar 1)) .default) .default
+      type := arrow (n := `x) (.sort 0) <| arrow (n := `y) (.sort 0) <| Lean.mkApp2 (Lean.mkConst n) (.bvar 0) (.bvar 1)
       numParams := 2
-      induct := `inductWrongCtorResParams
+      induct := n
       cidx := 0
       numFields := 0
       isUnsafe := false
   },
   -- The exporter insists on some recursor to exist
-  dummyRecInfo `inductWrongCtorResParams,
+  dummyRecInfo n,
   .inductInfo {
-      name := `inductWrongCtorResParams
+      name := n
       levelParams := []
-      type := .forallE `x (.sort 0) (.forallE `y (.sort 0) (.sort 1) .default) .default
+      type := arrow (n := `x) (.sort 0) <| arrow (n := `y) (.sort 0) <| .sort 1
       numParams := 2
       numIndices := 0
-      all := [`inductWrongCtorResParams]
-      ctors := [`inductWrongCtorResParams.mk]
+      all := [n]
+      ctors := [n ++ `mk]
       numNested := 0
       isRec := false
       isUnsafe := false
@@ -277,30 +318,593 @@ bad_consts #[
   ]
 
 /-- An inductive with a constructor with wrong level parameters in result (they are swapped) -/
-bad_consts #[
-  .ctorInfo {
-      name := `inductWrongCtorResLevel.mk
+bad_raw_consts
+  let n := `inductWrongCtorResLevel
+  #[ .ctorInfo {
+      name := n ++ `mk
       levelParams := [`u1, `u2]
-      type := .forallE `x (.sort 0) (.forallE `y (.sort 0) (Lean.mkApp2 (Lean.mkConst `inductWrongCtorResLevel [.param `u2,.param `u1]) (.bvar 1) (.bvar 0)) .default) .default
+      type := arrow (n := `x) (.sort 0) <| arrow (n := `y) (.sort 0) <|
+        Lean.mkApp2 (Lean.mkConst n [.param `u2,.param `u1]) (.bvar 1) (.bvar 0)
       numParams := 2
-      induct := `inductWrongCtorResLevel
+      induct := n
       cidx := 0
       numFields := 0
       isUnsafe := false
   },
   -- The exporter insists on some recursor to exist
-  dummyRecInfo `inductWrongCtorResLevel,
+  dummyRecInfo n,
   .inductInfo {
-      name := `inductWrongCtorResLevel
+      name := n
       levelParams := [`u1,`u2]
-      type := .forallE `x (.sort 0) (.forallE `y (.sort 0) (.sort 1) .default) .default
+      type := arrow (n := `x) (.sort 0) <| arrow (n := `y) (.sort 0) <| .sort 1
       numParams := 2
       numIndices := 0
-      all := [`inductWrongCtorResLevel]
-      ctors := [`inductWrongCtorResLevel.mk]
+      all := [n]
+      ctors := [n ++ `mk]
       numNested := 0
       isRec := false
       isUnsafe := false
       isReflexive := false
   }
   ]
+
+/-- A constructor with an unexpected occurrence of the type in index position of a return type. -/
+bad_raw_consts
+  let n := `inductInIndex
+  #[ .ctorInfo {
+      name := n ++ `mk
+      levelParams := []
+      type := Lean.mkApp (Lean.mkConst n) (Lean.mkApp (Lean.mkConst n) (Lean.mkConst ``aProp))
+      numParams := 0
+      induct := n
+      cidx := 0
+      numFields := 0
+      isUnsafe := false
+  },
+  -- The exporter insists on some recursor to exist
+  dummyRecInfo n,
+  .inductInfo {
+      name := n
+      levelParams := []
+      type := arrow (.sort 0) (.sort 0)
+      numParams := 0
+      numIndices := 1
+      all := [n]
+      ctors := [n ++ `mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }
+  ]
+
+/-- The classic example of an inductive with negative recursive occurrence -/
+bad_raw_consts
+  let n := `indNeg
+  #[ .ctorInfo {
+      name := n ++ `mk
+      levelParams := []
+      type := arrow (arrow (.const n []) (.const n [])) (.const n [])
+      numParams := 0
+      induct := n
+      cidx := 0
+      numFields := 1
+      isUnsafe := false
+  },
+  -- The exporter insists on some recursor to exist
+  dummyRecInfo n,
+  .inductInfo {
+      name := n
+      levelParams := []
+      type := .sort 1
+      numParams := 0
+      numIndices := 0
+      all := [n]
+      ctors := [n ++ `mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }
+  ]
+
+/--
+When checking inductives, we expect the kernel to reduce the types of constructor arguments.
+-/
+-- This test needs to be written using `good_decl` because the surface syntax does not allow
+-- us to control the type of the constructor parameters.
+good_decl
+  let n := `reduceCtorParam
+  .inductDecl (lparams := []) (nparams := 1) (isUnsafe := false) [{
+    name := n
+    type := arrow (.sort 1) (.sort 1)
+    ctors := [{
+        name := n ++ `mk
+        type :=
+          arrow (n := `α) (Lean.mkApp2 (Lean.mkConst ``id [3]) (.sort 2) (.sort 1)) <|
+          arrow (Lean.mkApp2 (Lean.mkConst ``constType) ((Lean.mkConst n []).app (.bvar 0)) ((Lean.mkConst n []).app (.bvar 0))) <|
+          Lean.mkApp (Lean.mkConst n) (.bvar 1)
+    }]
+  }]
+
+/--
+When checking inductives, we expect the kernel to **not** reduce the type of the constructor itself;
+that should be all manifest `forall`s
+-/
+bad_raw_consts
+  let n := `reduceCtorType
+  #[ .inductInfo {
+      name := n
+      levelParams := []
+      type := .sort 1
+      numParams := 0
+      numIndices := 0
+      all := [n]
+      ctors := [n ++ `mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  },
+  dummyRecInfo n,
+  .ctorInfo {
+      name := n ++ `mk
+      levelParams := []
+      type := Lean.mkApp2 (.const ``id [2]) (.sort 1) (Lean.mkConst n)
+      numParams := 0
+      induct := n
+      cidx := 0
+      numFields := 0
+      isUnsafe := false
+  }
+  ]
+
+/--
+When checking inductives, we expect the kernel to **not** reduce the type of the constructor parameters
+further than head normal form. Recursive occurrences nested inside the head normal form are considered
+negative occurrences, even if they could be reduced to disappear.
+-/
+bad_raw_consts
+  let n := `indNegReducible
+  #[ .ctorInfo {
+      name := n ++ `mk
+      levelParams := []
+      type := arrow (arrow (Lean.mkApp2 (.const ``constType []) (.const ``aType []) (.const n [])) (.const n [])) (.const n [])
+      numParams := 0
+      induct := n
+      cidx := 0
+      numFields := 1
+      isUnsafe := false
+  },
+  -- The exporter insists on some recursor to exist
+  dummyRecInfo n,
+  .inductInfo {
+      name := n
+      levelParams := []
+      type := .sort 1
+      numParams := 0
+      numIndices := 0
+      all := [n]
+      ctors := [n ++ `mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }
+  ]
+
+inductive PredWithTypeField : Prop where
+  | mk (α : Type) : PredWithTypeField
+
+/--
+An inductive proposition can have constructors with fields of arbitrary level.
+-/
+good_def predWithTypeField : Prop := PredWithTypeField
+
+inductive TypeWithTypeField : Type 1 where
+  | mk (α : Type) : TypeWithTypeField
+
+/--
+An inductive type can have fields of level up to that of the inductive.
+-/
+good_def typeWithTypeField : Type 1 := TypeWithTypeField
+
+inductive TypeWithTypeFieldPoly : Type (u + 1) where
+  | mk (α : Type u) : TypeWithTypeFieldPoly
+/--
+An inductive type can have fields of level up to that of the inductive (polymorphic variant).
+-/
+good_def typeWithTypeFieldPoly.{u} : Type (u + 1) := TypeWithTypeFieldPoly
+
+/--
+An inductive type can have fields of from higher universes.
+-/
+bad_raw_consts
+  let n := `typeWithTooHighTypeField
+  #[ .inductInfo {
+      name := n
+      levelParams := []
+      type := .sort 1
+      numParams := 0
+      numIndices := 0
+      all := [n]
+      ctors := [n ++ `mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  },
+  dummyRecInfo n,
+  .ctorInfo {
+      name := n ++ `mk
+      levelParams := []
+      type := arrow (.sort 1) (Lean.mkConst n)
+      numParams := 0
+      induct := n
+      cidx := 0
+      numFields := 1
+      isUnsafe := false
+  }
+  ]
+
+/-! Now statically checking the recursors -/
+
+/-- Asserting the type of the generated recursor -/
+good_def emptyRec.{u} : ∀ (motive : Empty → Sort u) (x : Empty), motive x := @Empty.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def boolRec.{u} : ∀ {motive : Bool → Sort u} (false : motive false) (true : motive true) (t : Bool), motive t := Bool.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def twoBoolRec.{u} : ∀ {motive : TwoBool → Sort u} (mk : ∀ b1 b2, motive ⟨b1, b2⟩) (x : TwoBool), motive x := TwoBool.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def andRec.{u} : ∀ (p q : Prop) {motive : And p q → Sort u} (mk : ∀ p q, motive (And.intro p q)) (x : And p q), motive x := @And.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def prodRec.{u,v,w} : ∀ (α : Type u) (β : Type v) {motive : Prod α β → Sort u} (mk : ∀ p q, motive (.mk p q)) (x : Prod α β), motive x := @Prod.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def pprodRec.{u,v,w} : ∀ (α : Sort u) (β : Sort v) {motive : PProd α β → Sort u} (mk : ∀ p q, motive (.mk p q)) (x : PProd α β), motive x := @PProd.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def punitRec.{u,w} : ∀ {motive : PUnit.{u} → Sort w} (mk : motive ⟨⟩) (x : PUnit), motive x := @PUnit.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def eqRec.{u, u_1} : ∀ {α : Sort u_1} {a : α} {motive : (a' : α) → a = a' → Sort u} (refl : motive a (.refl a)) {a' : α}
+  (t : a = a'), motive a' t := @Eq.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def nRec.{u}  : ∀ {motive : N → Sort u} (zero : motive N.zero) (succ : (a : N) → motive a → motive a.succ) (t : N), motive t := @N.rec
+
+/-- Asserting the type of the generated recursor -/
+good_def rbTreeRef.{u} : ∀ {α : Type u}
+  {motive : (a : Color) → (a_1 : N) → RBTree α a a_1 → Sort u},
+   motive Color.b N.zero RBTree.leaf →
+      ({n : N} →
+          (a : RBTree α Color.b n) →
+            (a_1 : α) →
+              (a_2 : RBTree α Color.b n) →
+                motive Color.b n a → motive Color.b n a_2 → motive Color.r n (a.red a_1 a_2)) →
+        ({c1 c2 : Color} →
+            {n : N} →
+              (a : RBTree α c1 n) →
+                (a_1 : α) →
+                  (a_2 : RBTree α c2 n) → motive c1 n a → motive c2 n a_2 → motive Color.b n.succ (a.black a_1 a_2)) →
+          {a : Color} → {a_1 : N} → (t : RBTree α a a_1) → motive a a_1 t := @RBTree.rec
+
+inductive BoolProp : Prop where
+  | a : BoolProp
+  | b : BoolProp
+
+/-- Inductive predicates eliminiate into Prop if they have more than one construtor. -/
+good_def boolPropRec : ∀ {motive : BoolProp → Prop} (a : motive BoolProp.a) (b : motive BoolProp.b) (x : BoolProp), motive x := @BoolProp.rec
+
+/-- Inductive predicates eliminiate into Prop if they have one constructors and it carries data. -/
+good_def existsRec.{u} : ∀ {α : Sort u} {p : α → Prop} {motive : Exists p → Prop} (intro : ∀ (w : α) (h : p w), motive ⟨w,h⟩)
+  (t : Exists p), motive t := @Exists.rec
+
+
+inductive SortElimProp (b : Bool) : Bool → Bool → Prop
+  | mk (b1 b2 : Bool) : SortElimProp b b2 b1
+
+/--
+Inductive predicates eliminiate into Sort if they have one constructors and it carries data, but the data is
+known from the type, e.g. a parameter or an index
+-/
+good_def sortElimPropRec.{u} : ∀ {b : Bool} {motive : ∀ b1 b2, SortElimProp b b1 b2 → Sort u}
+  (mk : ∀ b1 b2, motive b2 b1 (.mk b1 b2)) (b1 b2 : Bool) (x : SortElimProp b b1 b2), motive b1 b2 x := @SortElimProp.rec
+
+inductive SortElimProp2 (b : Bool) : Bool → Bool → Prop
+  | mk (b1 b2 : Bool) : SortElimProp2 b b2 (id b1)
+
+/--
+Inductive predicates eliminiate into Sort if they have one constructors and it carries data, but the data is
+known from the type, e.g. a parameter or an index. However, it must occur directliy in the result type,
+with no intervening reduction.
+-/
+good_def sortElimProp2Rec : ∀ {b : Bool} {motive : ∀ b1 b2, SortElimProp2 b b1 b2 → Prop}
+  (mk : ∀ b1 b2, motive b2 b1 (.mk b1 b2)) (b1 b2 : Bool) (x : SortElimProp2 b b1 b2), motive b1 b2 x := @SortElimProp2.rec
+
+/-! Now actually reducing the recursor -/
+
+def Bool.match : Bool → Unit
+  | false => ()
+  | true => ()
+
+def boolRecEqns := And.intro Bool.match.match_1.eq_1 Bool.match.match_1.eq_2
+
+/-- Reduction behavior of `Bool.rec` -/
+good_consts #[``boolRecEqns]
+
+def Prod.match : (α × β) → Unit
+  | (.mk _ _) => ()
+
+def prodRecEqns := @Prod.match.match_1.eq_1
+
+/-- Reduction behavior of `Prod.rec` -/
+good_consts #[``prodRecEqns]
+
+-- We define this using the recursor directly, as structural recursion
+-- uses projections, which we do not want to expect at this point
+
+noncomputable def N.add : N → N → N
+  := N.rec (fun m => m) (fun n ih m => (ih m).succ)
+
+/-- A proof relying on the reduction behavior of N.rec -/
+good_thm nRecReduction :
+  (∀ m, N.add N.zero m = m) ∧
+  (∀ n m, N.add (N.succ n) m = N.succ (N.add n m)) := by
+  unfold N.add;
+  constructor <;> intros <;> rfl
+
+
+noncomputable def myListApped {α : Type} (xs ys : List α) : List α :=
+  List.recOn xs ys (fun x xs ih => x :: ih)
+
+/-- Reduction behavior of `List.rec` -/
+good_thm listRecReduction : ∀ {α : Type} (xs ys : List α),
+  (myListApped [] ys = ys) ∧
+  (∀ x xs, myListApped (x :: xs) ys = x :: myListApped xs ys) := by
+  intros; unfold myListApped; constructor <;> intros <;> rfl
+
+noncomputable def RBTree.id {α : Type} {c : Color} {n : N} (t :RBTree α c n) : RBTree α c n :=
+  RBTree.rec .leaf
+    (fun _t1 a _t2 ih1 ih2 => RBTree.red ih1 a ih2)
+    (fun _t1 a _t2 ih1 ih2 => RBTree.black ih1 a ih2)
+    t
+
+/-- Reduction behavior of `RBTree.rec` -/
+good_thm RBTree.id_spec : ∀ {α : Type} {c : Color} {n : N} (t : RBTree α c n), t.id = t := by
+  intro α c n t
+  induction t
+  · rfl
+  · dsimp [RBTree.id]
+    congr
+  · dsimp [RBTree.id]
+    congr
+
+/-! Projections -/
+
+/-- Typechecking simple projection functions -/
+good_consts #[``And.left, ``And.right]
+
+/-- Typechecking projection functions with parameters -/
+good_consts #[``Prod.fst, ``Prod.snd]
+
+/-- Typechecking projection functions  -/
+good_consts #[``PProd.fst, ``PProd.snd]
+
+/-- Typechecking dependent projection functions  -/
+good_consts #[``PSigma.fst, ``PSigma.snd]
+
+/-- Out of range projection -/
+bad_raw_consts #[
+  .defnInfo {
+    name := `projOutOfRange
+    levelParams := []
+    type := arrow (.sort 0) <| arrow (.sort 0) <|
+      arrow (Lean.mkApp2 (Lean.mkConst `And []) (.bvar 1) (.bvar 0)) <| .bvar 2
+    value :=
+      .lam `x (binderInfo := .default) (.sort 0) <|
+      .lam `y (binderInfo := .default) (.sort 0) <|
+      .lam `z (binderInfo := .default) (Lean.mkApp2 (Lean.mkConst `And []) (.bvar 1) (.bvar 0)) <|
+      .proj `And 2 (.bvar 0)
+    hints := .opaque
+    safety := .safe
+  }
+]
+
+/-- Projection out something that is not a structure -/
+bad_raw_consts #[
+  .defnInfo {
+    name := `projNotStruct
+    levelParams := []
+    type := arrow (Lean.mkConst ``N) <| (Lean.mkConst ``N)
+    value :=
+      .lam `x (binderInfo := .default) (Lean.mkConst ``N) <|
+      .proj `N 0 (.bvar 0)
+    hints := .opaque
+    safety := .safe
+  }
+]
+
+inductive PropStructure.{u,v} : Prop where
+  | mk (aProof : PUnit.{u}) (someData : PUnit.{v}) (aSecondProof : PUnit.{u})
+    (someMoreData : PUnit.{v}) (aProofAboutData : someMoreData = someMoreData)
+    (aFinalProof : PUnit.{u})
+
+meta def mkPropStructureTest (n : Lean.Name) (resType : Lean.Expr) (idx : Nat) : Array Lean.ConstantInfo :=
+  #[ .defnInfo {
+    name := n
+    levelParams := []
+    type := arrow (Lean.mkConst ``PropStructure [0,1]) resType
+    value :=
+      .lam `x (binderInfo := .default) (Lean.mkConst ``PropStructure [0,1]) <|
+      .proj ``PropStructure idx (.bvar 0)
+    hints := .opaque
+    safety := .safe
+  }]
+
+
+/-- Projecting out of a proposition
+
+The lean kernel allows projections out of propositions if they preceed
+all dependent data fields.
+-/
+good_raw_consts mkPropStructureTest `projProp1 (Lean.mkConst ``PUnit [0]) 0
+
+/-- Projecting out of a proposition
+
+The lean kernel disallows data projections out of propositional structures.
+-/
+bad_raw_consts mkPropStructureTest `projProp2 (Lean.mkConst ``PUnit [1]) 1
+
+/-- Projecting out of a proposition
+
+The lean kernel allows projections out of propositions if they preceed
+all dependent data fields. Non-dependent data fields are not relevant.
+-/
+good_raw_consts mkPropStructureTest `projProp3 (Lean.mkConst ``PUnit [0]) 2
+
+/-- Projecting out of a proposition
+
+The lean kernel disallows data projections out of propositional structures.
+-/
+bad_raw_consts mkPropStructureTest `projProp4 (Lean.mkConst ``PUnit [1]) 3
+
+/-- Projecting out of a proposition
+
+The lean kernel disallows proof projections out of propositional structures that depend on data.
+-/
+bad_raw_consts mkPropStructureTest `projProp5
+  (Lean.mkApp3 (Lean.mkConst ``Eq [1]) (Lean.mkConst ``PUnit [1]) (.proj ``PropStructure 3 (.bvar 0)) (.proj ``PropStructure 3 (.bvar 0))) 4
+
+/--
+Projecting out of a proposition.
+
+The lean kernel rejects any projections out of a propositoin that
+come after a dependent data field, even if that is not used by the the present projection.
+-/
+bad_raw_consts mkPropStructureTest `projProp6 (Lean.mkConst ``PUnit [0]) 5
+
+inductive ProjDataIndex : N → Prop
+  | mk (n : N) (p : True) : ProjDataIndex n
+
+noncomputable def projDataIndexRec := @ProjDataIndex.rec
+
+/--
+The recursor for `ProjDataIndex` allows elimination into sort.
+-/
+good_consts #[``projDataIndexRec]
+
+/--
+Projecting out data is not allowed, even if this data appears as an index
+and the recursor would allow it.
+-/
+bad_raw_consts
+  #[ .defnInfo {
+    name := `projIndexData
+    levelParams := []
+    type :=
+      arrow (Lean.mkConst ``N) <|
+      arrow ((Lean.mkConst ``ProjDataIndex).app (.bvar 0)) <|
+      (Lean.mkConst ``N)
+    value :=
+      .lam `x (binderInfo := .default) (Lean.mkConst ``N) <|
+      .lam `x (binderInfo := .default) ((Lean.mkConst ``ProjDataIndex).app (.bvar 0)) <|
+      .proj ``PropStructure 0 (.bvar 0)
+    hints := .opaque
+    safety := .safe
+  }]
+
+/--
+Projecting out data is not allowed, even if this data appears as an index
+and the recursor would allow it.
+
+This also forbits projecting out proofs that follow such fields.
+-/
+bad_raw_consts
+  #[ .defnInfo {
+    name := `projIndexData2
+    levelParams := []
+    type :=
+      arrow (Lean.mkConst ``N) <|
+      arrow ((Lean.mkConst ``ProjDataIndex).app (.bvar 0)) <|
+      (Lean.mkConst ``True)
+    value :=
+      .lam `x (binderInfo := .default) (Lean.mkConst ``N) <|
+      .lam `x (binderInfo := .default) ((Lean.mkConst ``ProjDataIndex).app (.bvar 0)) <|
+      .proj ``PropStructure 1 (.bvar 0)
+    hints := .opaque
+    safety := .safe
+  }]
+
+/-- Projection reductions -/
+good_def projRed : (Prod.mk true false).2 = false := rfl
+
+
+/--
+Rule k for Eq:
+The recursor reduces even if the major argument is not a constructor,
+as long replacing the major argument with a constructor is type correct.
+-/
+good_thm ruleK : ∀ (h : true = true) (a : Bool),
+  Eq.rec (motive := fun _ _ => Bool) a h = a :=
+  fun _ a => Eq.refl a
+
+/--
+Rule k for Eq should not fire if the types of the major argument
+do not match that of the constructor.
+-/
+bad_thm ruleKbad : ∀ (h : true = false) (a : Bool),
+  Eq.rec (motive := fun _ _ => Bool) a h = a :=
+  fun _ a => unchecked Eq.refl a
+
+/--
+Rule k should not fire for `Acc`.
+-/
+bad_thm ruleKAcc.{u} : ∀ (α : Sort u) (p : α → α → Prop) (x : α) (h : Acc p x) (a : Bool),
+  Acc.rec (motive := fun _ _ => Bool) (fun _ _ _=> a) h = a :=
+  fun α p x h a => unchecked Eq.refl a
+
+/-- Type checking Nat literals -/
+good_decl (.defnDecl {
+  name := `aNatLit
+  levelParams := {}
+  type := Lean.mkConst ``Nat
+  value := .lit (.natVal 0)
+  hints := .opaque
+  safety := .safe
+})
+
+/-- Reducing Nat literals -/
+good_decl (.thmDecl {
+  name := `natLitEq
+  levelParams := {}
+  type := Lean.mkApp3 (Lean.mkConst ``Eq [1]) (Lean.mkConst ``Nat) (.lit (.natVal 3))
+    (Lean.mkApp (Lean.mkConst ``Nat.succ) <|
+     Lean.mkApp (Lean.mkConst ``Nat.succ) <|
+     Lean.mkApp (Lean.mkConst ``Nat.succ) <|
+     Lean.mkConst ``Nat.zero
+    )
+  value := Lean.mkApp2 (Lean.mkConst ``Eq.refl [1]) (Lean.mkConst ``Nat) (.lit (.natVal 3))
+})
+
+/--
+Corner case for function eta:
+Does a defeq between a partially applied constructor with rule k an a free
+variable trigger eta expansion?
+
+Taking the official kernel as the specification, the answer is no. See <https://github.com/leanprover/lean4/issues/12520> for a discussion.
+-/
+bad_def etaRuleK : ∀ (a : true = true → Bool),
+  @Eq (true = true → Bool)
+    (@Eq.rec Bool true (fun _ _ => Bool) (a (Eq.refl true)) _)
+    a :=
+  fun a => unchecked Eq.refl a
+
+-- TODO:
+-- * reflexive inductives
+-- * eta for functions
+-- * eta for structures
