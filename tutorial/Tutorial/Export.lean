@@ -1,5 +1,6 @@
 import Export
 open Lean
+open Std (HashMap)
 
 initialize importedRecursorMap : IO.Ref (NameMap NameSet) ← do
   IO.mkRef {}
@@ -32,9 +33,21 @@ def initStateCached (env : Environment) (cliOptions : List String := []) : M Uni
     recursorMap
   }
 
+/-- Like `M.run`, but with smaller HashMap capacities suitable for small exports.
+The defaults in `State` are tuned for full Mathlib export (10M expressions etc.)
+and are wasteful when called repeatedly for small test cases. -/
+def M.runSmall (env : Environment) (act : M α) : IO α :=
+  StateT.run' (s := {
+    visitedExprs := HashMap.emptyWithCapacity 1024
+    visitedNames := HashMap.emptyWithCapacity 256 |>.insert .anonymous 0
+    visitedLevels := HashMap.emptyWithCapacity 64 |>.insert .zero 0
+    noMDataExprs := HashMap.emptyWithCapacity 256
+  }) do
+    ReaderT.run (r := { env }) do
+      act
+
 def exportDeclsFromEnv (env : Lean.Environment) (constants : Array Name) : IO Unit := do
-  initSearchPath (← findSysroot)
-  M.run env do
+  M.runSmall env do
     initStateCached env
     dumpMetadata
     for c in constants do
