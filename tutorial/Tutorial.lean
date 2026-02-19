@@ -5,6 +5,11 @@ Tutorial declarations for Lean type theory features
 Each declaration exercises a specific feature of the type system
 -/
 
+axiom aDepProp : Type → Prop
+axiom mkADepProp : ∀ t, aDepProp t
+axiom aType : Type
+axiom aProp : Prop
+
 
 /-- Basic definition -/
 good_def basicDef : Type := Prop
@@ -137,6 +142,50 @@ good_thm peano3.{u} : ∀ (t : PN → Prop) (v : (n : PN) → t n), t PN.lit4.{u
   fun t v => v (PN.lit2.mul PN.lit2)
 
 /-!
+Let declarations
+-/
+
+
+/--
+Type checking a non-dependent let
+-/
+-- Use `good_decl` to avoid the elabortor turning lets into haves
+good_decl (.defnDecl {
+    name := `letType
+    levelParams := []
+    type := .sort 1
+    value := .letE (nondep := false) `x (.sort 1) (.sort 0) ( .bvar 0)
+    hints := .opaque
+    safety := .safe
+  })
+
+/--
+Type checking a dependent let
+-/
+-- Use `good_decl` to avoid the elabortor turning lets into haves
+good_decl (.defnDecl {
+    name := `letTypeDep
+    levelParams := []
+    type := (Lean.mkConst `aDepProp).app (.sort 0)
+    value := .letE (nondep := false) `x (.sort 1) (.sort 0) <|
+             (Lean.mkConst ``mkADepProp).app (.bvar 0)
+    hints := .opaque
+    safety := .safe
+  })
+
+/--
+Reducing a let
+-/
+good_decl (.defnDecl {
+    name := `letRed
+    levelParams := []
+    type := .letE (nondep := false) `x (.sort 1) (.sort 0) <| .bvar 0
+    value := Lean.mkConst ``aProp
+    hints := .opaque
+    safety := .safe
+  })
+
+/-!
 Inductives. We begin with examples of good and bad inductive types and constructors.
 -/
 
@@ -200,9 +249,6 @@ bad_raw_consts
       isUnsafe := false
       isReflexive := false
   }]
-
-axiom aType : Type
-axiom aProp : Prop
 
 /-- Another inductive type with a non-sort type -/
 bad_raw_consts

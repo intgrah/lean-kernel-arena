@@ -1,4 +1,4 @@
-version: "-"
+version: a1251ba
 serious: false
 description: |
   A small, naive and incomplete implementation of a Lean kernel from scratch.
@@ -6,6 +6,6 @@ description: |
   This is mostly an exercise to improve the test coverage on the arena. 
 url: https://github.com/nomeata/lean-mini-kernel
 ref: master
-rev: a5806f6
+rev: a1251ba
 build: lake build
 run: .lake/build/bin/mini-kernel "$IN"
