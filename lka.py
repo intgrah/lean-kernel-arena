@@ -27,6 +27,26 @@ import markdown
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import shlex
 
+
+def _configure_stdout_stderr_unbuffered() -> None:
+    """Best-effort: make stdout/stderr write through immediately.
+
+    This avoids relying on per-call `print(..., flush=True)`.
+    """
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name, None)
+        if stream is None:
+            continue
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            try:
+                reconfigure(line_buffering=True, write_through=True)
+            except Exception:
+                pass
+
+
+_configure_stdout_stderr_unbuffered()
+
 # Global verbose flag
 VERBOSE = False
 
@@ -1301,7 +1321,7 @@ def cmd_run_checker(args: argparse.Namespace) -> int:
     results = []
     for checker in checkers:
         for test in tests:
-            print(f"Running {checker['name']} on {test['name']}...", end="\n" if VERBOSE else " ", flush=True)
+            print(f"Running {checker['name']} on {test['name']}...", end="\n" if VERBOSE else " ")
             result = run_checker_on_test(checker, test, build_dir, tests_dir, results_dir)
             results.append(result)
             
@@ -1327,7 +1347,7 @@ def cmd_run_checker(args: argparse.Namespace) -> int:
             else:  # error
                 correctness_emoji = '⚠️'
             
-            print(f"[{status_emoji} {correctness_emoji} {format_duration(result['wall_time'])}]", flush=True)
+            print(f"[{status_emoji} {correctness_emoji} {format_duration(result['wall_time'])}]")
 
     # Summary
     print("\n" + "=" * 60)
