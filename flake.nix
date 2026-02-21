@@ -16,6 +16,7 @@
           perf
           libffi
           libffi.dev
+          pkg-config
           just
           pypy
         ];
