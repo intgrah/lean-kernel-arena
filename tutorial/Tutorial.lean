@@ -1179,3 +1179,46 @@ bad_thm accRecNoEta :
     (h : Acc r a) (p : Bool),
     Acc.rec (motive := fun _ _ => Bool) (fun _ _ _ => p) h = p :=
   @fun α r a h p => unchecked Eq.refl p
+
+/-! Quotients -/
+
+/-- Asserting the type of `Quot.mk`. -/
+good_def quotMkType.{u} :
+  ∀ {α : Sort u} (r : α → α → Prop) (a : α), Quot r :=
+  @Quot.mk
+
+/-- Asserting the type of `Quot.ind`. -/
+good_def quotIndType.{u} :
+  ∀ {α : Sort u} {r : α → α → Prop} {β : Quot r → Prop}
+    (mk : ∀ a : α, β (Quot.mk r a)) (q : Quot r),
+      β q :=
+  @Quot.ind
+
+/-- Asserting the type of `Quot.lift`. -/
+good_def quotLiftType.{u,v} :
+  ∀ {α : Sort u} {r : α → α → Prop} {β : Sort v}
+    (f : α → β) (h : ∀ (a b : α), r a b → f a = f b),
+      Quot r → β :=
+  @Quot.lift
+
+/-- Asserting the type of `Quot.sound`. -/
+good_def quotSoundType.{u} :
+  ∀ {α : Sort u} {r : α → α → Prop} {a b : α},
+    r a b → Quot.mk r a = Quot.mk r b :=
+  @Quot.sound
+
+/-- Reduction behavior of `Quot.lift` on `Quot.mk`. -/
+good_thm quotLiftReduction.{u,v} :
+  ∀ {α : Sort u} {r : α → α → Prop} {β : Sort v}
+    (f : α → β) (h : ∀ (a b : α), r a b → f a = f b) (a : α),
+      Quot.lift f h (Quot.mk r a) = f a := by
+  intro α r β f h a
+  rfl
+
+/-- Reduction behavior of `Quot.ind` on `Quot.mk`. -/
+good_thm quotIndReduction.{u} :
+  ∀ {α : Sort u} (r : α → α → Prop) {β : Quot r → Prop}
+    (mk : ∀ a : α, β (Quot.mk r a)) (a : α),
+      Quot.ind (r := r) (β := β) mk (Quot.mk r a) = mk a := by
+  intro α r β mk a
+  rfl
