@@ -157,7 +157,7 @@ end Unchecked
 /-! Some expression builder helpers -/
 
 def arrow  (dom : Expr) (codom : Expr) (n := `x) : Expr :=
-  .forallE n dom codom .default
+  Lean.mkForall n BinderInfo.default dom codom
 
 def dummyRecInfo (indName : Lean.Name) : Lean.ConstantInfo :=
   .recInfo {

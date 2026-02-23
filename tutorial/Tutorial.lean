@@ -54,7 +54,7 @@ bad_decl (.thmDecl {
   name := `nonPropThm
   levelParams := []
   type := .sort 0
-  value := .forallE `x (binderInfo := .default) (.sort 0) <| .bvar 0
+  value := arrow (.sort 0) (.bvar 0)
 })
 
 /-- Some level computation -/
@@ -299,7 +299,7 @@ bad_raw_consts
   #[ .inductInfo {
       name := n
       levelParams := []
-      type := .forallE `x (.sort 0) (.sort 0) .default
+      type := arrow (.sort 0) (.sort 0)
       numParams := 2
       numIndices := 0
       all := [n]
