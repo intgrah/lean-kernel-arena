@@ -547,6 +547,11 @@ bad_raw_consts
   }
   ]
 
+/--
+info: indNegReducible.mk (x : constType aType indNegReducible → indNegReducible) : indNegReducible
+-/
+#guard_msgs in #check indNegReducible.mk
+
 inductive PredWithTypeField : Prop where
   | mk (α : Type) : PredWithTypeField
 
@@ -979,8 +984,6 @@ bad_thm funEtaBad :
   ∀ (α : Type) (β : Type) (g : α → α) (f : α → β), (fun x => f (g x)) = f :=
   fun _ _ _ f => unchecked Eq.refl f
 
-
-
 /--
 Corner case for function eta:
 Does a defeq between a partially applied recursor with rule k and a free
@@ -1009,5 +1012,144 @@ See <https://github.com/leanprover/lean4/issues/12520> for a discussion.
 bad_def etaCtor :
   ∀ (x : True → T) , (T.mk (x True.intro).val) = x := fun x => unchecked Eq.refl x
 
--- TODO:
--- * reflexive inductives
+/-! Reflexive inductives -/
+
+/--
+Rejection: recursive occurrence on the *left* of an arrow,
+*behind further arrows* inside a constructor argument.
+
+The constructor argument is a function type `Nat → (I → Nat)`.
+-/
+bad_raw_consts
+  let n := `reflOccLeft
+  #[ .ctorInfo {
+      name := n ++ `mk
+      levelParams := []
+      type := arrow (arrow (Lean.mkConst ``Nat) (arrow (.const n []) (Lean.mkConst ``Nat))) (.const n [])
+      numParams := 0
+      induct := n
+      cidx := 0
+      numFields := 1
+      isUnsafe := false
+  },
+  dummyRecInfo n,
+  .inductInfo {
+      name := n
+      levelParams := []
+      type := .sort 1
+      numParams := 0
+      numIndices := 0
+      all := [n]
+      ctors := [n ++ `mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }
+  ]
+
+/--
+Rejection: recursive occurrence in *index position*, behind a further arrow.
+
+We build an indexed inductive `I : Type → Type` with a constructor argument
+`Nat → I (I α)`, so the recursive occurrence appears as an index argument.
+-/
+bad_raw_consts
+  let n := `reflOccInIndex
+  #[ .ctorInfo {
+      name := n ++ `mk
+      levelParams := []
+      type :=
+        arrow (n := `α) (.sort 1) <|
+        arrow (arrow (Lean.mkConst ``Nat) <|
+          Lean.mkApp (Lean.mkConst n) (Lean.mkApp (Lean.mkConst n) (.bvar 0))) <|
+        Lean.mkApp (Lean.mkConst n) (.bvar 1)
+      numParams := 0
+      induct := n
+      cidx := 0
+      numFields := 1
+      isUnsafe := false
+  },
+  dummyRecInfo n,
+  .inductInfo {
+      name := n
+      levelParams := []
+      type := arrow (n := `α) (.sort 1) (.sort 1)
+      numParams := 0
+      numIndices := 1
+      all := [n]
+      ctors := [n ++ `mk]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }
+  ]
+
+/--
+When checking inductives, we expect the kernel to reduce the types of constructor arguments in all
+positive positions.
+-/
+-- This test needs to be written using `good_decl` because the surface syntax does not allow
+-- us to control the type of the constructor parameters.
+good_decl
+  let n := `reduceCtorParamRefl
+  .inductDecl (lparams := []) (nparams := 1) (isUnsafe := false) [{
+    name := n
+    type := arrow (.sort 1) (.sort 1)
+    ctors := [{
+        name := n ++ `mk
+        type :=
+          arrow (n := `α) (Lean.mkApp2 (Lean.mkConst ``id [3]) (.sort 2) (.sort 1)) <|
+          arrow (arrow (.bvar 0) (Lean.mkApp2 (Lean.mkConst ``constType) ((Lean.mkConst n []).app (.bvar 1)) ((Lean.mkConst n []).app (.bvar 1)))) <|
+          Lean.mkApp (Lean.mkConst n) (.bvar 1)
+    }]
+  }]
+
+/--
+info: reduceCtorParamRefl.mk (α : id Type) (x : α → constType (reduceCtorParamRefl α) (reduceCtorParamRefl α)) :
+  reduceCtorParamRefl α
+-/
+#guard_msgs in #check reduceCtorParamRefl.mk
+
+/--
+When checking inductives, we expect the kernel to reduce the types of constructor arguments in all
+positive positions.
+-/
+-- This test needs to be written using `good_decl` because the surface syntax does not allow
+-- us to control the type of the constructor parameters.
+good_decl
+  let n := `reduceCtorParamRefl2
+  .inductDecl (lparams := []) (nparams := 1) (isUnsafe := false) [{
+    name := n
+    type := arrow (.sort 1) (.sort 1)
+    ctors := [{
+        name := n ++ `mk
+        type :=
+          arrow (n := `α) (Lean.mkApp2 (Lean.mkConst ``id [3]) (.sort 2) (.sort 1)) <|
+          arrow (arrow (.bvar 0) (Lean.mkApp2 (Lean.mkConst ``constType) ((Lean.mkConst n []).app (.bvar 1)) (.bvar 1))) <|
+          Lean.mkApp (Lean.mkConst n) (.bvar 1)
+    }]
+  }]
+
+/--
+info: reduceCtorParamRefl2.mk (α : id Type) (x : α → constType (reduceCtorParamRefl2 α) α) : reduceCtorParamRefl2 α
+-/
+#guard_msgs in #check reduceCtorParamRefl2.mk
+
+/-! `Acc` and reduction -/
+
+/-- `Acc.rec` reduces on `Acc.intro`. -/
+good_thm accRecReduction :
+  ∀ {α : Type} (r : α → α → Prop) (a : α)
+    (h : ∀ b, r b a → Acc r b) (p : Bool),
+    Acc.rec (motive := fun _ _ => Bool) (fun _ _ _ => p) (Acc.intro (x := a) h) = p := by
+  intro α r a h p
+  rfl
+
+/-- `Acc.rec` does not have structure eta. -/
+bad_thm accRecNoEta :
+  ∀ {α : Type} (r : α → α → Prop) (a : α)
+    (h : Acc r a) (p : Bool),
+    Acc.rec (motive := fun _ _ => Bool) (fun _ _ _ => p) h = p :=
+  @fun α r a h p => unchecked Eq.refl p
