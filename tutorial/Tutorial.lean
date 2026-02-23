@@ -1137,6 +1137,32 @@ info: reduceCtorParamRefl2.mk (α : id Type) (x : α → constType (reduceCtorPa
 -/
 #guard_msgs in #check reduceCtorParamRefl2.mk
 
+/--
+A concrete reflexive inductive `Type`: binary trees.
+
+The recursive occurrences live behind further arrows (`Bool → RTree`).
+-/
+inductive RTree : Type where
+  | leaf
+  | node (children : Bool → RTree) : RTree
+
+noncomputable def rTreeRec := @RTree.rec
+
+/-- Asserting the type of the generated recursor. -/
+good_consts #[``rTreeRec]
+
+noncomputable def RTree.left (t : RTree) : RTree :=
+  RTree.rec (motive := fun _ => RTree) .leaf (fun children _ih => children true) t
+
+/-- Reduction behavior of `RTree.rec` on `RTree.mk`. -/
+good_thm rtreeRecReduction : ∀ (t1 t2 : RTree),
+  (RTree.node (cond · t1 t2)).left = t1 := fun _ _ => rfl
+
+noncomputable def accRecType := @Acc.rec
+
+/-- Asserting the type of `Acc.rec`. -/
+good_consts #[``accRecType]
+
 /-! `Acc` and reduction -/
 
 /-- `Acc.rec` reduces on `Acc.intro`. -/
