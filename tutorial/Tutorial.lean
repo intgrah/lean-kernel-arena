@@ -962,6 +962,25 @@ good_def unitEta3 : ∀ (x y : PUnit.{0}), x = y := fun _ _ => rfl
 /-- Structure eta -/
 good_def structEta.{u} : ∀ (α β : Type u) (x : α × β), x = ⟨x.1, x.2⟩ ∧ ⟨x.1, x.2⟩ = x:= fun _ _ _ => ⟨rfl, rfl⟩
 
+/-! Function eta -/
+
+/-- Function eta for non-dependent functions. -/
+good_thm funEta :
+  ∀ (α : Type) (β : Type) (f : α → β), (fun x => f x) = f :=
+  fun _ _ f => rfl
+
+/-- Function eta for dependent functions (pi types). -/
+good_thm funEtaDep :
+  ∀ (α : Type) (β : α → Type) (f : ∀ a, β a), (fun a => f a) = f :=
+  fun _ _ f => rfl
+
+/-- Eta should not identify functions with different bodies. -/
+bad_thm funEtaBad :
+  ∀ (α : Type) (β : Type) (g : α → α) (f : α → β), (fun x => f (g x)) = f :=
+  fun _ _ _ f => unchecked Eq.refl f
+
+
+
 /--
 Corner case for function eta:
 Does a defeq between a partially applied recursor with rule k and a free
@@ -992,4 +1011,3 @@ bad_def etaCtor :
 
 -- TODO:
 -- * reflexive inductives
--- * eta for functions
