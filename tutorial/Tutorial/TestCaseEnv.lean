@@ -26,7 +26,10 @@ def registerTestCase (testCase : TestCase) : CoreM Unit := do
   let n ← bumpTestCaseCounter
   let some outdir ← IO.getEnv "OUT" | return ()
   let outdir := System.FilePath.mk outdir
-  let nStr := if n < 10 then "0" ++ toString n else toString n
+  let nStr :=
+    let s := toString n
+    let zeros : String := String.ofList (List.replicate (3 - s.length) '0')
+    zeros ++ s
   let testname := s!"{nStr}_{testCase.decls.back!.toString}"
   let subdir := match testCase.outcome with
     | Outcome.good => "good"
