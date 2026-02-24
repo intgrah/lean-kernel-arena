@@ -1,5 +1,6 @@
 import TestPrinter.Merge
 import TestPrinter.PrettyPrint
+import TestPrinter.AddConstInfo
 import TestPrinter.Render
 
 open Lean in
@@ -30,6 +31,22 @@ def main (args : List String) : IO Unit := do
   IO.eprintln "Resolving shared declarations..."
   let resolvedTests := resolveTests parsedTests
 
+  IO.eprintln "Building environment..."
+  -- Collect all constants from all tests
+  let mut allConstants : Array Lean.ConstantInfo := #[]
+  for test in parsedTests do
+    for (_, ci) in test.env.constMap do
+      allConstants := allConstants.push ci
+  -- Build a Lean Environment with all constants injected
+  let env ← Lean.importModules #[] {}
+  let coreCtx : Lean.Core.Context :=
+    { fileName := "<kernel-export>", fileMap := default }
+  let coreState : Lean.Core.State := { env }
+  let (env, _) ← (do
+    addConstInfos allConstants
+    Lean.getEnv : Lean.CoreM _).toIO coreCtx coreState
+  IO.eprintln s!"  {allConstants.size} constants loaded"
+
   IO.eprintln "Pretty-printing declarations..."
   let mut results : Array (ResolvedTest × Array PrettyDecl) := #[]
   for test in resolvedTests do
@@ -40,7 +57,9 @@ def main (args : List String) : IO Unit := do
       | some ci =>
         if let .recInfo _ := ci then pure ()
         else
-          let decl := ppConstantInfo ci
+          let (decl, _, _) ← (ppConstantInfo ci).toIO
+            { fileName := "<kernel-export>", fileMap := default }
+            { env }
           decls := decls.push decl
       | none => pure ()
     -- Also filter recursors from sharedDecls

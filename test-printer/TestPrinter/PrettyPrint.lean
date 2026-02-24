@@ -1,156 +1,13 @@
-import Lean.Expr
+import SubVerso.Highlighting.Code
+import Lean.Widget.InteractiveCode
+import Lean.PrettyPrinter
 import TestPrinter.Types
 
 namespace TestPrinter
 
 open Lean
-
-/-- Pretty-print a universe level. -/
-partial def ppLevel (l : Level) : String :=
-  match l with
-  | .zero => "0"
-  | .succ .zero => "1"
-  | .succ l => s!"({ppLevel l} + 1)"
-  | .max l1 l2 => s!"(max {ppLevel l1} {ppLevel l2})"
-  | .imax l1 l2 => s!"(imax {ppLevel l1} {ppLevel l2})"
-  | .param n => toString n
-  | .mvar _ => "?u"
-
-/-- Pretty-print a universe level for Sort. -/
-def ppSort (l : Level) : String :=
-  match l with
-  | .zero => "Prop"
-  | .succ .zero => "Type"
-  | .succ l => s!"Type {ppLevel l}"
-  | _ => s!"Sort {ppLevel l}"
-
-private def binderInfoOpen : BinderInfo → String
-  | .default => "("
-  | .implicit => "{"
-  | .strictImplicit => "⦃"
-  | .instImplicit => "["
-
-private def binderInfoClose : BinderInfo → String
-  | .default => ")"
-  | .implicit => "}"
-  | .strictImplicit => "⦄"
-  | .instImplicit => "]"
-
-/-- Check if a Name is an internal hygiene name (contains `_@` or `_hyg` components). -/
-private def isHygieneName : Name → Bool
-  | .str _ s => s == "_@" || s == "_hyg" || s == "_internal"
-  | .num p _ => isHygieneName p
-  | .anonymous => false
-
-/-- Clean up internal hygiene names like `a._@._internal._hyg.0` → `_`. -/
-private def cleanName (n : Name) : String :=
-  if n.isAnonymous then "_"
-  else if isHygieneName n then "_"
-  else toString n
-
-private def indentStr (n : Nat) : String :=
-  String.ofList (List.replicate n ' ')
-
-/-- Pretty-print an expression. Uses a name context for de Bruijn indices.
-    `col` is the current column, `width` is the target max width. -/
-partial def ppExpr (e : Expr) (ctx : List Name := []) (col : Nat := 0) (width : Nat := 72) : String :=
-  match e with
-  | .bvar n =>
-    match ctx[n]? with
-    | some nm => cleanName nm
-    | none => s!"#{n}"
-  | .sort l => ppSort l
-  | .const name [] => toString name
-  | .const name us =>
-    let usStr := ", ".intercalate (us.map ppLevel)
-    toString name ++ ".{" ++ usStr ++ "}"
-  | .app f a => ppApp f a ctx col width
-  | .lam _ _ _ _ => ppLams e ctx col width
-  | .forallE _ _ _ _ => ppForalls e ctx col width
-  | .letE name ty val body _ =>
-    let nameStr := cleanName name
-    let tyStr := ppExpr ty ctx col width
-    let header := s!"let {nameStr} : {tyStr} := "
-    let valStr := ppExpr val ctx (col + header.length) width
-    let flat := s!"{header}{valStr}; {ppExpr body (name :: ctx) col width}"
-    if col + flat.length ≤ width then flat
-    else
-      let ind := col + 2
-      s!"{header}{valStr};\n{indentStr ind}{ppExpr body (name :: ctx) ind width}"
-  | .lit (.natVal n) => toString n
-  | .lit (.strVal s) => s!"\"{s}\""
-  | .mdata _ e => ppExpr e ctx col width
-  | .proj typeName idx struct =>
-    s!"{ppExpr struct ctx col width}.{typeName}.{idx}"
-  | .fvar fvarId => s!"?fvar.{fvarId.name}"
-  | .mvar mvarId => s!"?mvar.{mvarId.name}"
-where
-  /-- Flatten application spine and print. -/
-  ppApp (f : Expr) (a : Expr) (ctx : List Name) (col : Nat) (width : Nat) : String :=
-    let args := collectArgs f [a]
-    let flat := "(" ++ " ".intercalate (args.map (ppExpr · ctx 0 width)) ++ ")"
-    if col + flat.length ≤ width then flat
-    else
-      let ind := col + 2
-      let parts := args.map (ppExpr · ctx ind width)
-      "(" ++ ("\n" ++ indentStr ind).intercalate parts ++ ")"
-  collectArgs (e : Expr) (acc : List Expr) : List Expr :=
-    match e with
-    | .app f a => collectArgs f (a :: acc)
-    | _ => e :: acc
-  /-- Collect and print consecutive lambda binders. -/
-  ppLams (e : Expr) (ctx : List Name) (col : Nat) (width : Nat) : String :=
-    let (binders, body, ctx') := collectLams e ctx col width
-    let binderStr := " ".intercalate binders
-    let header := s!"fun {binderStr} => "
-    let flat := s!"{header}{ppExpr body ctx' 0 width}"
-    if col + flat.length ≤ width then flat
-    else
-      let ind := col + 2
-      s!"{header}\n{indentStr ind}{ppExpr body ctx' ind width}"
-  collectLams (e : Expr) (ctx : List Name) (col : Nat) (width : Nat) :
-      (List String × Expr × List Name) :=
-    match e with
-    | .lam name ty body bi =>
-      let nameStr := cleanName name
-      let tyStr := ppExpr ty ctx col width
-      let binder := s!"{binderInfoOpen bi}{nameStr} : {tyStr}{binderInfoClose bi}"
-      let (rest, finalBody, ctx') := collectLams body (name :: ctx) col width
-      (binder :: rest, finalBody, ctx')
-    | _ => ([], e, ctx)
-  /-- Collect and print consecutive forall binders; use → for non-dependent. -/
-  ppForalls (e : Expr) (ctx : List Name) (col : Nat) (width : Nat) : String :=
-    match e with
-    | .forallE name ty body bi =>
-      if body.hasLooseBVars then
-        -- Dependent: collect consecutive dependent foralls
-        let nameStr := cleanName name
-        let tyStr := ppExpr ty ctx col width
-        let binder := s!"{binderInfoOpen bi}{nameStr} : {tyStr}{binderInfoClose bi}"
-        let bodyStr := ppForalls body (name :: ctx) col width
-        if bodyStr.startsWith "∀ " then
-          -- Merge with following ∀
-          let flat := s!"∀ {binder} " ++ bodyStr.drop 2
-          if col + flat.length ≤ width then flat
-          else
-            let ind := col + 2
-            s!"∀ {binder},\n{indentStr ind}{ppForalls body (name :: ctx) ind width}"
-        else
-          let flat := s!"∀ {binder}, {bodyStr}"
-          if col + flat.length ≤ width then flat
-          else
-            let ind := col + 2
-            s!"∀ {binder},\n{indentStr ind}{ppForalls body (name :: ctx) ind width}"
-      else
-        -- Non-dependent arrow
-        let tyStr := ppExpr ty ctx col width
-        let bodyStr := ppExpr body (name :: ctx) col width
-        let flat := s!"{tyStr} → {bodyStr}"
-        if col + flat.length ≤ width then flat
-        else
-          let ind := col + 2
-          s!"{tyStr} →\n{indentStr ind}{ppExpr body (name :: ctx) ind width}"
-    | _ => ppExpr e ctx col width
+open Lean.Widget (TaggedText CodeWithInfos SubexprInfo tagCodeInfos)
+open SubVerso.Highlighting
 
 /-- Get the kind label for a ConstantInfo. -/
 def constKind (ci : ConstantInfo) : String :=
@@ -164,25 +21,138 @@ def constKind (ci : ConstantInfo) : String :=
   | .ctorInfo _ => "constructor"
   | .recInfo _ => "recursor"
 
-/-- Pretty-print a single ConstantInfo. -/
-def ppConstantInfo (ci : ConstantInfo) (width : Nat := 72) : PrettyDecl :=
-  let nameStr := toString ci.name
-  let kind := constKind ci
-  -- Column offset: "kind name : " prefix
-  let typeCol := kind.length + 1 + nameStr.length + 3
-  let typePP := ppExpr ci.type [] typeCol width
-  -- Value starts at indent 2 (after ":=\n  ")
-  let valuePP := match ci with
-    | .defnInfo v => some (ppExpr v.value [] 2 width)
-    | .thmInfo v => some (ppExpr v.value [] 2 width)
-    | .opaqueInfo v => some (ppExpr v.value [] 2 width)
-    | _ => none
-  {
-    kind
-    name := ci.name
-    levelParams := ci.levelParams
-    typePP
-    valuePP
-  }
+/-- Compute display length of highlighted content (total character count). -/
+private partial def hlLength : Highlighted → Nat
+  | .token t => t.content.length
+  | .text s => s.length
+  | .seq hs => hs.foldl (fun acc h => acc + hlLength h) 0
+  | .span _ h => hlLength h
+  | .unparsed s => s.length
+  | .tactics _ _ _ h => hlLength h
+  | .point _ _ => 0
+
+/-- Strip the first `n` characters from the text content at the start of a
+    TaggedText. Used to remove a dummy prefix that was prepended for
+    column-offset layout. Assumes the first `n` characters are untagged text. -/
+private partial def stripLeadingText {α : Type} (tt : TaggedText α) (n : Nat) : TaggedText α :=
+  if n == 0 then tt
+  else match tt with
+  | .text s => .text (s.drop n).toString
+  | .append items =>
+    if items.isEmpty then .append items
+    else .append (#[stripLeadingText items[0]! n] ++ items.extract 1 items.size)
+  | .tag a content => .tag a (stripLeadingText content n)
+
+/-- Like `ppExprTagged` but respects a custom layout width and starting column.
+    The `column` parameter tells the layout engine where on the line the
+    expression will appear, so it makes correct line-breaking decisions.
+    Falls back to plain text if the delaborator fails. -/
+private def ppExprTaggedW (e : Expr) (width : Nat) (column : Nat := 0)
+    : MetaM CodeWithInfos := do
+  let e ← instantiateMVars e
+  try
+    let ⟨fmt, infos⟩ ← PrettyPrinter.ppExprWithInfos e
+    -- Prepend a dummy prefix so the layout engine sees the correct column,
+    -- and nest by `column` so hard line breaks indent to the right level.
+    let fmt' := if column > 0
+      then .text (String.ofList (List.replicate column ' ')) ++ .nest column fmt
+      else fmt
+    let tt := TaggedText.prettyTagged fmt' (w := width)
+    -- Strip the dummy prefix from the laid-out result
+    let tt' := if column > 0 then stripLeadingText tt column else tt
+    let ctx : Elab.ContextInfo := {
+      env           := (← getEnv)
+      mctx          := (← getMCtx)
+      options       := (← getOptions)
+      currNamespace := (← getCurrNamespace)
+      openDecls     := (← getOpenDecls)
+      fileMap       := default
+      ngen          := (← getNGen)
+    }
+    tagCodeInfos ctx infos tt'
+  catch _ =>
+    try
+      let fmt ← Meta.ppExpr e
+      pure <| .text (fmt.pretty width 0 column)
+    catch _ =>
+      pure <| .text e.dbgToString
+
+/-- Pretty-print an expression using Lean's built-in pretty-printer (with custom
+    width and column offset) and SubVerso's semantic token rendering.
+    Returns `Highlighted` with full hover/binding info. -/
+def ppExprHighlighted (e : Expr) (width : Nat) (column : Nat := 0)
+    : MetaM Highlighted := do
+  let cwi ← ppExprTaggedW e width column
+  let ctx : SubVerso.Highlighting.Context :=
+    { ids := {}, definitionsPossible := false,
+      includeUnparsed := false, suppressNamespaces := [] }
+  renderTagged none cwi |>.run ctx
+
+private def binderInfoOpen : BinderInfo → String
+  | .default => "("
+  | .implicit => "{"
+  | .strictImplicit => "⦃"
+  | .instImplicit => "["
+
+private def binderInfoClose : BinderInfo → String
+  | .default => ")"
+  | .implicit => "}"
+  | .strictImplicit => "⦄"
+  | .instImplicit => "]"
+
+/-- Pretty-print a single ConstantInfo, producing highlighted output.
+    Runs in MetaM to use Lean's Wadler-Lindig layout algorithm.
+    The type is laid out knowing its column position after `kind name : `,
+    so the pretty-printer makes correct line-breaking decisions.
+    For inductives, parameters are split out before the colon. -/
+def ppConstantInfo (ci : ConstantInfo) (width : Nat := 80) : MetaM PrettyDecl := do
+  withOptions (fun o => o.insert `pp.all true) do
+    let kind := constKind ci
+    let nameStr := toString ci.name
+    let lvlStr := if ci.levelParams.isEmpty then ""
+      else ".{" ++ ", ".intercalate (ci.levelParams.map toString) ++ "}"
+    -- For inductives, split type into parameters (before :) and indices (after :)
+    let (paramsPP, typePP) ← match ci with
+      | .inductInfo iv =>
+        if iv.numParams == 0 then
+          let prefixLen := kind.length + 1 + nameStr.length + lvlStr.length + 3
+          let typePP ← ppExprHighlighted ci.type width prefixLen
+          pure (none, typePP)
+        else
+          Meta.forallBoundedTelescope ci.type (some iv.numParams) fun paramFVars bodyExpr => do
+            -- Build highlighted binders for each parameter
+            let mut parts : Array Highlighted := #[]
+            for fvar in paramFVars do
+              let decl ← fvar.fvarId!.getDecl
+              let bi := decl.binderInfo
+              let pName := if decl.userName.isAnonymous then "_" else toString decl.userName
+              let tyPP ← ppExprHighlighted decl.type width 0
+              let binder : Highlighted := .seq #[
+                .text (binderInfoOpen bi), .text pName, .text " : ", tyPP,
+                .text (binderInfoClose bi)]
+              parts := parts.push binder
+            -- Join params with spaces
+            let paramsHL : Highlighted := .seq (parts.foldl (init := #[]) fun acc p =>
+              if acc.isEmpty then #[p] else acc ++ #[.text " ", p])
+            -- Compute prefix length for the index type column offset
+            let paramsTextLen := hlLength paramsHL
+            let prefixLen := kind.length + 1 + nameStr.length + lvlStr.length +
+              1 + paramsTextLen + 3  -- " " + params + " : "
+            let bodyPP ← ppExprHighlighted bodyExpr width prefixLen
+            pure (some paramsHL, bodyPP)
+      | _ =>
+        let prefixLen := kind.length + 1 + nameStr.length + lvlStr.length + 3
+        let typePP ← ppExprHighlighted ci.type width prefixLen
+        pure (none, typePP)
+    -- Value appears after ":=\n  " (indented 2), so use width-2 at column 0.
+    -- The renderer adds the 2-space indent prefix for the first line;
+    -- internal line breaks are relative to column 0 which aligns with that.
+    let valuePP ← match ci with
+      | .defnInfo v => some <$> ppExprHighlighted v.value (width - 2)
+      | .thmInfo v => some <$> ppExprHighlighted v.value (width - 2)
+      | .opaqueInfo v => some <$> ppExprHighlighted v.value (width - 2)
+      | _ => pure none
+    return { kind, name := ci.name,
+             levelParams := ci.levelParams, paramsPP, typePP, valuePP }
 
 end TestPrinter

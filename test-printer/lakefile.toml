@@ -2,13 +2,13 @@ name = "test-printer"
 leanOptions = [{name = "autoImplicit", value = false}]
 
 [[require]]
-name = "MD4Lean"
-git = "https://github.com/acmepjz/md4lean"
+name = "verso"
+git = "https://github.com/leanprover/verso"
 rev = "main"
 
 [[lean_lib]]
 name = "TestPrinter"
-roots = ["TestPrinter.NdjsonParser", "TestPrinter.Types", "TestPrinter.Merge", "TestPrinter.PrettyPrint", "TestPrinter.Render"]
+roots = ["TestPrinter.NdjsonParser", "TestPrinter.Types", "TestPrinter.Merge", "TestPrinter.PrettyPrint", "TestPrinter.Render", "TestPrinter.AddConstInfo"]
 
 [[lean_exe]]
 name = "test-printer"

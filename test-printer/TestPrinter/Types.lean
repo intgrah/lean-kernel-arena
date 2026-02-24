@@ -1,4 +1,5 @@
 import Lean.Data.Json
+import SubVerso.Highlighting.Highlighted
 import TestPrinter.NdjsonParser
 
 namespace TestPrinter
@@ -54,8 +55,9 @@ structure PrettyDecl where
   kind : String
   name : Lean.Name
   levelParams : List Lean.Name
-  typePP : String
-  valuePP : Option String
+  paramsPP : Option SubVerso.Highlighting.Highlighted := none
+  typePP : SubVerso.Highlighting.Highlighted
+  valuePP : Option SubVerso.Highlighting.Highlighted
   deriving Inhabited
 
 end TestPrinter

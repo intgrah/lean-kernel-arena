@@ -1,7 +1,10 @@
 import TestPrinter.Types
+import SubVerso.Highlighting.Highlighted
 import MD4Lean
 
 namespace TestPrinter
+
+open SubVerso.Highlighting
 
 private def escapeHtml (s : String) : String :=
   s.replace "&" "&amp;"
@@ -21,18 +24,80 @@ private def stripPrefix (s : String) : String :=
 private def renderMarkdown (s : String) : String :=
   MD4Lean.renderHtml s |>.getD (escapeHtml s)
 
+/-! ## Highlighted → HTML rendering -/
+
+/-- CSS class for a token kind (matches Verso naming). -/
+private def tokenKindClass : Token.Kind → String
+  | .var .. => "var"
+  | .str .. => "literal string"
+  | .sort .. => "sort"
+  | .const .. => "const"
+  | .option .. => "option"
+  | .docComment => "doc-comment"
+  | .keyword .. => "keyword"
+  | .anonCtor .. => "unknown"
+  | .unknown => "unknown"
+  | .withType .. => "typed"
+  | .levelConst .. => "level-const"
+  | .levelVar .. => "level-var"
+  | .levelOp .. => "level-op"
+  | .moduleName .. => "module-name"
+
+/-- Data-binding attribute value for binding highlighting on hover. -/
+private def tokenKindData : Token.Kind → String
+  | .const n _ _ _ | .anonCtor n _ _ => "const-" ++ toString n
+  | .var ⟨v⟩ _ => "var-" ++ toString v
+  | .option n _ _ => "option-" ++ toString n
+  | .keyword _ (some occ) _ => "kw-occ-" ++ toString occ
+  | .sort (some d) => s!"sort-{hash d}"
+  | .levelVar x => s!"level-var-{x}"
+  | .levelConst i => s!"level-const-{i}"
+  | .levelOp op => s!"level-op-{op}"
+  | .moduleName m => s!"module-name-{m}"
+  | _ => ""
+
+/-- Render a Highlighted value to an HTML string. -/
+partial def highlightedToHtml (hl : Highlighted) : String :=
+  match hl with
+  | .token t =>
+    let cls := tokenKindClass t.kind ++ " token"
+    let binding := tokenKindData t.kind
+    let bindAttr := if binding.isEmpty then "" else s!" data-binding=\"{escapeHtml binding}\""
+    let sigAttr := match t.kind with
+      | .const _ sig _ _ => if sig.isEmpty then "" else s!" data-sig=\"{escapeHtml sig}\""
+      | .var _ ty => if ty.isEmpty then "" else s!" data-sig=\"{escapeHtml ty}\""
+      | _ => ""
+    s!"<span class=\"{cls}\"{bindAttr}{sigAttr}>{escapeHtml t.content}</span>"
+  | .text s => escapeHtml s
+  | .seq hs => String.join (hs.toList.map highlightedToHtml)
+  | .span _ h => highlightedToHtml h
+  | .unparsed s => escapeHtml s
+  | .tactics _ _ _ h => highlightedToHtml h
+  | .point _ _ => ""
+
+/-- Render a PrettyDecl as highlighted HTML. -/
 private def renderPrettyDecl (decl : PrettyDecl) : String := Id.run do
-  let lvlStr := if decl.levelParams.isEmpty then ""
-    else ".{" ++ ", ".intercalate (decl.levelParams.map toString) ++ "}"
-  let nameStr := toString decl.name
   let anchorId := nameToId decl.name
-  let sigTooltip := escapeHtml s!"{nameStr} : {decl.typePP}"
-  let mut s := s!"<span class=\"decl-kind\">{escapeHtml decl.kind}</span> "
-  s := s ++ s!"<span class=\"decl-name\" id=\"{anchorId}\" data-sig=\"{sigTooltip}\">{escapeHtml nameStr}{escapeHtml lvlStr}</span>"
-  s := s ++ s!" : <span class=\"decl-type\">{escapeHtml decl.typePP}</span>"
+  -- Level params
+  let lvlHtml := if decl.levelParams.isEmpty then ""
+    else
+      let params := decl.levelParams.map fun p =>
+        let h : Highlighted := .token ⟨.levelVar p, toString p⟩
+        highlightedToHtml h
+      ".{" ++ ", ".intercalate params ++ "}"
+  -- Build highlighted declaration line
+  let kindH := highlightedToHtml (.token ⟨.keyword none none none, decl.kind⟩)
+  let nameH := highlightedToHtml (.token ⟨.const decl.name "" none true, toString decl.name⟩)
+  let paramsH := match decl.paramsPP with
+    | some p => " " ++ highlightedToHtml p
+    | none => ""
+  let typeH := highlightedToHtml decl.typePP
+  let mut s := s!"{kindH} <span id=\"{anchorId}\">{nameH}</span>{lvlHtml}{paramsH} : {typeH}"
   match decl.valuePP with
   | some val =>
-    s := s ++ s!" :=\n  <span class=\"decl-value\">{escapeHtml val}</span>"
+    -- Add 2-space indent after every newline so value body stays indented
+    let valHtml := (highlightedToHtml val).replace "\n" "\n  "
+    s := s ++ s!" :=\n  {valHtml}"
   | none => pure ()
   return s
 
@@ -60,14 +125,72 @@ private def renderTest (test : ResolvedTest) (decls : Array PrettyDecl)
   if decls.isEmpty then
     s := s ++ "<p class=\"no-decls\"><em>No new declarations</em></p>\n"
   else
-    s := s ++ "<div class=\"declarations\"><pre><code>"
+    s := s ++ s!"<div class=\"declarations\"><pre class=\"hl lean block\" data-lean-context=\"{testId}\">"
     let mut first := true
     for decl in decls do
       if first then first := false else s := s ++ "\n"
       s := s ++ renderPrettyDecl decl
-    s := s ++ "</code></pre></div>\n"
+    s := s ++ "</pre></div>\n"
   s := s ++ "</section>\n"
   return s
+
+/-! ## CSS -/
+
+private def highlightCss : String :=
+  "
+/* Verso-compatible syntax highlighting */
+.hl.lean {
+  white-space: pre;
+  font-weight: normal;
+  font-style: normal;
+  font-size: inherit;
+}
+.hl.lean .keyword {
+  color: var(--verso-code-keyword-color, #7b1fa2);
+  font-weight: var(--verso-code-keyword-weight, bold);
+}
+.hl.lean .const {
+  color: var(--verso-code-const-color, #1565c0);
+}
+.hl.lean .var {
+  color: var(--verso-code-var-color, #37474f);
+  font-style: italic;
+}
+.hl.lean .sort {
+  color: var(--verso-code-keyword-color, #7b1fa2);
+  font-weight: bold;
+}
+.hl.lean .literal, .hl.lean .unknown {
+  color: var(--verso-code-color, #333);
+}
+.hl.lean .literal.string {
+  color: #2e7d32;
+}
+.hl.lean .level-var {
+  color: #6a1b9a;
+  font-style: italic;
+}
+.hl.lean .level-const {
+  color: #6a1b9a;
+}
+.hl.lean .level-op {
+  color: #6a1b9a;
+  font-weight: bold;
+}
+.hl.lean .token {
+  transition: all 0.25s;
+}
+@media (hover: hover) {
+  .hl.lean .token.binding-hl {
+    background-color: #eee;
+    border-radius: 2px;
+    transition: none;
+  }
+}
+.hl.lean.block {
+  display: block;
+}
+"
 
 private def css : String :=
   "
@@ -131,6 +254,7 @@ main {
   padding: 24px 32px;
   overflow-y: auto;
   max-width: 900px;
+  outline: none;
 }
 .test {
   margin-bottom: 20px;
@@ -171,21 +295,11 @@ main {
   overflow-x: auto;
 }
 .declarations pre { margin: 0; }
-.declarations code {
+.declarations pre, .declarations code {
   font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', 'Consolas', monospace;
   font-size: 13px;
   line-height: 1.5;
 }
-.decl-kind { font-weight: 600; color: #7b1fa2; }
-.decl-name {
-  color: #1565c0;
-  font-weight: 700;
-  cursor: default;
-  position: relative;
-}
-.decl-name[id] { scroll-margin-top: 20px; }
-.decl-type { color: #37474f; }
-.decl-value { color: #455a64; }
 .no-decls { color: #999; }
 .page-header { margin-bottom: 24px; }
 .page-header h1 { font-size: 1.4em; margin-bottom: 8px; color: #222; }
@@ -196,19 +310,19 @@ main {
   font-size: 12px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px;
 }
 .tooltip {
-  position: absolute;
+  position: fixed;
   background: #333;
   color: #fff;
   padding: 6px 10px;
   border-radius: 4px;
   font-size: 12px;
-  white-space: pre-wrap;
-  max-width: 600px;
-  z-index: 100;
+  white-space: pre;
+  width: max-content;
+  max-width: 90vw;
+  z-index: 1000;
   pointer-events: none;
-  bottom: calc(100% + 4px);
-  left: 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', 'Consolas', monospace;
 }
 .nav-toggle {
   display: none;
@@ -249,9 +363,15 @@ main {
 }
 "
 
+/-! ## JavaScript -/
+
 private def js : String :=
   "
 document.addEventListener('DOMContentLoaded', function() {
+  // Focus main pane so PgDn/PgUp/Space work immediately
+  var m = document.querySelector('main');
+  if (m) m.focus();
+
   // Mobile nav toggle
   var nav = document.querySelector('nav.sidebar');
   var toggle = document.querySelector('.nav-toggle');
@@ -266,15 +386,45 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.target.tagName === 'A') closeNav();
   });
 
-  // Tooltips
+  // Binding highlighting: on hover, highlight all tokens with same data-binding
+  for (var c of document.querySelectorAll('.hl.lean .token')) {
+    if (c.dataset.binding && c.dataset.binding !== '') {
+      c.addEventListener('mouseover', function(event) {
+        var context = this.closest('.hl.lean').dataset.leanContext;
+        for (var example of document.querySelectorAll('.hl.lean')) {
+          if (example.dataset.leanContext === context) {
+            for (var tok of example.querySelectorAll('.token')) {
+              if (this.dataset.binding === tok.dataset.binding) {
+                tok.classList.add('binding-hl');
+              }
+            }
+          }
+        }
+      });
+    }
+    c.addEventListener('mouseout', function(event) {
+      for (var tok of document.querySelectorAll('.hl.lean .token')) {
+        tok.classList.remove('binding-hl');
+      }
+    });
+  }
+
+  // Hover tooltips for tokens with data-sig
   document.querySelectorAll('[data-sig]').forEach(function(el) {
     var tooltip = null;
     el.addEventListener('mouseenter', function() {
+      var sig = el.getAttribute('data-sig');
+      if (!sig) return;
       tooltip = document.createElement('div');
       tooltip.className = 'tooltip';
-      tooltip.textContent = el.getAttribute('data-sig');
-      el.style.position = 'relative';
-      el.appendChild(tooltip);
+      tooltip.textContent = sig;
+      document.body.appendChild(tooltip);
+      var rect = el.getBoundingClientRect();
+      var ttHeight = tooltip.offsetHeight;
+      var top = rect.top - ttHeight - 4;
+      if (top < 4) top = rect.bottom + 4;
+      tooltip.style.left = Math.max(4, rect.left) + 'px';
+      tooltip.style.top = top + 'px';
     });
     el.addEventListener('mouseleave', function() {
       if (tooltip && tooltip.parentNode) tooltip.parentNode.removeChild(tooltip);
@@ -315,7 +465,7 @@ def generatePage (tests : Array (ResolvedTest × Array PrettyDecl)) : String := 
   html := html ++ "<meta charset=\"utf-8\">\n"
   html := html ++ "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
   html := html ++ "<title>Tutorial Tests</title>\n"
-  html := html ++ s!"<style>{css}</style>\n"
+  html := html ++ s!"<style>{css}{highlightCss}</style>\n"
   let sourceUrl := match tests[0]? with
     | some (t, _) => t.parsed.stats.sourceUrl
     | none => ""
@@ -341,7 +491,7 @@ def generatePage (tests : Array (ResolvedTest × Array PrettyDecl)) : String := 
       if !declOrigin.contains name then
         declOrigin := declOrigin.insert name testId
   -- Main content
-  html := html ++ "<main>\n"
+  html := html ++ "<main tabindex=\"-1\">\n"
   html := html ++ "<header class=\"page-header\">\n"
   html := html ++ "<h1>Tutorial Test Cases</h1>\n"
   html := html ++ "<p>These are the test cases from the <a href=\""
