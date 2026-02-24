@@ -1,8 +1,11 @@
 import Tutorial.Meta
 set_option linter.unusedVariables false
 /-!
-Tutorial declarations for Lean type theory features
-Each declaration exercises a specific feature of the type system
+Tutorial declarations for Lean type theory features.
+Each declaration exercises a specific feature of the type system.
+
+A rendered view of the exported test cases is available at
+https://arena.lean-lang.org/tutorial/
 -/
 
 axiom aDepProp : Type → Prop
