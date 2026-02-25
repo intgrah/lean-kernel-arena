@@ -70,6 +70,7 @@ def main (args : List String) : IO Unit := do
 
   IO.eprintln "Generating HTML..."
   let html := generatePage results
-  IO.FS.createDirAll (outputPath : System.FilePath).parent
+  if let some parent := (outputPath : System.FilePath).parent then
+    IO.FS.createDirAll parent
   IO.FS.writeFile outputPath html
   IO.eprintln s!"Written to {outputPath} ({html.length} bytes)"
