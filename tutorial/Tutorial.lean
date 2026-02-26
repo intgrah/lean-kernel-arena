@@ -690,22 +690,19 @@ good_def sortElimProp2Rec : ∀ {b : Bool} {motive : ∀ b1 b2, SortElimProp2 b 
 
 /-! Now actually reducing the recursor -/
 
-def Bool.match : Bool → Unit
-  | false => ()
-  | true => ()
-
-def boolRecEqns := And.intro Bool.match.match_1.eq_1 Bool.match.match_1.eq_2
-
 /-- Reduction behavior of `Bool.rec` -/
-good_consts #[``boolRecEqns]
-
-def Prod.match : (α × β) → Unit
-  | (.mk _ _) => ()
-
-def prodRecEqns := @Prod.match.match_1.eq_1
+good_thm boolRecEqns.{u} :
+  (∀ {motive : Bool → Sort u} (falseVal : motive false) (trueVal : motive true),
+    Bool.rec falseVal trueVal false = falseVal) ∧
+  (∀ {motive : Bool → Sort u} (falseVal : motive false) (trueVal : motive true),
+    Bool.rec falseVal trueVal true = trueVal) := by
+  constructor <;> intros <;> rfl
 
 /-- Reduction behavior of `Prod.rec` -/
-good_consts #[``prodRecEqns]
+good_thm prodRecEqns.{u} :
+  ∀ {α β : Type} {motive : α × β → Sort u} (f : (a : α) → (b : β) → motive (a, b)) (a : α) (b : β),
+    Prod.rec f (a, b) = f a b := by
+  intros; rfl
 
 -- We define this using the recursor directly, as structural recursion
 -- uses projections, which we do not want to expect at this point
