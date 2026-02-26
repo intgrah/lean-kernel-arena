@@ -1156,7 +1156,7 @@ noncomputable def RTree.left (t : RTree) : RTree :=
 
 /-- Reduction behavior of `RTree.rec` on `RTree.mk`. -/
 good_thm rtreeRecReduction : ∀ (t1 t2 : RTree),
-  (RTree.node (cond · t1 t2)).left = t1 := fun _ _ => rfl
+  (RTree.node (Bool.rec t2 t1)).left = t1 := fun _ _ => rfl
 
 noncomputable def accRecType := @Acc.rec
 
