@@ -1222,3 +1222,43 @@ good_thm quotIndReduction.{u} :
       Quot.ind (r := r) (β := β) mk (Quot.mk r a) = mk a := by
   intro α r β mk a
   rfl
+
+/-! ## Name collisions
+
+These test cases use the `renamings` feature to create exports where
+two different declarations share the same name, testing that checkers
+properly detect and reject name collisions.
+-/
+
+def dupDef : Type := Prop
+def dupDef2 : Type := Prop
+inductive DupInd where | mk
+inductive DupInd2 where | mk1 | mk2
+
+/-- Two definitions with the same name -/
+bad_consts #[`dupDef2, `dupDef]
+  renaming #[(`dupDef, `dup_defs), (`dupDef2, `dup_defs)]
+
+/-- A definition and an inductive type with the same name -/
+bad_consts #[`DupInd, `dupDef]
+  renaming #[(`dupDef, `dup_def_ind), (`DupInd, `dup_def_ind)]
+
+/-- A definition and a constructor with the same name -/
+bad_consts #[`DupInd, `dupDef]
+  renaming #[(`dupDef, `dup_def_ctor), (`DupInd.mk, `dup_def_ctor)]
+
+/-- An inductive type and a constructor with the same name -/
+bad_consts #[`DupInd]
+  renaming #[(`DupInd, `dup_ind_ctor), (`DupInd.mk, `dup_ind_ctor)]
+
+/-- A definition and a recursor with the same name -/
+bad_consts #[`DupInd, `dupDef]
+  renaming #[(`dupDef, `dup_def_rec), (`DupInd.rec, `dup_def_rec)]
+
+/-- A constructor and a recursor with the same name -/
+bad_consts #[`DupInd]
+  renaming #[(`DupInd, `DupConRec), (`DupInd.mk, `dup_ctor_rec), (`DupInd.rec, `dup_ctor_rec)]
+
+/-- An inductive with two constructors with the same name -/
+bad_consts #[`DupInd2]
+  renaming #[(`DupInd2, `DupConCon), (`DupInd2.mk1, `dup_ind_con_con.mk), (`DupInd2.mk2, `dup_ind_con_con.mk)]

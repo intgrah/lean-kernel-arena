@@ -88,12 +88,14 @@ elab descr?:(plainDocComment)? "good_decl " decl:term : command => do
 elab descr?:(plainDocComment)? "bad_decl " decl:term : command => do
   elabRawTestDecl descr? decl .bad
 
-def addTestCaseCIsCore (descr? : Option String) (cis : Array Lean.ConstantInfo) (outcome : Outcome) : CoreM Unit := do
+def addTestCaseCIsCore (descr? : Option String) (cis : Array Lean.ConstantInfo) (outcome : Outcome)
+    (renamings : NameMap Name := {}) : CoreM Unit := do
   addConstInfos cis
   registerTestCase {
     decls := cis.map (·.name)
     outcome := outcome
     description := descr?
+    renamings
   }
 
 
@@ -115,7 +117,8 @@ elab descr?:(plainDocComment)? "bad_raw_consts " ci:term : command => do
   elabRawTestCIs descr? ci .bad
 
 open TSyntax.Compat in -- due to plainDocComments vs. docComment
-def elabRawTestConsts (descr? : Option (TSyntax `Lean.Parser.Command.plainDocComment)) (cis : Term) (outcome : Outcome) : CommandElabM Unit := liftTermElabM do
+def elabRawTestConsts (descr? : Option (TSyntax `Lean.Parser.Command.plainDocComment)) (cis : Term)
+    (outcome : Outcome) (renamingsTerm? : Option Term := none) : CommandElabM Unit := liftTermElabM do
   let descrStr? ← descr?.mapM (getDocStringText ·)
   let descrStr? := descrStr?.map (·.trimAscii.copy)
   let expectedType := mkApp (Lean.mkConst ``Array [0]) (Lean.mkConst ``Lean.Name)
@@ -123,10 +126,33 @@ def elabRawTestConsts (descr? : Option (TSyntax `Lean.Parser.Command.plainDocCom
   let namesExpr ← instantiateMVars namesExpr
   let names ← Lean.Meta.MetaM.run' <| unsafe Meta.evalExpr (α := Array Lean.Name) expectedType namesExpr
   let cis ← names.mapM Lean.getConstInfo
-  addTestCaseCIsCore descrStr? cis outcome
+  let renamingsMap : NameMap Name ← match renamingsTerm? with
+    | some renamingsTerm =>
+      let nameType := Lean.mkConst ``Name
+      let pairType := mkApp2 (Lean.mkConst ``Prod [0, 0]) nameType nameType
+      let renamingsType := mkApp (Lean.mkConst ``Array [0]) pairType
+      let renamingsExpr ← elabTerm renamingsTerm (some renamingsType)
+      let renamingsExpr ← instantiateMVars renamingsExpr
+      synthesizeSyntheticMVarsNoPostponing
+      let renamingPairs ← Lean.Meta.MetaM.run' <|
+        unsafe Meta.evalExpr (α := Array (Lean.Name × Lean.Name)) renamingsType renamingsExpr
+      pure <| renamingPairs.foldl (fun m (k, v) => m.insert k v) ({} : NameMap Name)
+    | none => pure {}
+  addTestCaseCIsCore descrStr? cis outcome renamingsMap
 
-elab descr?:(plainDocComment)? "good_consts " ci:term : command => do
-  elabRawTestConsts descr? ci .good
+syntax (name := goodConsts) (plainDocComment)? "good_consts " term (" renaming " term)? : command
+syntax (name := badConsts) (plainDocComment)? "bad_consts " term (" renaming " term)? : command
+
+private def elabConstsCmd (outcome : Outcome) : CommandElab := fun stx => do
+  let descr? : Option (TSyntax `Lean.Parser.Command.plainDocComment) :=
+    if stx[0].isNone then none else some ⟨stx[0][0]⟩
+  let names : Term := ⟨stx[2]⟩
+  let renamingsTerm? : Option Term :=
+    if stx[3].isNone then none else some ⟨stx[3][1]⟩
+  elabRawTestConsts descr? names outcome renamingsTerm?
+
+@[command_elab goodConsts] def elabGoodConsts : CommandElab := elabConstsCmd .good
+@[command_elab badConsts] def elabBadConsts : CommandElab := elabConstsCmd .bad
 
 section Unchecked
 

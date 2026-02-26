@@ -9,6 +9,7 @@ structure TestCase where
   decls : Array Name
   outcome : Outcome
   description : Option String
+  renamings : NameMap Name := {}
 
 initialize testCaseCounter : EnvExtension Nat ←
   registerEnvExtension (pure 1) (asyncMode := .sync)
@@ -30,7 +31,11 @@ def registerTestCase (testCase : TestCase) : CoreM Unit := do
     let s := toString n
     let zeros : String := String.ofList (List.replicate (3 - s.length) '0')
     zeros ++ s
-  let testname := s!"{nStr}_{testCase.decls.back!.toString}"
+  let lastName := testCase.decls.back!
+  let displayName := match testCase.renamings.find? lastName with
+    | some target => target
+    | none => lastName
+  let testname := s!"{nStr}_{displayName.toString}"
   let subdir := match testCase.outcome with
     | Outcome.good => "good"
     | Outcome.bad  => "bad"
@@ -41,6 +46,6 @@ def registerTestCase (testCase : TestCase) : CoreM Unit := do
   let h ← IO.FS.Handle.mk filename .write
   let stream := IO.FS.Stream.ofHandle h
   IO.withStdout stream do
-    exportDeclsFromEnv (← getEnv) testCase.decls
+    exportDeclsFromEnv (← getEnv) testCase.decls testCase.renamings
   if let some descr := testCase.description then
     IO.FS.writeFile infofilename <| Json.pretty <| .mkObj [ ("description", .str descr) ]

@@ -46,10 +46,18 @@ def M.runSmall (env : Environment) (act : M α) : IO α :=
     ReaderT.run (r := { env }) do
       act
 
-def exportDeclsFromEnv (env : Lean.Environment) (constants : Array Name) : IO Unit := do
+def exportDeclsFromEnv (env : Lean.Environment) (constants : Array Name)
+    (renamings : NameMap Name := {}) : IO Unit := do
   M.runSmall env do
     initStateCached env
     dumpMetadata
+    -- First dump all names in the range of the renamings map
+    for (_, target) in renamings.toList do
+      let _ ← dumpName target
+    -- Then extend visitedNames so that the keys point to the same index as their values
+    for (key, target) in renamings.toList do
+      let some idx := (← get).visitedNames[target]? | panic! s!"Name {target} not found in visitedNames"
+      modify fun st => { st with visitedNames := st.visitedNames.insert key idx }
     for c in constants do
       modify (fun st => { st with noMDataExprs := {} })
       let _ ← dumpConstant c
