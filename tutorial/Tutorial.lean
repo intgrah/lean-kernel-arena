@@ -1239,25 +1239,21 @@ inductive DupInd2 where | mk1 | mk2
 bad_consts #[`dupDef2, `dupDef]
   renaming #[(`dupDef, `dup_defs), (`dupDef2, `dup_defs)]
 
-/-- A definition and an inductive type with the same name -/
-bad_consts #[`DupInd, `dupDef]
-  renaming #[(`dupDef, `dup_def_ind), (`DupInd, `dup_def_ind)]
+/-- A definition and a constructor with the same name -/
+bad_consts #[`dupDef, `DupInd]
+  renaming #[(`DupInd, `dup_ind_def), (`DupInd.mk, `dup_ind_def.mk), (`DupInd.rec, `dup_ind_def.rec), (`dupDef, `dup_ind_def)]
 
 /-- A definition and a constructor with the same name -/
-bad_consts #[`DupInd, `dupDef]
-  renaming #[(`dupDef, `dup_def_ctor), (`DupInd.mk, `dup_def_ctor)]
-
-/-- An inductive type and a constructor with the same name -/
-bad_consts #[`DupInd]
-  renaming #[(`DupInd, `dup_ind_ctor), (`DupInd.mk, `dup_ind_ctor)]
+bad_consts #[`dupDef, `DupInd]
+  renaming #[(`DupInd, `dup_ctor_def), (`DupInd.mk, `dup_ctor_def.mk), (`DupInd.rec, `dup_ctor_def.rec), (`dupDef, `dup_ctor_def.mk)]
 
 /-- A definition and a recursor with the same name -/
-bad_consts #[`DupInd, `dupDef]
-  renaming #[(`dupDef, `dup_def_rec), (`DupInd.rec, `dup_def_rec)]
+bad_consts #[`dupDef, `DupInd]
+  renaming #[(`DupInd, `dup_rec_def), (`DupInd.mk, `dup_rec_def.mk), (`DupInd.rec, `dup_rec_def.rec), (`dupDef, `dup_rec_def.rec)]
 
 /-- A constructor and a recursor with the same name -/
 bad_consts #[`DupInd]
-  renaming #[(`DupInd, `DupConRec), (`DupInd.mk, `dup_ctor_rec), (`DupInd.rec, `dup_ctor_rec)]
+  renaming #[(`DupInd, `dup_ctor_rec), (`DupInd.mk, `dup_ctor_rec.rec), (`DupInd.rec, `dup_ctor_rec.rec)]
 
 /-- An inductive with two constructors with the same name -/
 bad_consts #[`DupInd2]
