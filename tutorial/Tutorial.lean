@@ -1251,6 +1251,14 @@ bad_consts #[`dupDef, `DupInd]
 bad_consts #[`dupDef, `DupInd]
   renaming #[(`DupInd, `dup_rec_def), (`DupInd.mk, `dup_rec_def.mk), (`DupInd.rec, `dup_rec_def.rec), (`dupDef, `dup_rec_def.rec)]
 
+/--
+A definition with the name of a recursor, and the recursor named differently.
+This would pass simple checks for duplicate definitions in the parser, but should still
+be rejected by the checker.
+-/
+bad_consts #[`dupDef, `DupInd]
+  renaming #[(`DupInd, `dup_rec_def2), (`DupInd.mk, `dup_rec_def2.mk), (`DupInd.rec, `dup_rec_def2.original_rec), (`dupDef, `dup_rec_def2.rec)]
+
 /-- A constructor and a recursor with the same name -/
 bad_consts #[`DupInd]
   renaming #[(`DupInd, `dup_ctor_rec), (`DupInd.mk, `dup_ctor_rec.rec), (`DupInd.rec, `dup_ctor_rec.rec)]
