@@ -56,7 +56,9 @@ structure PrettyDecl where
   name : Lean.Name
   levelParams : List Lean.Name
   paramsPP : Option SubVerso.Highlighting.Highlighted := none
-  typePP : SubVerso.Highlighting.Highlighted
+  /-- Highlighted " : type" with a soft line break after the colon;
+      the pretty printer decides whether to break based on the layout. -/
+  colonTypePP : SubVerso.Highlighting.Highlighted
   valuePP : Option SubVerso.Highlighting.Highlighted
   deriving Inhabited
 

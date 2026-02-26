@@ -56,8 +56,11 @@ private def tokenKindData : Token.Kind → String
   | .moduleName m => s!"module-name-{m}"
   | _ => ""
 
-/-- Render a Highlighted value to an HTML string. -/
-partial def highlightedToHtml (hl : Highlighted) : String :=
+/-- Render a Highlighted value to an HTML string.
+    If `declOrigin` is provided, `.const` tokens whose name appears in the map
+    are wrapped in an `<a>` link pointing to the declaration's anchor. -/
+partial def highlightedToHtml (hl : Highlighted)
+    (declOrigin : Std.HashMap Lean.Name String := {}) : String :=
   match hl with
   | .token t =>
     let cls := tokenKindClass t.kind ++ " token"
@@ -66,37 +69,48 @@ partial def highlightedToHtml (hl : Highlighted) : String :=
     let sigAttr := match t.kind with
       | .const _ sig _ _ => if sig.isEmpty then "" else s!" data-sig=\"{escapeHtml sig}\""
       | .var _ ty => if ty.isEmpty then "" else s!" data-sig=\"{escapeHtml ty}\""
+      | .sort (some doc) => s!" data-sig=\"{escapeHtml doc}\""
       | _ => ""
-    s!"<span class=\"{cls}\"{bindAttr}{sigAttr}>{escapeHtml t.content}</span>"
+    let spanHtml := s!"<span class=\"{cls}\"{bindAttr}{sigAttr}>{escapeHtml t.content}</span>"
+    -- Wrap const tokens in a link if the constant has a definition on the page
+    match t.kind with
+    | .const name _ _ isDef =>
+      if !isDef && declOrigin.contains name then
+        let target := nameToId name
+        s!"<a href=\"#{escapeHtml target}\" class=\"const-ref\">{spanHtml}</a>"
+      else spanHtml
+    | _ => spanHtml
   | .text s => escapeHtml s
-  | .seq hs => String.join (hs.toList.map highlightedToHtml)
-  | .span _ h => highlightedToHtml h
+  | .seq hs => String.join (hs.toList.map (highlightedToHtml · declOrigin))
+  | .span _ h => highlightedToHtml h declOrigin
   | .unparsed s => escapeHtml s
-  | .tactics _ _ _ h => highlightedToHtml h
+  | .tactics _ _ _ h => highlightedToHtml h declOrigin
   | .point _ _ => ""
 
 /-- Render a PrettyDecl as highlighted HTML. -/
-private def renderPrettyDecl (decl : PrettyDecl) : String := Id.run do
+private def renderPrettyDecl (decl : PrettyDecl)
+    (declOrigin : Std.HashMap Lean.Name String := {}) : String := Id.run do
   let anchorId := nameToId decl.name
+  let hl (h : Highlighted) := highlightedToHtml h declOrigin
   -- Level params
   let lvlHtml := if decl.levelParams.isEmpty then ""
     else
       let params := decl.levelParams.map fun p =>
         let h : Highlighted := .token ⟨.levelVar p, toString p⟩
-        highlightedToHtml h
+        hl h
       ".{" ++ ", ".intercalate params ++ "}"
   -- Build highlighted declaration line
-  let kindH := highlightedToHtml (.token ⟨.keyword none none none, decl.kind⟩)
-  let nameH := highlightedToHtml (.token ⟨.const decl.name "" none true, toString decl.name⟩)
+  let kindH := hl (.token ⟨.keyword none none none, decl.kind⟩)
+  let nameH := hl (.token ⟨.const decl.name "" none true, toString decl.name⟩)
   let paramsH := match decl.paramsPP with
-    | some p => " " ++ highlightedToHtml p
+    | some p => " " ++ hl p
     | none => ""
-  let typeH := highlightedToHtml decl.typePP
-  let mut s := s!"{kindH} <span id=\"{anchorId}\">{nameH}</span>{lvlHtml}{paramsH} : {typeH}"
+  let colonTypeH := hl decl.colonTypePP
+  let mut s := s!"{kindH} <span id=\"{anchorId}\">{nameH}</span>{lvlHtml}{paramsH}{colonTypeH}"
   match decl.valuePP with
   | some val =>
     -- Add 2-space indent after every newline so value body stays indented
-    let valHtml := (highlightedToHtml val).replace "\n" "\n  "
+    let valHtml := (hl val).replace "\n" "\n  "
     s := s ++ s!" :=\n  {valHtml}"
   | none => pure ()
   return s
@@ -129,7 +143,7 @@ private def renderTest (test : ResolvedTest) (decls : Array PrettyDecl)
     let mut first := true
     for decl in decls do
       if first then first := false else s := s ++ "\n"
-      s := s ++ renderPrettyDecl decl
+      s := s ++ renderPrettyDecl decl declOrigin
     s := s ++ "</pre></div>\n"
   s := s ++ "</section>\n"
   return s
@@ -285,8 +299,10 @@ main {
   padding: 1px 4px;
   border-radius: 3px;
 }
-.shared a, .const-ref { color: #1976d2; text-decoration: none; }
-.shared a:hover, .const-ref:hover { text-decoration: underline; }
+.shared a, .shared .const-ref { color: #1976d2; text-decoration: none; }
+.shared a:hover, .shared .const-ref:hover { text-decoration: underline; }
+.declarations a.const-ref { color: inherit; text-decoration: none; }
+.declarations a.const-ref:hover { text-decoration: underline; }
 .declarations {
   background: #f8f9fa;
   border: 1px solid #e8e8e8;

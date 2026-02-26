@@ -100,10 +100,48 @@ private def binderInfoClose : BinderInfo → String
   | .strictImplicit => "⦄"
   | .instImplicit => "]"
 
+/-- Pretty-print " : type" with a soft line break after the colon.
+    The Wadler-Lindig layout algorithm decides whether to break based on fit.
+    `colonCol` is the column position where " :" appears (i.e. the length
+    of everything before it: "kind name" or "kind name params").
+    Returns Highlighted starting with either " : type" or " :\n    type". -/
+private def ppColonType (e : Expr) (width : Nat) (colonCol : Nat)
+    (breakIndent : Nat := 4) : MetaM Highlighted := do
+  let e ← instantiateMVars e
+  try
+    let ⟨fmt, infos⟩ ← PrettyPrinter.ppExprWithInfos e
+    -- Build: dummyPrefix ++ group(" :" ++ nest breakIndent (line ++ fmt))
+    -- The group lets the layout algorithm decide: if everything fits, keep on
+    -- one line (" : type"); otherwise break after the colon (" :\n    type").
+    let dummyPfx := Std.Format.text (String.ofList (List.replicate colonCol ' '))
+    let combined := dummyPfx ++ .group (.text " :" ++ .nest breakIndent (.line ++ fmt))
+    let tt := TaggedText.prettyTagged combined (w := width)
+    let tt' := if colonCol > 0 then stripLeadingText tt colonCol else tt
+    let ctx : Elab.ContextInfo := {
+      env           := (← getEnv)
+      mctx          := (← getMCtx)
+      options       := (← getOptions)
+      currNamespace := (← getCurrNamespace)
+      openDecls     := (← getOpenDecls)
+      fileMap       := default
+      ngen          := (← getNGen)
+    }
+    let cwi ← tagCodeInfos ctx infos tt'
+    let hlCtx : SubVerso.Highlighting.Context :=
+      { ids := {}, definitionsPossible := false,
+        includeUnparsed := false, suppressNamespaces := [] }
+    renderTagged none cwi |>.run hlCtx
+  catch _ =>
+    try
+      let fmt ← Meta.ppExpr e
+      pure <| .text (" : " ++ fmt.pretty width)
+    catch _ =>
+      pure <| .text (" : " ++ e.dbgToString)
+
 /-- Pretty-print a single ConstantInfo, producing highlighted output.
     Runs in MetaM to use Lean's Wadler-Lindig layout algorithm.
-    The type is laid out knowing its column position after `kind name : `,
-    so the pretty-printer makes correct line-breaking decisions.
+    The type is laid out with " :" as a soft break point in the Format tree,
+    so the pretty-printer naturally decides whether to break after the colon.
     For inductives, parameters are split out before the colon. -/
 def ppConstantInfo (ci : ConstantInfo) (width : Nat := 80) : MetaM PrettyDecl := do
   withOptions (fun o => o.insert `pp.all true) do
@@ -112,12 +150,12 @@ def ppConstantInfo (ci : ConstantInfo) (width : Nat := 80) : MetaM PrettyDecl :=
     let lvlStr := if ci.levelParams.isEmpty then ""
       else ".{" ++ ", ".intercalate (ci.levelParams.map toString) ++ "}"
     -- For inductives, split type into parameters (before :) and indices (after :)
-    let (paramsPP, typePP) ← match ci with
+    let (paramsPP, colonTypePP) ← match ci with
       | .inductInfo iv =>
         if iv.numParams == 0 then
-          let prefixLen := kind.length + 1 + nameStr.length + lvlStr.length + 3
-          let typePP ← ppExprHighlighted ci.type width prefixLen
-          pure (none, typePP)
+          let colonCol := kind.length + 1 + nameStr.length + lvlStr.length
+          let colonTypePP ← ppColonType ci.type width colonCol
+          pure (none, colonTypePP)
         else
           Meta.forallBoundedTelescope ci.type (some iv.numParams) fun paramFVars bodyExpr => do
             -- Build highlighted binders for each parameter
@@ -134,16 +172,16 @@ def ppConstantInfo (ci : ConstantInfo) (width : Nat := 80) : MetaM PrettyDecl :=
             -- Join params with spaces
             let paramsHL : Highlighted := .seq (parts.foldl (init := #[]) fun acc p =>
               if acc.isEmpty then #[p] else acc ++ #[.text " ", p])
-            -- Compute prefix length for the index type column offset
+            -- Compute column position of ":"
             let paramsTextLen := hlLength paramsHL
-            let prefixLen := kind.length + 1 + nameStr.length + lvlStr.length +
-              1 + paramsTextLen + 3  -- " " + params + " : "
-            let bodyPP ← ppExprHighlighted bodyExpr width prefixLen
-            pure (some paramsHL, bodyPP)
+            let colonCol := kind.length + 1 + nameStr.length + lvlStr.length +
+              1 + paramsTextLen  -- "kind " + name + lvl + " " + params
+            let colonTypePP ← ppColonType bodyExpr width colonCol
+            pure (some paramsHL, colonTypePP)
       | _ =>
-        let prefixLen := kind.length + 1 + nameStr.length + lvlStr.length + 3
-        let typePP ← ppExprHighlighted ci.type width prefixLen
-        pure (none, typePP)
+        let colonCol := kind.length + 1 + nameStr.length + lvlStr.length
+        let colonTypePP ← ppColonType ci.type width colonCol
+        pure (none, colonTypePP)
     -- Value appears after ":=\n  " (indented 2), so use width-2 at column 0.
     -- The renderer adds the 2-space indent prefix for the first line;
     -- internal line breaks are relative to column 0 which aligns with that.
@@ -153,7 +191,7 @@ def ppConstantInfo (ci : ConstantInfo) (width : Nat := 80) : MetaM PrettyDecl :=
       | .opaqueInfo v => some <$> ppExprHighlighted v.value (width - 2)
       | _ => pure none
     return { kind, name := ci.name,
-             levelParams := ci.levelParams, paramsPP, typePP, valuePP }
+             levelParams := ci.levelParams, paramsPP, colonTypePP, valuePP }
 
 /-! Note: Column-offset layout via dummy prefix
 
@@ -182,6 +220,11 @@ output. This is the simplest correct approach because:
       expressions;
   (c) the added complexity (custom syntax, formatters, position management)
       is not justified for this use case.
+
+`ppColonType` extends this with a `group(" :" ++ nest indent (line ++ fmt))`
+so the Wadler-Lindig algorithm naturally decides whether to break after the
+colon. The " :" text becomes an untagged token in the Highlighted output,
+which is fine since `renderPrettyDecl` uses it directly.
 -/
 
 end TestPrinter
