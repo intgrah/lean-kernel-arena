@@ -124,7 +124,7 @@ section pre, details pre {
                 <td class="text-center">
                     {% if result.expected == 'accept' %}👍{% elif result.expected == 'reject' %}✋{% else %}⚠️ {{ result.expected }}{% endif %}
                 </td>
-                <td class="text-center {% if (result.expected == 'accept' and result.status == 'accepted') or (result.expected == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' %}bg-warning{% else %}bg-error{% endif %}">
+                <td class="text-center {% if (result.expected == 'accept' and result.status == 'accepted') or (result.expected == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' or result.status == 'error' %}bg-warning{% else %}bg-error{% endif %}">
                     {% if result.status == 'accepted' %}👍{% elif result.status == 'rejected' %}✋{% elif result.status == 'declined' %}🚫{% else %}💥{% endif %}
                 </td>
                 <td class="text-right">
@@ -205,7 +205,7 @@ section pre, details pre {
     
     <p>
       <b>Test result:</b>
-        <span class="{% if (result.expected == 'accept' and result.status == 'accepted') or (result.expected == 'reject' and result.status == 'rejected') %}bg-success{% elif (result.expected == 'accept' and result.status != 'accepted' and result.status != 'declined') or (result.expected == 'reject' and result.status != 'rejected' and result.status != 'declined') %}bg-error{% else %}bg-warning{% endif %}" style="padding: 0.2em 0.5em; border-radius: 3px;">
+        <span class="{% if (result.expected == 'accept' and result.status == 'accepted') or (result.expected == 'reject' and result.status == 'rejected') %}bg-success{% elif (result.expected == 'accept' and result.status != 'accepted' and result.status != 'declined' and result.status != 'error') or (result.expected == 'reject' and result.status != 'rejected' and result.status != 'declined' and result.status != 'error') %}bg-error{% else %}bg-warning{% endif %}" style="padding: 0.2em 0.5em; border-radius: 3px;">
             {% if result.status == 'accepted' %}👍 accepted{% elif result.status == 'rejected' %}✋ rejected{% elif result.status == 'declined' %}🚫 declined{% else %}💥 {{ result.status }}{% endif %}
         </span>
         · exit code {{ result.exit_code }}

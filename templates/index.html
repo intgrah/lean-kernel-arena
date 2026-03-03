@@ -128,7 +128,7 @@ table thead th {
                     {% if checker.get('serious', true) and checker.name == 'official' %}
                     {% set key = (checker.name, test.name) %}
                     {% set result = test_results.get(key) %}
-                    <td class="text-center official-column {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
+                    <td class="text-center official-column {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' or result.status == 'error' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
                         {% if result %}
                         <a href="checker/{{ checker.name }}/#test-{{ test.name }}" style="text-decoration: none; color: inherit; display: block;">
                             {% if test.outcome == 'accept' and result.status == 'accepted' and test.get('large') %}
@@ -154,7 +154,7 @@ table thead th {
                     {% if checker.get('serious', true) and checker.name != 'official' %}
                     {% set key = (checker.name, test.name) %}
                     {% set result = test_results.get(key) %}
-                    <td class="text-center {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
+                    <td class="text-center {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' or result.status == 'error' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
                         {% if result %}
                         <a href="checker/{{ checker.name }}/#test-{{ test.name }}" style="text-decoration: none; color: inherit; display: block;">
                             {% if test.outcome == 'accept' and result.status == 'accepted' and test.get('large') %}

@@ -1468,8 +1468,9 @@ def compute_checker_stats(checker: dict, tests: list[dict], results: dict) -> di
             mathlib_max_rss = result.get("max_rss")
             mathlib_instructions = result.get("instructions", 0) or 0
 
-        # Count declined tests
-        if status == "declined":
+        # Count declined and error tests
+        # Errors don't make any assertion about correctness, so treat them like declines
+        if status == "declined" or status == "error":
             declined_count += 1
             continue
 
