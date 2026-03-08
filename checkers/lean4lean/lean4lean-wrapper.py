@@ -10,11 +10,11 @@ from pathlib import Path
 
 # Map from Lean toolchains to lean4lean git tags
 TOOLCHAIN_TO_TAG = {
-    "4.26.0": ("arena/v4.26.0","f9271a8"),
-    "4.27.0-nightly-2025-12-01": ("arena/v4.26.0","f9271a8"),
-    "4.27.0-rc1": ("arena/v4.27.0-rc1","d29406d"),
-    "4.28.0-nightly-2026-01-19": ("arena/v4.27.0-rc1","d29406d"),
-    "4.28.0-nightly-2026-01-20": ("arena/v4.27.0-rc1","d29406d"),
+    "4.26.0": ("arena/v4.26.0","7a444cd"),
+    "4.27.0-nightly-2025-12-01": ("arena/v4.26.0","7a444cd"),
+    "4.27.0-rc1": ("arena/v4.27.0-rc1","481d2a0"),
+    "4.28.0-nightly-2026-01-19": ("arena/v4.27.0-rc1","481d2a0"),
+    "4.28.0-nightly-2026-01-20": ("arena/v4.27.0-rc1","481d2a0"),
 # not yet supported upstream, it seems
 #   "4.29.0-rc1": ("arena/v4.27.0-rc1","d86be59"),
 }
