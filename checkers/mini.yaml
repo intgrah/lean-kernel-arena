@@ -2,9 +2,10 @@ serious: false
 description: |
   A small, naive and incomplete implementation of a Lean kernel from scratch.
   
-  This is mostly an exercise to improve the test coverage on the arena. 
+  This is mostly an exercise to improve the test coverage on the arena.
+  Runs with a 30s timeout.
 url: https://github.com/nomeata/lean-mini-kernel
 ref: master
 rev: 9deb6c1
 build: lake build
-run: .lake/build/bin/mini-kernel "$IN"
+run: timeout 30s -- .lake/build/bin/mini-kernel "$IN"
