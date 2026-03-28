@@ -8,4 +8,4 @@ url: https://github.com/nomeata/lean-mini-kernel
 ref: master
 rev: 9deb6c1
 build: lake build
-run: timeout 30s -- .lake/build/bin/mini-kernel "$IN"
+run: timeout 30s .lake/build/bin/mini-kernel "$IN"
