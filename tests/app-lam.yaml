@@ -19,3 +19,4 @@ description: |
 leanfile: tests/app-lam.lean
 export-decls: ["dag_app_binder"]
 outcome: accept
+compare-perf: true

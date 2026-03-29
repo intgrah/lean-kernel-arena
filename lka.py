@@ -1012,6 +1012,10 @@ def create_test(test: dict, output_dir: Path) -> bool:
         if test.get("description"):
             stats["description"] = test["description"]
 
+        # Add compare-perf field if present
+        if test.get("compare-perf"):
+            stats["compare-perf"] = test["compare-perf"]
+
         # Add large field if present
         if test.get("large"):
             stats["large"] = test["large"]
@@ -1615,8 +1619,8 @@ def create_test_tarball(tests: list, output_dir: Path) -> dict:
 
     with tarfile.open(tarball_path, "w:gz") as tar:
         for test in tests:
-            # Skip large tests (by flag or by size > 1GB)
-            if test.get("large", False) or test.get("size", 0) > 1024*1024*1024:
+            # Skip tests larger than 10 MB
+            if test.get("size", 0) > 10*1024*1024:
                 continue
 
             # Use the file path from test data

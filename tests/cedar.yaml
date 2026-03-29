@@ -12,4 +12,5 @@ pre-build: |
   shopt -s dotglob && find . -mindepth 1 -maxdepth 1 ! -name cedar-lean -exec rm -rf {} + && mv cedar-lean/* . && rmdir cedar-lean
 module: Cedar
 outcome: accept
+compare-perf: true
 large: true

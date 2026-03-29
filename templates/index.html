@@ -131,8 +131,8 @@ table thead th {
                     <td class="text-center official-column {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' or result.status == 'error' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
                         {% if result %}
                         <a href="checker/{{ checker.name }}/#test-{{ test.name }}" style="text-decoration: none; color: inherit; display: block;">
-                            {% if test.outcome == 'accept' and result.status == 'accepted' and test.get('large') %}
-                                {# Show absolute virtual time for official checker on large tests #}
+                            {% if test.outcome == 'accept' and result.status == 'accepted' and test.get('compare-perf') %}
+                                {# Show absolute virtual time for perf-compared tests #}
                                 {% set official_cpu_time = convert_instructions_to_time(result.get('instructions', 0), instructions_per_second) if result.get('instructions', 0) > 0 and instructions_per_second > 0 else result.cpu_time %}
                                 {% if official_cpu_time and official_cpu_time >= 0.05 %}
                                     {{ format_duration(official_cpu_time) }}
@@ -157,8 +157,8 @@ table thead th {
                     <td class="text-center {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' or result.status == 'error' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
                         {% if result %}
                         <a href="checker/{{ checker.name }}/#test-{{ test.name }}" style="text-decoration: none; color: inherit; display: block;">
-                            {% if test.outcome == 'accept' and result.status == 'accepted' and test.get('large') %}
-                                {# Show performance comparison for large, accepted tests #}
+                            {% if test.outcome == 'accept' and result.status == 'accepted' and test.get('compare-perf') %}
+                                {# Show performance comparison for perf-compared tests #}
                                 {% set official_key = ('official', test.name) %}
                                 {% set official_result = test_results.get(official_key) %}
                                 {% if official_result and official_result.status == 'accepted' %}
@@ -218,7 +218,7 @@ table thead th {
     </p>
 
     <p>
-        A tarball of the test suite (excluding large tests) is available for download: <a href="lean-arena-tests.tar.gz"><tt>lean-arena-tests.tar.gz</tt></a> ({{ tarball_info.good_count }} good tests, {{ tarball_info.bad_count }} bad tests, {{ format_memory(tarball_info.tarball_size) }}). 
+        A tarball of the test suite (excluding tests larger than 10 MB) is available for download: <a href="lean-arena-tests.tar.gz"><tt>lean-arena-tests.tar.gz</tt></a> ({{ tarball_info.good_count }} good tests, {{ tarball_info.bad_count }} bad tests, {{ format_memory(tarball_info.tarball_size) }}). 
         The tarball contains subdirectories <tt>good/</tt> and <tt>bad/</tt> based on expected results, making it easy to test your own checker implementation.
     </p>
 

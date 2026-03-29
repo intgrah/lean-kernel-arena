@@ -6,5 +6,6 @@ rev: 97032dd9c7a4cfde8a3476f035dd855cba1e7860
 pre-build: lake exe cache get
 module: LeanMLIR.Basic
 outcome: accept
+compare-perf: true
 large: true
 export-decls: ["denote_matchLets_of", "rewritePeepholeRecursively", "String.ofList", "Char.ofNat"]

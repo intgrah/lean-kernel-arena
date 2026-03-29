@@ -14,4 +14,5 @@ rev: 7acaa1e4b353e8a5f9044f9bb0b68460079533a6
 pre-build: lake exe cache get
 module: Mathlib
 outcome: accept
+compare-perf: true
 large: true
