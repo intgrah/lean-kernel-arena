@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block static_path %}../../{% endblock %}
+
+{% block title %}{{ test.name }} - Lean Kernel Arena{% endblock %}
+
+{% block h1 %}<a href="../../">Lean Kernel Arena</a> / {{ test.name }}
+{% endblock %}
+
+{% block style %}
+.bg-success { background-color: #d4edda; }
+.bg-error { background-color: #f8d7da; }
+.bg-warning { background-color: #fff3cd; }
+.description {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+.description p {
+    margin: 0 0 0.5rem 0;
+}
+.description p:last-child {
+    margin-bottom: 0;
+}
+{% endblock %}
+
+{% block content %}
+<section>
+    <header>
+        <h2>Test "{{ test.name }}"</h2>
+    </header>
+    <p>
+        <strong>Expected:</strong>
+        {% if test.outcome == 'accept' %}👍 accept{% elif test.outcome == 'reject' %}✋ reject{% else %}⚠️ {{ test.outcome }}{% endif %}
+        · <strong>Size:</strong> {{ test.size_str }}
+        · <strong>Lines:</strong> {{ test.lines_str }}
+        {% if test.lean4export_version %}
+        · <strong>lean4export:</strong> {{ test.lean4export_version }}
+        {% endif %}
+        {% if test.lean_version %}
+        · <strong>Lean:</strong> {{ test.lean_version }}
+        {% endif %}
+        {% if test_links.declaration_url or test_links.source_url %} · {% endif %}
+        {% if test_links.declaration_url %}
+        <a href="{{ test_links.declaration_url }}" target="_blank">📄 Declaration</a>
+        {% endif %}
+        {% if test_links.declaration_url and test_links.source_url %} · {% endif %}
+        {% if test_links.source_url %}
+        <a href="{{ test_links.source_url }}" target="_blank">🔗 Source</a>
+        {% endif %}
+    </p>
+
+    {% if test_description %}
+    <div class="description">
+        {{ test_description | safe }}
+    </div>
+    {% endif %}
+</section>
+
+{% if results %}
+<section>
+    <div style="overflow-x:auto">
+    <table class="striped">
+        <thead>
+            <tr>
+                <th>Checker</th>
+                <th class="text-center">Result</th>
+                <th class="text-right">⏱️</th>
+                <th class="text-right"></th>
+                <th class="text-right">🧠</th>
+                <th class="text-right"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td><a href="../../checker/{{ result.checker }}/#test-{{ test.name }}">{{ result.checker }}</a></td>
+                <td class="text-center {% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' or result.status == 'error' %}bg-warning{% else %}bg-error{% endif %}">
+                    {% if result.status == 'accepted' %}👍{% elif result.status == 'rejected' %}✋{% elif result.status == 'declined' %}🚫{% else %}💥{% endif %}
+                </td>
+                <td class="text-right">
+                    {% if result.get('instructions', 0) > 0 and instructions_per_second > 0 %}
+                        <span title="{{ format_instructions(result.get('instructions', 0)) }} instructions">{{ format_duration(convert_instructions_to_time(result.get('instructions', 0), instructions_per_second)) }}</span>
+                    {% elif result.cpu_time is not none %}
+                        {{ format_duration(result.cpu_time) }}
+                    {% endif %}
+                </td>
+                <td class="text-left">
+                    {% if test.outcome == 'accept' and result.status == 'accepted' and result.official and result.official.status == 'accepted' %}
+                        {% set official_cpu_time = convert_instructions_to_time(result.official.get('instructions', 0), instructions_per_second) if result.official.get('instructions', 0) > 0 and instructions_per_second > 0 else result.official.cpu_time %}
+                        {% set current_cpu_time = convert_instructions_to_time(result.get('instructions', 0), instructions_per_second) if result.get('instructions', 0) > 0 and instructions_per_second > 0 else result.cpu_time %}
+                        {% if official_cpu_time and official_cpu_time >= 0.05 and current_cpu_time %}
+                            {% set percent_change = ((current_cpu_time - official_cpu_time) / official_cpu_time * 100) | round(0) | int %}
+                            {% if percent_change > 0 %}(+{{ percent_change }}%){% elif percent_change < 0 %}({{ percent_change }}%){% else %}(0%){% endif %}
+                        {% endif %}
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    {% if result.max_rss is not none %}
+                        {{ format_memory(result.max_rss) }}
+                    {% endif %}
+                </td>
+                <td class="text-left">
+                    {% if test.outcome == 'accept' and result.status == 'accepted' and result.official and result.official.status == 'accepted' %}
+                        {% set official_memory = result.official.max_rss %}
+                        {% set current_memory = result.max_rss %}
+                        {% if official_memory and official_memory >= 200*1024*1024 and current_memory %}
+                            {% set percent_change = ((current_memory - official_memory) / official_memory * 100) | round(0) | int %}
+                            {% if percent_change > 0 %}(+{{ percent_change }}%){% elif percent_change < 0 %}({{ percent_change }}%){% else %}(0%){% endif %}
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</section>
+{% else %}
+<p class="text-grey">No checker results available for this test.</p>
+{% endif %}
+{% endblock %}

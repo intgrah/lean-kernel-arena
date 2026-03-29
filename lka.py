@@ -1812,6 +1812,55 @@ def cmd_build_site(args: argparse.Namespace) -> int:
         print(f"Error rendering checker template: {e}")
         return 1
 
+    # Generate per-test pages
+    try:
+        test_template = env.get_template("test.html")
+        for test in tests:
+            test_dir = output_dir / "test" / test["name"]
+            test_dir.mkdir(parents=True, exist_ok=True)
+
+            # Generate test links
+            test_links = {
+                "declaration_url": test.get("declaration_url"),
+                "source_url": test.get("source_url")
+            }
+
+            # Gather results from all checkers for this test
+            test_results = []
+            for checker in checkers:
+                key = (checker["name"], test["name"])
+                if key in results:
+                    result = results[key].copy()
+                    result["checker"] = checker["name"]
+
+                    # Add official checker results for comparison
+                    official_key = ("official", test["name"])
+                    official_result = results.get(official_key)
+                    result["official"] = official_result
+
+                    test_results.append(result)
+
+            test_data = {
+                "test": test,
+                "test_links": test_links,
+                "test_description": render_markdown(test.get("description", "")),
+                "results": test_results,
+                "format_duration": format_duration,
+                "format_memory": format_memory,
+                "format_instructions": format_instructions,
+                "format_unitless": format_unitless,
+                "convert_instructions_to_time": convert_instructions_to_time,
+                "instructions_per_second": instructions_per_second,
+                "build_info": build_info,
+            }
+
+            output_file = test_dir / "index.html"
+            test_template.stream(test_data).dump(str(output_file))
+            print(f"Generated: {output_file}")
+    except Exception as e:
+        print(f"Error rendering test template: {e}")
+        return 1
+
     # Copy static files if they exist
     static_dir = templates_dir / "static"
     if static_dir.exists():

@@ -122,7 +122,7 @@ table thead th {
         <tbody>
             {% for test in tests %}
             <tr>
-                <td>{{ test.name }}</td>
+                <td><a href="test/{{ test.name }}/">{{ test.name }}</a></td>
                 <td class="text-right">{{ test.size_str }}</td>
                 {% for checker in checkers %}
                     {% if checker.get('serious', true) and checker.name == 'official' %}
