@@ -34,4 +34,4 @@ build: |
    }
   __END__
 run: |
-  target/release/nanobruijn config.json < "$IN" || exit 1
+  timeout 3600 target/release/nanobruijn config.json < "$IN" || exit 1
