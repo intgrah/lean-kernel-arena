@@ -11,7 +11,7 @@ description: |
   This is an experimental checker, not intended for production use.
 url: https://github.com/datokrat/sonanoda
 ref: master
-rev: 22e5940e8e5c7c27e9290dfa26fb6dff31905e7e
+rev: 48a11bc6598234102fb3193120391adb7bb778ff
 build: |
   cargo build --release
   cat > config.json <<__END__
