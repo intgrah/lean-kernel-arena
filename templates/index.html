@@ -49,6 +49,7 @@ table thead th {
             <tr>
                 <th>Checker</th>
                 <th>Version</th>
+                <th class="spacer-col"></th>
                 <th class="text-center" title="Correctly accepted valid proofs">👍</th>
                 <th class="text-center" title="Correctly rejected invalid proofs">✋</th>
                 <th class="text-center" title="Tests declined to process or crashed">🚫</th>
@@ -61,6 +62,7 @@ table thead th {
             <tr>
                 <td><a href="checker/{{ checker.name }}/">{{ checker.name }}</a></td>
                 <td>{{ checker.version }}</td>
+                <td class="spacer-col"></td>
                 <td class="text-center {% if checker.stats.accept_correct == checker.stats.accept_total and checker.stats.accept_total > 0 %}bg-success{% elif checker.stats.accept_correct < checker.stats.accept_total %}bg-error{% endif %}">
                     {{ checker.stats.accept_correct }}/{{ checker.stats.accept_total }}
                 </td>
@@ -106,7 +108,7 @@ table thead th {
         <thead>
             <tr>
                 <th style="vertical-align: bottom;">Name</th>
-                <th class="text-right" style="vertical-align: bottom;">Size</th>
+                <th class="spacer-col"></th>
                 {% for checker in checkers %}
                 {% if checker.get('serious', true) and checker.name == 'official' %}
                 <th class="text-center official-column" style="vertical-align: bottom;"><a href="checker/{{ checker.name }}/" class="rotated-header">{{ checker.name }}</a></th>
@@ -117,13 +119,14 @@ table thead th {
                 <th class="text-center" style="vertical-align: bottom;"><a href="checker/{{ checker.name }}/" class="rotated-header">{{ checker.name }}</a></th>
                 {% endif %}
                 {% endfor %}
+                <th class="text-right" style="vertical-align: bottom;">Size</th>
             </tr>
         </thead>
         <tbody>
             {% for test in tests %}
             <tr>
                 <td><a href="test/{{ test.name }}/">{{ test.name }}</a></td>
-                <td class="text-right">{{ test.size_str }}</td>
+                <td class="spacer-col"></td>
                 {% for checker in checkers %}
                     {% if checker.get('serious', true) and checker.name == 'official' %}
                     {% set key = (checker.name, test.name) %}
@@ -184,6 +187,7 @@ table thead th {
                     </td>
                     {% endif %}
                 {% endfor %}
+                <td class="text-right">{{ test.size_str }}</td>
             </tr>
             {% endfor %}
         </tbody>

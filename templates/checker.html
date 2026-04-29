@@ -95,6 +95,7 @@ section pre, details pre {
         <thead>
             <tr>
                 <th>Test</th>
+                <th class="spacer-col"></th>
                 <th class="text-center">Expected</th>
                 <th class="text-center">Result</th>
                 {{ perf_header() }}
@@ -104,6 +105,7 @@ section pre, details pre {
             {% for result in results %}
             <tr>
                 <td><a href="#test-{{ result.test }}">{{ result.test }}</a></td>
+                <td class="spacer-col"></td>
                 <td class="text-center">
                     {% if result.expected == 'accept' %}👍{% elif result.expected == 'reject' %}✋{% else %}⚠️ {{ result.expected }}{% endif %}
                 </td>

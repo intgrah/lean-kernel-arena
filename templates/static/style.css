@@ -5,3 +5,13 @@
 :root {
 --font-family-mono: 'JuliaMono', monospace;
 }
+
+/* All columns shrink to fit content; .spacer-col absorbs extra width */
+table th, table td {
+  white-space: nowrap;
+  padding-left: 0.8em;
+  padding-right: 0.8em;
+}
+th.spacer-col, td.spacer-col {
+  width: 100%;
+}

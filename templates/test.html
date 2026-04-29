@@ -52,6 +52,7 @@
         <thead>
             <tr>
                 <th>Checker</th>
+                <th class="spacer-col"></th>
                 <th class="text-center">Result</th>
                 {{ perf_header() }}
             </tr>
@@ -60,6 +61,7 @@
             {% for result in results %}
             <tr>
                 <td><a href="{{ root_path }}checker/{{ result.checker }}/#test-{{ test.name }}">{{ result.checker }}</a></td>
+                <td class="spacer-col"></td>
                 {{ result_status_cell(test.outcome, result.status) }}
                 {{ perf_cells(result, test.outcome, instructions_per_second, format_duration, format_memory, format_instructions, convert_instructions_to_time) }}
             </tr>
