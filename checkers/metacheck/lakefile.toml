@@ -1,0 +1,12 @@
+name = "metacheck"
+version = "0.1.0"
+defaultTargets = ["metacheck"]
+
+[[lean_exe]]
+name = "metacheck"
+root = "Main"
+
+[[require]]
+scope = "leanprover"
+name = "lean4export"
+rev = "f297dfe2a8557e8674fe892bb49dffe4bfadc0e9"
