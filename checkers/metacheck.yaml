@@ -1,0 +1,9 @@
+version: "0.1.0"
+description: |
+  **MetaCheck** uses the Lean elaborator's type checker instead of the kernel.
+  The exceptions to this are inductives and `Quot`, which use the real kernel.
+
+  The intention is to find divergences between the elaborator and the kernel.
+dir: metacheck
+build: lake build
+run: .lake/build/bin/metacheck "$IN"
