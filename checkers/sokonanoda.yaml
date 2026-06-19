@@ -7,8 +7,8 @@ description: |
   The conversion algorithm uses "glued" evaluation, as in András Kovács'
   [smalltt](https://github.com/AndrasKovacs/smalltt).
 url: https://github.com/intgrah/sokonanoda
-ref: master
-rev: f1c4b12ca88a37fcc030eef2a59260a4a2d04a24
+ref: experimental-arena
+rev: 76e0f5859542f0501dab15430c4e4fa9c342dda6
 build: |
   cargo build --release
   cat > config.json <<__END__
