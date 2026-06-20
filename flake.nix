@@ -1,9 +1,16 @@
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
-  outputs = { self, nixpkgs }:
+  inputs.rust-overlay = {
+    url = "github:oxalica/rust-overlay";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+  outputs = { self, nixpkgs, rust-overlay }:
     let
       system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ rust-overlay.overlays.default ];
+      };
     in
     {
       devShell.${system} = pkgs.stdenv.mkDerivation rec {
@@ -11,8 +18,7 @@
         buildInputs = with pkgs; [
           (python3.withPackages (p : with p; [ jinja2 pyyaml jsonschema markdown ]))
           elan
-          rustc 
-          cargo
+          (rust-bin.stable."1.95.0".default)
           perf
           libffi
           libffi.dev
