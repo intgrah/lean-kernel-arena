@@ -1290,6 +1290,7 @@ properly detect and reject name collisions.
 def dupDef : Type := Prop
 def dupDef2 : Type := Prop
 inductive DupInd where | mk
+noncomputable def dupRecUser := @DupInd.rec
 inductive DupInd2 where | mk1 | mk2
 
 /-- Two definitions with the same name -/
@@ -1310,10 +1311,12 @@ bad_consts #[`dupDef, `DupInd]
 
 /--
 The name of the recursor for `misnamed_rec` must be `misnamed_rec.rec`:
-another name (like `misnamed_rec.invalid_rec`) should be rejected.
+another name (like `misnamed_rec.not_rec`) should be rejected.
+`dupRecUser` is included so that checkers that recreate the recursor (as `misnamed_rec.rec`)
+rather than validating it still fail, because `misnamed_rec_user` references `misnamed_rec.not_rec`.
 -/
-bad_consts #[`DupInd]
-  renaming #[(`DupInd, `misnamed_rec), (`DupInd.mk, `misnamed_rec.mk), (`DupInd.rec, `misnamed_rec.not_rec)]
+bad_consts #[`DupInd, `dupRecUser]
+  renaming #[(`DupInd, `misnamed_rec), (`DupInd.mk, `misnamed_rec.mk), (`DupInd.rec, `misnamed_rec.not_rec), (`dupRecUser, `misnamed_rec_user)]
 
 /--
 Even if a kernel doesn't catch a recursor for `dup_rec_def2` that is misnamed
