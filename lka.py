@@ -1706,15 +1706,18 @@ def cmd_build_site(args: argparse.Namespace) -> int:
         checker["stats"] = compute_checker_stats(checker, tests, results)
 
     # Sort checkers by the specified criteria:
-    # 1. Number of bad tests not rejected (ascending - fewer mistakes is better)
-    # 2. Number of good tests accepted (descending - more is good)
-    # 3. Number of good tests not accepted (ascending - fewer mistakes is better)
-    # 4. Number of tests declined (ascending - fewer declines is better)
-    # 5. Instruction count for processing mathlib (ascending, with None/0 values last)
+    # 1. Number of bad tests not rejected (ascending - giving a bad response to a
+    #    negative test is the worst failure)
+    # 2. Number of good (non-declined) tests not accepted (ascending - wrongly
+    #    rejecting a good test is a serious bug; declines don't count here)
+    # 3. Instruction count for processing mathlib (ascending, with None/0 values
+    #    last - checkers that cope with mathlib rank on top, sorted by speed,
+    #    others below)
+    # 4. Number of tests declined (ascending - a final tie-breaker; serious
+    #    checkers may decline less important tests without being penalized)
     def sort_key(checker):
         stats = checker["stats"]
         bad_not_rejected = stats["reject_total"] - stats["reject_correct"]  # Should be low
-        good_accepted = stats["accept_correct"]  # Should be high
         good_not_accepted = stats["accept_total"] - stats["accept_correct"]  # Should be low
         declined_count = stats["declined_count"]  # Should be low
         mathlib_instructions = stats["mathlib_instructions"]
@@ -1722,8 +1725,7 @@ def cmd_build_site(args: argparse.Namespace) -> int:
         # For mathlib_instructions: None/0 values should be treated as infinity (sort last)
         instructions_sort_key = mathlib_instructions if mathlib_instructions and mathlib_instructions > 0 else float('inf')
 
-        # Note: For descending sort on good_accepted, we negate it
-        return (bad_not_rejected, -good_accepted, good_not_accepted, declined_count, instructions_sort_key)
+        return (bad_not_rejected, good_not_accepted, instructions_sort_key, declined_count)
 
     checkers.sort(key=sort_key)
 
