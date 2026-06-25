@@ -9,6 +9,7 @@ description: |
 url: https://github.com/intgrah/sokonanoda
 ref: master
 rev: f1c4b12ca88a37fcc030eef2a59260a4a2d04a24
+threads: 4
 build: |
   cargo build --release
   cat > config.json <<__END__
