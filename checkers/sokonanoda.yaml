@@ -8,7 +8,7 @@ description: |
   [smalltt](https://github.com/AndrasKovacs/smalltt).
 url: https://github.com/intgrah/sokonanoda
 ref: experimental-arena
-rev: 76e0f5859542f0501dab15430c4e4fa9c342dda6
+rev: fd05f02761950c3712a0e5a2d44cac05c786c4ca
 build: |
   cargo build --release
   cat > config.json <<__END__
