@@ -3,6 +3,7 @@ description: |
 url: https://github.com/intgrah/zignodamus
 ref: master
 rev: c43332f043a6fe8f946348d3ce69ef33c26e845d
+threads: 4
 build: |
   zig build -Drelease
 run: |
