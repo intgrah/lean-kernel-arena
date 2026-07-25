@@ -1,5 +1,5 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
   outputs = { self, nixpkgs }:
     let
       system = "x86_64-linux";
@@ -11,7 +11,7 @@
         buildInputs = with pkgs; [
           (python3.withPackages (p : with p; [ jinja2 pyyaml jsonschema markdown ]))
           elan
-          rustc 
+          rustc
           cargo
           perf
           libffi
@@ -21,6 +21,10 @@
           pypy
           monolith
           nodejs
+          ocaml
+          opam
+          gmp
+          zig
         ];
       };
     };
