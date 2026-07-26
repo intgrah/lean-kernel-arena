@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "macros.html" import detail_styles, result_status_cell, perf_cells, perf_header %}
+{% from "macros.html" import detail_styles, expected_symbol, status_cell, perf_cells, perf_header %}
 
 {% block static_path %}../../{% endblock %}
 
@@ -46,19 +46,19 @@ section pre, details pre {
     </header>
     <p>
         {% if checker.version %}<strong>Version:</strong> {{ checker.version }}{% endif %}
-        {% if checker.version and (checker_links.declaration_url or checker_links.source_url) %} · {% endif %}
-        {% if checker_links.declaration_url %}
-        <a href="{{ checker_links.declaration_url }}" target="_blank">📄 Declaration</a>
+        {% if checker.version and (checker.links.declaration_url or checker.links.source_url) %} · {% endif %}
+        {% if checker.links.declaration_url %}
+        <a href="{{ checker.links.declaration_url }}" target="_blank">📄 Declaration</a>
         {% endif %}
-        {% if checker_links.declaration_url and checker_links.source_url %} · {% endif %}
-        {% if checker_links.source_url %}
-        <a href="{{ checker_links.source_url }}" target="_blank">🔗 Source</a>
+        {% if checker.links.declaration_url and checker.links.source_url %} · {% endif %}
+        {% if checker.links.source_url %}
+        <a href="{{ checker.links.source_url }}" target="_blank">🔗 Source</a>
         {% endif %}
     </p>
 
-    {% if checker.description %}
+    {% if checker.description_html %}
     <div class="description">
-        {{ checker.description | safe }}
+        {{ checker.description_html | safe }}
     </div>
     {% endif %}
 
@@ -89,7 +89,7 @@ section pre, details pre {
         </div>
     </div>
 
-    {% if results %}
+    {% if rows %}
     <div style="overflow-x:auto">
     <table class="striped">
         <thead>
@@ -102,15 +102,13 @@ section pre, details pre {
             </tr>
         </thead>
         <tbody>
-            {% for result in results %}
+            {% for row in rows %}
             <tr>
-                <td><a href="#test-{{ result.test }}">{{ result.test }}</a></td>
+                <td><a href="#test-{{ row.test.name }}">{{ row.test.name }}</a></td>
                 <td class="spacer-col"></td>
-                <td class="text-center">
-                    {% if result.expected == 'accept' %}👍{% elif result.expected == 'reject' %}✋{% else %}⚠️ {{ result.expected }}{% endif %}
-                </td>
-                {{ result_status_cell(result.expected, result.status) }}
-                {{ perf_cells(result, result.expected, instructions_per_second, format_duration, format_memory, format_instructions, convert_instructions_to_time) }}
+                <td class="text-center">{{ expected_symbol(row.test.outcome) }}</td>
+                {{ status_cell(row) }}
+                {{ perf_cells(row) }}
             </tr>
             {% endfor %}
         </tbody>
@@ -122,52 +120,48 @@ section pre, details pre {
     <h2>Detailed results</h2>
   </header>
 
-    {% for result in results %}
-    <h3 id="test-{{ result.test }}">Test "{{ result.test }}"</h3>
+    {% for row in rows %}
+    {% set test = row.test %}
+    {% set result = row.result %}
+    <h3 id="test-{{ test.name }}">Test "{{ test.name }}"</h3>
 
     <p>
         <strong>Expected:</strong>
-        {% if result.expected == 'accept' %}👍 accept{% elif result.expected == 'reject' %}✋ reject{% else %}⚠️ {{ result.expected }}{% endif %}
-        {% if result.test_stats %}
-        · <strong>Size:</strong> {{ result.test_stats.size_str }}
-        · <strong>Lines:</strong> {{ result.test_stats.lines_str }}
+        {% if test.outcome == 'accept' %}👍 accept{% elif test.outcome == 'reject' %}✋ reject{% else %}⚠️ {{ test.outcome }}{% endif %}
+        · <strong>Size:</strong> {{ test.size_str }}
+        · <strong>Lines:</strong> {{ test.lines_str }}
+        {% if test.export.lean4export_version %}
+        · <strong>lean4export:</strong> {{ test.export.lean4export_version }}
         {% endif %}
-        {% if result.test_stats.lean4export_version %}
-        · <strong>lean4export:</strong> {{ result.test_stats.lean4export_version }}
+        {% if test.export.lean_version %}
+        · <strong>Lean:</strong> {{ test.export.lean_version }}
         {% endif %}
-        {% if result.test_stats.lean_version %}
-        · <strong>Lean:</strong> {{ result.test_stats.lean_version }}
+        {% if test.links.declaration_url or test.links.source_url %} · {% endif %}
+        {% if test.links.declaration_url %}
+        <a href="{{ test.links.declaration_url }}" target="_blank">📄 Declaration</a>
         {% endif %}
-        {% if result.test_links.declaration_url or result.test_links.source_url %} · {% endif %}
-        {% if result.test_links.declaration_url %}
-        <a href="{{ result.test_links.declaration_url }}" target="_blank">📄 Declaration</a>
-        {% endif %}
-        {% if result.test_links.declaration_url and result.test_links.source_url %} · {% endif %}
-        {% if result.test_links.source_url %}
-        <a href="{{ result.test_links.source_url }}" target="_blank">🔗 Source</a>
+        {% if test.links.declaration_url and test.links.source_url %} · {% endif %}
+        {% if test.links.source_url %}
+        <a href="{{ test.links.source_url }}" target="_blank">🔗 Source</a>
         {% endif %}
     </p>
-    {% if result.test_description %}
+    {% if test.description_html %}
     <div class="description">
-        {{ result.test_description | safe }}
+        {{ test.description_html | safe }}
     </div>
     {% endif %}
 
     <p>
       <b>Test result:</b>
-        <span class="{% if (result.expected == 'accept' and result.status == 'accepted') or (result.expected == 'reject' and result.status == 'rejected') %}bg-success{% elif (result.expected == 'accept' and result.status != 'accepted' and result.status != 'declined' and result.status != 'error') or (result.expected == 'reject' and result.status != 'rejected' and result.status != 'declined' and result.status != 'error') %}bg-error{% else %}bg-warning{% endif %}" style="padding: 0.2em 0.5em; border-radius: 3px;">
+        <span class="{{ row.status_class or 'bg-success' }}" style="padding: 0.2em 0.5em; border-radius: 3px;">
             {% if result.status == 'accepted' %}👍 accepted{% elif result.status == 'rejected' %}✋ rejected{% elif result.status == 'declined' %}🚫 declined{% else %}💥 {{ result.status }}{% endif %}
         </span>
         · exit code {{ result.exit_code }}
-        {% if result.wall is not none %}
         · wall time: {{ format_duration(result.wall_time) }}
+        {% if result.instructions > 0 %}
+        · instructions: {{ format_unitless(result.instructions) }}
         {% endif %}
-        {% if result.get('instructions', 0) > 0 %}
-        · instructions: {{ format_unitless(result.get('instructions', 0)) }}
-        {% endif %}
-        {% if result.max_rss is not none %}
         · max rss memory: {{ format_memory(result.max_rss) }}
-        {% endif %}
     </p>
     {% if result.stdout %}
     <h5>stdout:</h5>

@@ -1,6 +1,3 @@
-{# Shared macros for checker and test result tables #}
-
-{# CSS styles shared across detail pages #}
 {% macro detail_styles() %}
 .bg-success { background-color: #d4edda; }
 .bg-error { background-color: #f8d7da; }
@@ -20,53 +17,58 @@
 }
 {% endmacro %}
 
-{# Result status cell with background color #}
-{% macro result_status_cell(expected, status) %}
-<td class="text-center {% if (expected == 'accept' and status == 'accepted') or (expected == 'reject' and status == 'rejected') %}{% elif status == 'declined' or status == 'error' %}bg-warning{% else %}bg-error{% endif %}">
-    {% if status == 'accepted' %}👍{% elif status == 'rejected' %}✋{% elif status == 'declined' %}🚫{% else %}💥{% endif %}
+{% macro expected_symbol(outcome) %}
+{%- if outcome == 'accept' %}👍{% elif outcome == 'reject' %}✋{% else %}⚠️ {{ outcome }}{% endif -%}
+{% endmacro %}
+
+{% macro delta(percent) %}
+{%- if percent is not none %}({{ '+' if percent > 0 }}{{ percent }}%){% endif -%}
+{% endmacro %}
+
+{% macro status_cell(row) %}
+<td class="text-center {{ row.status_class }}">{{ status_symbol(row.result.status) }}</td>
+{% endmacro %}
+
+{% macro summary_cell(column, test, row) %}
+<td class="text-center{{ ' official-column' if column.name == official_checker }}{% if row %} {{ row.status_class }}{% endif %}">
+    {%- if row -%}
+    <a class="cell-link" href="checker/{{ column.name }}/#test-{{ test.name }}">
+        {%- if not row.timed -%}
+            {{ status_symbol(row.result.status) }}
+        {%- elif column.name == official_checker -%}
+            {%- if row.result.virtual_cpu_time >= min_comparable_cpu_time -%}
+                {{ format_duration(row.result.virtual_cpu_time) }}
+            {%- else -%}
+                {{ status_symbol('accepted') }}
+            {%- endif -%}
+        {%- elif row.speed_delta is not none -%}
+            {{ '+' if row.speed_delta > 0 }}{{ row.speed_delta }}%
+        {%- else -%}
+            {{ status_symbol('accepted') }}
+        {%- endif -%}
+    </a>
+    {%- else -%}
+    -
+    {%- endif -%}
 </td>
 {% endmacro %}
 
-{# Performance cells: time, time%, memory, memory% #}
-{% macro perf_cells(result, expected, instructions_per_second, format_duration, format_memory, format_instructions, convert_instructions_to_time) %}
-<td class="text-right">
-    {% if result.get('instructions', 0) > 0 and instructions_per_second > 0 %}
-        <span title="{{ format_instructions(result.get('instructions', 0)) }} instructions">{{ format_duration(convert_instructions_to_time(result.get('instructions', 0), instructions_per_second)) }}</span>
-    {% elif result.cpu_time is not none %}
-        {{ format_duration(result.cpu_time) }}
-    {% endif %}
-</td>
-<td class="text-left">
-    {% if expected == 'accept' and result.status == 'accepted' and result.official and result.official.status == 'accepted' %}
-        {% set official_cpu_time = convert_instructions_to_time(result.official.get('instructions', 0), instructions_per_second) if result.official.get('instructions', 0) > 0 and instructions_per_second > 0 else result.official.cpu_time %}
-        {% set current_cpu_time = convert_instructions_to_time(result.get('instructions', 0), instructions_per_second) if result.get('instructions', 0) > 0 and instructions_per_second > 0 else result.cpu_time %}
-        {% if official_cpu_time and official_cpu_time >= 0.05 and current_cpu_time %}
-            {% set percent_change = ((current_cpu_time - official_cpu_time) / official_cpu_time * 100) | round(0) | int %}
-            {% if percent_change > 0 %}(+{{ percent_change }}%){% elif percent_change < 0 %}({{ percent_change }}%){% else %}(0%){% endif %}
-        {% endif %}
-    {% endif %}
-</td>
-<td class="text-right">
-    {% if result.max_rss is not none %}
-        {{ format_memory(result.max_rss) }}
-    {% endif %}
-</td>
-<td class="text-left">
-    {% if expected == 'accept' and result.status == 'accepted' and result.official and result.official.status == 'accepted' %}
-        {% set official_memory = result.official.max_rss %}
-        {% set current_memory = result.max_rss %}
-        {% if official_memory and official_memory >= 200*1024*1024 and current_memory %}
-            {% set percent_change = ((current_memory - official_memory) / official_memory * 100) | round(0) | int %}
-            {% if percent_change > 0 %}(+{{ percent_change }}%){% elif percent_change < 0 %}({{ percent_change }}%){% else %}(0%){% endif %}
-        {% endif %}
-    {% endif %}
-</td>
-{% endmacro %}
-
-{# Table header for performance columns #}
 {% macro perf_header() %}
 <th class="text-right">⏱️</th>
 <th class="text-right"></th>
 <th class="text-right">🧠</th>
 <th class="text-right"></th>
+{% endmacro %}
+
+{% macro perf_cells(row) %}
+<td class="text-right">
+    {%- if row.result.instructions > 0 -%}
+    <span title="{{ format_unitless(row.result.instructions) }} instructions">{{ format_duration(row.result.virtual_cpu_time) }}</span>
+    {%- else -%}
+    {{ format_duration(row.result.cpu_time) }}
+    {%- endif -%}
+</td>
+<td class="text-left">{{ delta(row.speed_delta) }}</td>
+<td class="text-right">{{ format_memory(row.result.max_rss) }}</td>
+<td class="text-left">{{ delta(row.memory_delta) }}</td>
 {% endmacro %}

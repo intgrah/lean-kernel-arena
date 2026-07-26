@@ -7,1298 +7,1163 @@
 #     "pyyaml>=6.0.3",
 # ]
 # ///
-"""Lean Kernel Arena - Tool for managing Lean kernel tests and checkers."""
 
 import argparse
+import dataclasses
 import datetime
 import fnmatch
+import functools
+import io
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import time
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Literal
 
-import yaml
 import jsonschema
 import markdown
+import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-import shlex
 
+PROJECT_ROOT = Path(__file__).parent.resolve()
+ARENA_REPO_URL = "https://github.com/leanprover/lean-kernel-arena"
+LEAN4EXPORT_REPO_URL = "https://github.com/leanprover/lean4export"
 
-def _configure_stdout_stderr_unbuffered() -> None:
-    """Best-effort: make stdout/stderr write through immediately.
+INSTRUCTIONS_PER_SECOND = 6_000_000_000
+MIN_COMPARABLE_CPU_TIME = 0.05
+MIN_COMPARABLE_MAX_RSS = 200 * 1024 * 1024
+MAX_TARBALL_ENTRY_SIZE = 10 * 1024 * 1024
+MATHLIB_TEST = "mathlib"
+OFFICIAL_CHECKER = "official"
+UNIT_SPACE = "\N{NARROW NO-BREAK SPACE}"
 
-    This avoids relying on per-call `print(..., flush=True)`.
-    """
-    for stream_name in ("stdout", "stderr"):
-        stream = getattr(sys, stream_name, None)
-        if stream is None:
-            continue
-        reconfigure = getattr(stream, "reconfigure", None)
-        if callable(reconfigure):
-            try:
-                reconfigure(line_buffering=True, write_through=True)
-            except Exception:
-                pass
+Outcome = Literal["accept", "reject"]
+Status = Literal["accepted", "rejected", "declined", "error"]
+Correctness = Literal["correct", "incorrect", "declined", "error"]
 
-
-_configure_stdout_stderr_unbuffered()
-
-# Global verbose flag
 VERBOSE = False
 
-# Timing/measurement utilities
 
-
-def get_project_root() -> Path:
-    """Get the project root directory."""
-    return Path(__file__).parent.resolve()
-
-
-def load_schema(schema_name: str) -> dict:
-    """Load a JSON schema file."""
-    schema_file = get_project_root() / "schemas" / f"{schema_name}.json"
-    if not schema_file.exists():
-        raise FileNotFoundError(f"Schema file not found: {schema_file}")
-    with open(schema_file, "r") as f:
-        return json.load(f)
-
-
-def validate_yaml_data(data: dict, schema_name: str, file_path: Path) -> None:
-    """Validate YAML data against a schema."""
-    try:
-        schema = load_schema(schema_name)
-        jsonschema.validate(data, schema)
-    except jsonschema.ValidationError as e:
-        # Format a helpful error message
-        error_path = " -> ".join(str(p) for p in e.absolute_path) if e.absolute_path else "root"
-        print(f"Schema validation error in {file_path}:")
-        print(f"  Path: {error_path}")
-        print(f"  Error: {e.message}")
-        if e.validator_value:
-            print(f"  Expected: {e.validator_value}")
-        if hasattr(e, 'instance') and e.instance is not None:
-            print(f"  Found: {e.instance}")
-        sys.exit(1)
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+class BuildError(Exception):
+    pass
 
 
 def format_duration(seconds: float) -> str:
-    """Format a duration in seconds to a human-readable string."""
     if seconds >= 3600:
-        return f"{seconds / 3600:.1f}\u202fh"
-    elif seconds >= 60:
-        return f"{seconds / 60:.1f}\u202fm"
-    elif seconds >= 1:
-        return f"{seconds:.1f}\u202fs"
-    else:
-        return f"{seconds * 1000:.0f}\u202fms"
+        return f"{seconds / 3600:.1f}{UNIT_SPACE}h"
+    if seconds >= 60:
+        return f"{seconds / 60:.1f}{UNIT_SPACE}m"
+    if seconds >= 1:
+        return f"{seconds:.1f}{UNIT_SPACE}s"
+    return f"{seconds * 1000:.0f}{UNIT_SPACE}ms"
 
 
-def format_memory(bytes_value: float) -> str:
-    """Format memory usage in bytes to a human-readable string."""
-    if bytes_value >= 1024 * 1024 * 1024:
-        return f"{bytes_value / (1024 * 1024 * 1024):.1f}\u202fGB"
-    elif bytes_value >= 1024 * 1024:
-        return f"{bytes_value / (1024 * 1024):.1f}\u202fMB"
-    elif bytes_value >= 1024:
-        return f"{bytes_value / 1024:.1f}\u202fKB"
-    else:
-        return f"{bytes_value:.0f}\u202fB"
+def format_memory(num_bytes: float) -> str:
+    if num_bytes >= 1024**3:
+        return f"{num_bytes / 1024**3:.1f}{UNIT_SPACE}GB"
+    if num_bytes >= 1024**2:
+        return f"{num_bytes / 1024**2:.1f}{UNIT_SPACE}MB"
+    if num_bytes >= 1024:
+        return f"{num_bytes / 1024:.1f}{UNIT_SPACE}KB"
+    return f"{num_bytes:.0f}{UNIT_SPACE}B"
 
 
-def format_unitless(count: int) -> str:
-    """Format unitless count to a human-readable string with SI prefixes."""
-    if count >= 1_000_000_000_000:
-        return f"{count / 1_000_000_000_000:.1f}\u202fT"
-    elif count >= 1_000_000_000:
-        return f"{count / 1_000_000_000:.1f}\u202fG"
-    elif count >= 1_000_000:
-        return f"{count / 1_000_000:.1f}\u202fM"
-    elif count >= 1_000:
-        return f"{count / 1_000:.1f}\u202fk"
-    else:
-        return str(count)
+def format_unitless(count: float) -> str:
+    if count >= 1e12:
+        return f"{count / 1e12:.1f}{UNIT_SPACE}T"
+    if count >= 1e9:
+        return f"{count / 1e9:.1f}{UNIT_SPACE}G"
+    if count >= 1e6:
+        return f"{count / 1e6:.1f}{UNIT_SPACE}M"
+    if count >= 1e3:
+        return f"{count / 1e3:.1f}{UNIT_SPACE}k"
+    return f"{count:.0f}"
 
 
-def format_instructions(instruction_count: int) -> str:
-    """Format instruction count to a human-readable string with SI prefixes."""
-    if instruction_count >= 1_000_000_000:
-        return f"{instruction_count / 1_000_000_000:.1f}\u202fG"
-    elif instruction_count >= 1_000_000:
-        return f"{instruction_count / 1_000_000:.1f}\u202fM"
-    elif instruction_count >= 1_000:
-        return f"{instruction_count / 1_000:.1f}\u202fk"
-    else:
-        return str(instruction_count)
+def status_symbol(status: Status) -> str:
+    match status:
+        case "accepted":
+            return "\N{THUMBS UP SIGN}"
+        case "rejected":
+            return "\N{RAISED HAND}"
+        case "declined":
+            return "\N{NO ENTRY SIGN}"
+        case "error":
+            return "\N{COLLISION SYMBOL}"
 
 
-def convert_instructions_to_time(instructions: int, instructions_per_second: float) -> float:
-    """Convert instruction count to equivalent time in seconds."""
-    if instructions_per_second > 0 and instructions > 0:
-        return instructions / instructions_per_second
-    return 0.0
+def correctness_symbol(correctness: Correctness) -> str:
+    match correctness:
+        case "correct":
+            return "\N{WHITE HEAVY CHECK MARK}"
+        case "incorrect":
+            return "\N{CROSS MARK}"
+        case "declined":
+            return "\N{CIRCLED DIVISION SLASH}"
+        case "error":
+            return "\N{WARNING SIGN}\N{VARIATION SELECTOR-16}"
 
 
-def render_markdown(text: str) -> str:
-    """Render markdown text to HTML."""
+def render_markdown(text: str | None) -> str:
     if not text:
         return ""
-
-    # Configure markdown with extensions for better HTML output
-    md = markdown.Markdown(extensions=['extra', 'codehilite', 'toc'])
-    return md.convert(text.strip())
+    renderer = markdown.Markdown(extensions=["extra", "codehilite", "toc"])
+    return renderer.convert(text.strip())
 
 
-def extract_ndjson_metadata(ndjson_file: Path) -> dict:
-    """Extract metadata from the first line of an NDJSON file.
+def indented(label: str, text: str) -> str:
+    if not text.strip():
+        return ""
+    padding = "\n" + " " * (len(label) + 4)
+    return f"  {label}: {text.strip().replace('\n', padding)}\n"
 
-    Returns a dict with extracted version information:
-    - lean4export_version: Version of lean4export tool (if available)
-    - lean_version: Version of Lean compiler (if available)
-    - lean_githash: Git hash of Lean compiler (if available)
-    """
-    metadata = {}
+
+def as_dict(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+@dataclass(frozen=True)
+class Metrics:
+    wall_time: float
+    cpu_time: float
+    max_rss: int
+    instructions: int
+
+
+@dataclass(frozen=True)
+class CommandResult:
+    returncode: int
+    stdout: str
+    stderr: str
+    metrics: Metrics
+
+    @property
+    def output(self) -> str:
+        return indented("stdout", self.stdout) + indented("stderr", self.stderr)
+
+
+def probe(cmd: list[str]) -> bool:
+    if shutil.which(cmd[0]) is None:
+        return False
     try:
-        with open(ndjson_file, 'r') as f:
-            first_line = f.readline().strip()
-            if first_line:
-                data = json.loads(first_line)
-                # Look for metadata structure
-                if "meta" in data:
-                    meta = data["meta"]
-                    # Extract lean4export version
-                    if "exporter" in meta and "version" in meta["exporter"]:
-                        metadata["lean4export_version"] = meta["exporter"]["version"]
-                    # Extract Lean version info
-                    if "lean" in meta:
-                        lean_info = meta["lean"]
-                        if "version" in lean_info:
-                            metadata["lean_version"] = lean_info["version"]
-                        if "githash" in lean_info:
-                            metadata["lean_githash"] = lean_info["githash"]
-    except Exception:
-        # Silently ignore metadata extraction errors
-        pass
-
-    return metadata
+        return subprocess.run(cmd, capture_output=True, timeout=10).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
 
 
-def measure_perf_with_fallback(
-    cmd: str | list[str],
-    cwd: Path | None = None,
-    env: dict | None = None,
-    shell: bool = False,
-    capture_output: bool = True,
-) -> tuple[subprocess.CompletedProcess, dict]:
-    """Run a command and measure performance metrics using perf + GNU time, with fallback.
+@functools.cache
+def perf_prefix() -> list[str]:
+    if not probe(["perf", "stat", "-e", "instructions", "--", "true"]):
+        return []
+    return [
+        "perf",
+        "stat",
+        "-j",
+        "-o",
+        "",
+        "-e",
+        "duration_time,task-clock,instructions",
+        "--",
+    ]
 
-    Returns:
-        Tuple of (subprocess result, metrics dict)
 
-    Metrics dict contains:
-    - wall_time: Wall clock time in seconds
-    - cpu_time: CPU time in seconds (measured via perf task-clock)
-    - max_rss: Maximum RSS in bytes (measured via GNU time)
-    - instructions: Instruction count (measured via perf)
-    """
-    # Record wall time manually as fallback
-    start_wall_time = time.time()
+@functools.cache
+def gnu_time_prefix() -> list[str]:
+    if not probe(["time", "-f", "%M", "-o", "/dev/null", "--", "true"]):
+        return []
+    return ["time", "-f", "max_rss_kb=%M", "-o", "", "--"]
 
-    # Try to use perf if available
-    metrics = {}
-    use_perf = False
 
-    # Check if perf is available
-    try:
-        perf_check = subprocess.run(
-            ["perf", "--version"],
-            capture_output=True,
-            timeout=2
-        )
-        if perf_check.returncode == 0:
-            use_perf = True
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        use_perf = False
+def argv(cmd: str | Sequence[str]) -> list[str]:
+    return ["sh", "-c", cmd] if isinstance(cmd, str) else list(cmd)
 
-    if use_perf:
-        # Use perf + GNU time for comprehensive measurements
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix=".perf") as perf_tmp:
-            perf_tmp_path = perf_tmp.name
 
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix=".time") as time_tmp:
-            time_tmp_path = time_tmp.name
-
+def parse_perf_events(path: Path) -> dict[str, float]:
+    events: dict[str, float] = {}
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
         try:
-            # Build nested command: perf stat ... -- time -f "..." -o tmpfile -- original_command
-            perf_cmd = [
-                "perf", "stat", "-j", "-o", perf_tmp_path,
-                "-e", "duration_time",  # wall-clock time
-                "-e", "task-clock",     # cpu time
-                "-e", "instructions",   # instruction count
-                "--"
-            ]
+            entry = as_dict(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+        event = entry.get("event")
+        value = entry.get("counter-value")
+        if not isinstance(event, str) or not isinstance(value, str):
+            continue
+        try:
+            count = float(value)
+        except ValueError:
+            continue
+        if event in {"duration_time", "task-clock"}:
+            count *= 1e-3 if entry.get("unit") == "msec" else 1e-9
+        events[event] = count
+    return events
 
-            # Add GNU time wrapper for max RSS measurement
-            time_fmt = "real_seconds=%e\nuser_seconds=%U\nsys_seconds=%S\nmax_rss_kb=%M"
-            time_cmd = ["time", "-f", time_fmt, "-o", time_tmp_path, "--"]
 
-            if isinstance(cmd, list):
-                full_cmd = perf_cmd + time_cmd + cmd
-            else:
-                if shell:
-                    full_cmd = perf_cmd + time_cmd + ["sh", "-c", cmd]
-                else:
-                    full_cmd = perf_cmd + time_cmd + cmd.split()
+def parse_max_rss(path: Path) -> int:
+    for line in path.read_text().splitlines():
+        key, _, value = line.partition("=")
+        if key.strip() == "max_rss_kb" and value.strip().isdigit():
+            return int(value.strip()) * 1024
+    return 0
 
-            # Set up environment
-            perf_env = (env or os.environ).copy()
-            perf_env["LC_ALL"] = "C"  # Ensure perf outputs valid JSON
 
-            # Run with nested perf + time
-            result = subprocess.run(
-                full_cmd,
-                cwd=cwd,
-                env=perf_env,
-                shell=False,
-                capture_output=capture_output,
-                text=True,
-            )
+def measure(
+    cmd: str | Sequence[str],
+    cwd: Path | None,
+    env: dict[str, str] | None,
+) -> CommandResult:
+    with tempfile.TemporaryDirectory() as tmp:
+        perf_out = Path(tmp) / "perf.json"
+        time_out = Path(tmp) / "time.txt"
+        prefix = [arg or str(perf_out) for arg in perf_prefix()]
+        prefix += [arg or str(time_out) for arg in gnu_time_prefix()]
+        measured_env = dict(os.environ if env is None else env) | {"LC_ALL": "C"}
 
-            # Parse perf output
-            perf_metrics = {}
-            try:
-                with open(perf_tmp_path, 'r') as f:
-                    for line in f:
-                        line = line.strip()
-                        if line:
-                            try:
-                                data = json.loads(line)
-                                if "event" in data and "counter-value" in data:
-                                    event = data["event"]
-                                    value = float(data["counter-value"])
-                                    unit = data.get("unit", "")
-
-                                    if event in ["duration_time", "task-clock"]:
-                                        # Time events are in nanoseconds by default
-                                        if unit == "msec":
-                                            value *= 1e-3
-                                        elif unit == "ns" or unit == "":
-                                            value *= 1e-9  # Convert nanoseconds to seconds
-                                        perf_metrics[event] = value
-                                    elif event == "instructions":
-                                        # Instructions are count (no unit conversion needed)
-                                        perf_metrics[event] = int(value)
-                            except (json.JSONDecodeError, ValueError, KeyError):
-                                continue
-            except Exception:
-                pass
-
-            # Parse GNU time output
-            time_metrics = {}
-            try:
-                with open(time_tmp_path, 'r') as f:
-                    for line in f:
-                        line = line.strip()
-                        if not line:
-                            continue
-                        if '=' in line:
-                            k, v = line.split('=', 1)
-                            time_metrics[k.strip()] = v.strip()
-            except Exception:
-                pass
-
-            # Clean up temporary files
-            try:
-                os.unlink(perf_tmp_path)
-                os.unlink(time_tmp_path)
-            except Exception:
-                pass
-
-            # Extract metrics with fallbacks
-            metrics["wall_time"] = perf_metrics.get("duration_time", time.time() - start_wall_time)
-            metrics["cpu_time"] = perf_metrics.get("task-clock", 0.0)
-            metrics["instructions"] = perf_metrics.get("instructions", 0)
-
-            # Extract max RSS from GNU time
-            try:
-                max_rss_kb = int(time_metrics.get("max_rss_kb", "0"))
-                metrics["max_rss"] = max_rss_kb * 1024  # Convert KB to bytes
-            except Exception:
-                metrics["max_rss"] = 0
-
-        except Exception:
-            # If perf+time fails completely, fall back to basic measurement
-            use_perf = False
-
-    if not use_perf:
-        # Final fallback: run normally and measure wall time only
-        result = subprocess.run(
-            cmd,
+        started = time.monotonic()
+        completed = subprocess.run(
+            prefix + argv(cmd),
             cwd=cwd,
-            env=env,
-            shell=shell,
-            capture_output=capture_output,
+            env=measured_env,
+            capture_output=True,
             text=True,
         )
-        metrics["wall_time"] = time.time() - start_wall_time
-        metrics["cpu_time"] = 0.0  # Not measured here
-        metrics["max_rss"] = 0.0
-        metrics["instructions"] = 0
+        elapsed = time.monotonic() - started
 
-    return result, metrics
+        events = parse_perf_events(perf_out) if perf_out.exists() else {}
+        max_rss = parse_max_rss(time_out) if time_out.exists() else 0
+
+    return CommandResult(
+        returncode=completed.returncode,
+        stdout=completed.stdout,
+        stderr=completed.stderr,
+        metrics=Metrics(
+            wall_time=events.get("duration_time", elapsed),
+            cpu_time=events.get("task-clock", 0.0),
+            max_rss=max_rss,
+            instructions=int(events.get("instructions", 0)),
+        ),
+    )
+
+
+def run_plain(
+    cmd: str | Sequence[str],
+    cwd: Path | None,
+    env: dict[str, str] | None,
+) -> CommandResult:
+    started = time.monotonic()
+    completed = subprocess.run(
+        argv(cmd),
+        cwd=cwd,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    return CommandResult(
+        returncode=completed.returncode,
+        stdout=completed.stdout,
+        stderr=completed.stderr,
+        metrics=Metrics(time.monotonic() - started, 0.0, 0, 0),
+    )
+
+
+def report_command(result: CommandResult) -> None:
+    outcome = "ok" if result.returncode == 0 else f"FAILED (exit {result.returncode})"
+    metrics = result.metrics
+    details = [f"wall: {format_duration(metrics.wall_time)}"]
+    if metrics.cpu_time > 0:
+        details.append(f"cpu: {format_duration(metrics.cpu_time)}")
+    if metrics.max_rss > 0:
+        details.append(f"rss: {format_memory(metrics.max_rss)}")
+    if metrics.instructions > 0:
+        details.append(f"inst: {metrics.instructions:,}")
+    print(f"      -> {outcome} ({', '.join(details)})")
+    print(result.output, end="")
 
 
 def run_cmd(
-    cmd: str | list[str],
+    cmd: str | Sequence[str],
     cwd: Path | None = None,
-    env: dict | None = None,
-    shell: bool = False,
-    capture_output: bool = True,
+    env: dict[str, str] | None = None,
     measure_perf: bool = False,
-    print_on_failure: bool = False,
-) -> subprocess.CompletedProcess:
-    """Run a command with optional verbose output and performance measurement.
+) -> CommandResult:
+    if VERBOSE:
+        shown = cmd if isinstance(cmd, str) else shlex.join(cmd)
+        print(f"    $ {shown}{f' (in {cwd})' if cwd else ''}")
 
-    Args:
-        cmd: Command to run (string for shell=True, list for shell=False)
-        cwd: Working directory
-        env: Environment variables
-        shell: Whether to run as shell command
-        capture_output: Whether to capture stdout/stderr
-        measure_perf: Whether to measure detailed performance metrics
-        print_on_failure: Whether to print stdout/stderr when the command fails
-
-    Returns:
-        CompletedProcess instance with additional attributes:
-        - wall_time: Wall clock time in seconds
-        - cpu_time: CPU time in seconds (if available)
-        - max_rss: Maximum RSS in bytes (if available)
-        - instructions: Instruction count (if available)
-    """
-    global VERBOSE
-
-    # Format command for display
-    if isinstance(cmd, list):
-        cmd_str = " ".join(cmd)
-    else:
-        cmd_str = cmd
+    measurable = measure_perf and (perf_prefix() or gnu_time_prefix())
+    result = measure(cmd, cwd, env) if measurable else run_plain(cmd, cwd, env)
 
     if VERBOSE:
-        cwd_str = f" (in {cwd})" if cwd else ""
-        print(f"    $ {cmd_str}{cwd_str}")
-
-    if measure_perf:
-        # Use detailed performance measurement
-        result, metrics = measure_perf_with_fallback(
-            cmd, cwd=cwd, env=env, shell=shell, capture_output=capture_output
-        )
-
-        # Add metrics as attributes to the result
-        result.wall_time = metrics["wall_time"]
-        result.cpu_time = metrics["cpu_time"]
-        result.max_rss = metrics["max_rss"]
-        result.instructions = metrics.get("instructions", 0)
-
-        if VERBOSE:
-            status = "ok" if result.returncode == 0 else f"FAILED (exit {result.returncode})"
-            metrics_str = f"wall: {format_duration(result.wall_time)}"
-            # Show real CPU time from perf (task-clock), not converted from instructions
-            if result.cpu_time > 0:
-                metrics_str += f", cpu: {format_duration(result.cpu_time)}"
-            metrics_str += f", rss: {format_memory(result.max_rss)}"
-            # Show instruction count separately
-            if result.instructions > 0:
-                metrics_str += f", inst: {result.instructions:,}"
-            print(f"      -> {status} ({metrics_str})")
-    else:
-        # Use simple timing
-        start_time = time.time()
-
-        result = subprocess.run(
-            cmd,
-            cwd=cwd,
-            env=env,
-            shell=shell,
-            capture_output=capture_output,
-            text=True,
-        )
-
-        elapsed = time.time() - start_time
-
-        # Add basic timing as attributes
-        result.wall_time = elapsed
-        result.cpu_time = 0.0  # Not measured
-        result.max_rss = 0.0   # Not measured
-        result.instructions = 0  # Not measured
-
-        if VERBOSE:
-            status = "ok" if result.returncode == 0 else f"FAILED (exit {result.returncode})"
-            print(f"      -> {status} in {format_duration(elapsed)}")
-
-    if VERBOSE:
-        if result.stdout:
-            print(f"      stdout: {result.stdout.replace('\n', '\n               ')}")
-        if result.stderr:
-            print(f"      stderr: {result.stderr.replace('\n', '\n               ')}")
-
-    if print_on_failure and result.returncode != 0:
-        if result.stdout:
-            print(f"  stdout: {result.stdout.replace('\n', '\n          ')}")
-        if result.stderr:
-            print(f"  stderr: {result.stderr.replace('\n', '\n          ')}")
-
+        report_command(result)
     return result
 
 
-def get_lean_toolchain(directory: Path) -> str | None:
-    """Read the lean-toolchain file from a directory and return the toolchain string.
+def run_checked(
+    description: str,
+    cmd: str | Sequence[str],
+    cwd: Path | None = None,
+    env: dict[str, str] | None = None,
+) -> CommandResult:
+    result = run_cmd(cmd, cwd=cwd, env=env)
+    if result.returncode != 0:
+        msg = f"{description} failed (exit {result.returncode})\n{result.output}"
+        raise BuildError(msg.rstrip())
+    return result
 
-    Args:
-        directory: Directory to look for lean-toolchain file
 
-    Returns:
-        Toolchain string (e.g., 'leanprover/lean4:v4.27.0-rc1'), or None if not found
-    """
-    toolchain_file = directory / "lean-toolchain"
-    if toolchain_file.exists():
-        try:
-            with open(toolchain_file, "r") as f:
-                return f.read().strip()
-        except Exception as e:
-            print(f"  Warning: Could not read {toolchain_file}: {e}")
+@dataclass(frozen=True)
+class GitSource:
+    url: str
+    ref: str | None
+    rev: str | None
+
+
+@dataclass(frozen=True)
+class LocalSource:
+    path: str
+
+
+Source = GitSource | LocalSource
+
+
+@dataclass(frozen=True)
+class StaticFile:
+    path: str
+
+
+@dataclass(frozen=True)
+class LeanFileExport:
+    path: str
+    export_decls: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ModuleExport:
+    module: str
+    export_decls: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class RunScript:
+    command: str
+    multiple: bool
+
+
+TestBuild = StaticFile | LeanFileExport | ModuleExport | RunScript
+
+
+def parse_source(data: dict[str, Any]) -> Source | None:
+    if data.get("url"):
+        return GitSource(url=data["url"], ref=data.get("ref"), rev=data.get("rev"))
+    if data.get("dir"):
+        return LocalSource(path=data["dir"])
     return None
 
 
-def run_lean4export(lean4export_dir: Path, module_name: str, export_decls: list | None, cwd: Path, out_file: Path) -> bool:
-    """Run lean4export (via lake env) to export a module.
-
-    lean4export_dir: path to the checked-out/build lean4export repo
-    module_name: module name to export
-    export_decls: optional list of declaration names to pass after --
-    cwd: working directory to run lake env from
-    out_file: output path for NDJSON
-    """
-    lean4export_bin = lean4export_dir / ".lake" / "build" / "bin" / "lean4export"
-    if not lean4export_bin.exists():
-        print(f"  Error: lean4export binary not found at {lean4export_bin}")
-        return False
-
-    # Build command
-    cmd = f"lake env {lean4export_bin} {module_name}"
-    if export_decls:
-        # Quote each decl for shell safety
-        decls = " ".join(shlex.quote(str(d)) for d in export_decls)
-        cmd += f" -- {decls}"
-    cmd += f" > {out_file}"
-
-    result = run_cmd(cmd, cwd=cwd, shell=True, print_on_failure=True)
-    if result.returncode != 0:
-        print(f"  Export failed")
-        return False
-    return True
+def parse_build(name: str, data: dict[str, Any]) -> TestBuild:
+    decls = tuple(data.get("export-decls", ()))
+    if data.get("module"):
+        return ModuleExport(module=data["module"], export_decls=decls)
+    if data.get("run"):
+        return RunScript(command=data["run"], multiple=bool(data.get("multiple")))
+    if data.get("leanfile"):
+        return LeanFileExport(path=data["leanfile"], export_decls=decls)
+    if data.get("file"):
+        return StaticFile(path=data["file"])
+    msg = f"Test {name} has no 'module', 'run', 'leanfile' or 'file' field"
+    raise BuildError(msg)
 
 
-def setup_lean4export(toolchain: str) -> Path | None:
-    """Clone and build lean4export for a specific Lean toolchain.
+@dataclass(frozen=True)
+class Test:
+    name: str
+    description: str | None
+    outcome: Outcome | None
+    compare_perf: bool
+    skip_on_ci: bool
+    source: Source | None
+    pre_build: str | None
+    build: TestBuild
 
-    Args:
-        toolchain: Lean toolchain string (e.g., 'leanprover/lean4:v4.27.0-rc1')
+    @property
+    def yaml_file(self) -> str:
+        return f"tests/{self.name}.yaml"
 
-    Returns:
-        Path to lean4export directory for this toolchain, or None on failure
-
-    Note: Failed temporary directories are left in place for debugging purposes.
-    """
-    # Sanitize toolchain string for use in file paths
-    toolchain_dir_name = toolchain.replace("/", "_").replace(":", "_")
-    build_base_dir = get_project_root() / "_build"
-    lean4export_dir = build_base_dir / "lean4export" / toolchain_dir_name
-
-    if not lean4export_dir.exists():
-        print(f"  Cloning lean4export for toolchain {toolchain}...")
-
-        # Work in temporary directory first
-        lean4export_tmp_dir = Path(str(lean4export_dir) + ".tmp")
-
-        # Clean up any existing temporary directory
-        if lean4export_tmp_dir.exists():
-            shutil.rmtree(lean4export_tmp_dir)
-
-        lean4export_tmp_dir.mkdir(parents=True, exist_ok=True)
-
-        clone_cmd = ["git", "clone", "--branch", "master",
-                    "https://github.com/leanprover/lean4export",
-                    str(lean4export_tmp_dir)]
-        result = run_cmd(clone_cmd)
-        if result.returncode != 0:
-            print(f"  Error cloning lean4export: {result.stderr}")
-            return None
-
-        # Set the specific toolchain
-        toolchain_file = lean4export_tmp_dir / "lean-toolchain"
-        try:
-            with open(toolchain_file, "w") as f:
-                f.write(toolchain + "\n")
-        except Exception as e:
-            print(f"  Error writing lean-toolchain file: {e}")
-            return None
-
-        print(f"  Building lean4export with toolchain {toolchain}...")
-        result = run_cmd("lake build", cwd=lean4export_tmp_dir, shell=True, print_on_failure=True)
-        if result.returncode != 0:
-            print(f"  Error building lean4export")
-            return None
-
-        # Move temporary directory to final location atomically
-        try:
-            lean4export_tmp_dir.rename(lean4export_dir)
-        except Exception as e:
-            print(f"  Error moving lean4export directory to final location: {e}")
-            return None
-
-    return lean4export_dir
+    @classmethod
+    def parse(cls, name: str, data: dict[str, Any]) -> "Test":
+        return cls(
+            name=name,
+            description=data.get("description"),
+            outcome=data.get("outcome"),
+            compare_perf=bool(data.get("compare-perf")),
+            skip_on_ci=bool(data.get("skip-on-ci")),
+            source=parse_source(data),
+            pre_build=data.get("pre-build"),
+            build=parse_build(name, data),
+        )
 
 
-def load_yaml_files(directory: Path, schema_name: str) -> list[dict]:
-    """Load all YAML files from a directory with schema validation."""
-    items = []
+def derived_version(data: dict[str, Any]) -> str | None:
+    ref = (data.get("ref") or "").strip()
+    rev = (data.get("rev") or "").strip()
+    return f"{ref} ({rev[:7]})" if ref and rev else None
+
+
+@dataclass(frozen=True)
+class Checker:
+    name: str
+    version: str | None
+    description: str | None
+    source: Source | None
+    build: str | None
+    run: str
+    disabled: bool
+    serious: bool
+
+    @classmethod
+    def parse(cls, name: str, data: dict[str, Any]) -> "Checker":
+        return cls(
+            name=name,
+            version=data.get("version") or derived_version(data),
+            description=data.get("description"),
+            source=parse_source(data),
+            build=data.get("build"),
+            run=data["run"],
+            disabled=bool(data.get("disable")),
+            serious=bool(data.get("serious", True)),
+        )
+
+
+def load_schema(schema_name: str) -> dict[str, Any]:
+    return json.loads((PROJECT_ROOT / "schemas" / f"{schema_name}.json").read_text())
+
+
+def validate_config(data: Any, schema_name: str, file_path: Path) -> None:
+    try:
+        jsonschema.validate(data, load_schema(schema_name))
+    except jsonschema.ValidationError as e:
+        location = " -> ".join(str(p) for p in e.absolute_path) or "root"
+        print(f"Schema validation error in {file_path}:")
+        print(f"  Path: {location}")
+        print(f"  Error: {e.message}")
+        print(f"  Expected: {e.validator_value}")
+        print(f"  Found: {e.instance}")
+        sys.exit(1)
+
+
+def load_configs[T](
+    directory: Path,
+    schema_name: str,
+    parse: Callable[[str, dict[str, Any]], T],
+) -> list[T]:
     if not directory.exists():
-        return items
-
-    def _derive_checker_version(config: dict) -> str | None:
-        """Derive a checker version string.
-
-        If the checker YAML omits `version` but has both `ref` and `rev`, use
-        "<ref> (<first 7 of rev>)".
-        """
-        version = config.get("version")
-        if isinstance(version, str) and version.strip():
-            return version
-
-        ref = config.get("ref")
-        rev = config.get("rev")
-        if isinstance(ref, str) and ref.strip() and isinstance(rev, str) and rev.strip():
-            rev_short = rev.strip()[:7]
-            return f"{ref.strip()} ({rev_short})"
-
-        return None
-
-    # Sort files alphabetically to avoid dependency on filesystem order
-    # Search recursively so tests can be organized in subdirectories
+        return []
+    items = []
     for file in sorted(directory.rglob("*.yaml")):
-        with open(file, "r") as f:
-            data = yaml.safe_load(f)
-
-            # Validate against schema before processing
-            validate_yaml_data(data, schema_name, file)
-
-            data["_file"] = file.name
-            # Derive name from relative path (without .yaml extension)
-            # e.g. tests/perf/app-lam.yaml -> "perf/app-lam"
-            data["name"] = str(file.relative_to(directory).with_suffix(""))
-
-            # Backwards-compatible default: derive checker version from ref+rev.
-            if schema_name == "checker" and not data.get("version"):
-                derived_version = _derive_checker_version(data)
-                if derived_version:
-                    data["version"] = derived_version
-
-            items.append(data)
+        data = yaml.safe_load(file.read_text())
+        validate_config(data, schema_name, file)
+        items.append(parse(str(file.relative_to(directory).with_suffix("")), data))
     return items
 
 
-def load_test_descriptions() -> list[dict]:
-    """Load test YAML definitions for accessing descriptions and configuration."""
-    return load_yaml_files(get_project_root() / "tests", "test")
+def load_test_definitions() -> list[Test]:
+    return load_configs(PROJECT_ROOT / "tests", "test", Test.parse)
 
 
-def load_checkers() -> list[dict]:
-    """Load all checker definitions, filtering out disabled ones."""
-    all_checkers = load_yaml_files(get_project_root() / "checkers", "checker")
-    # Filter out disabled checkers
-    return [checker for checker in all_checkers if not checker.get("disable", False)]
+def load_checkers() -> list[Checker]:
+    checkers = load_configs(PROJECT_ROOT / "checkers", "checker", Checker.parse)
+    return [checker for checker in checkers if not checker.disabled]
 
 
-def find_test_by_name(name: str) -> dict | None:
-    """Find a test by name (including expanded subtests)."""
-    results = find_items_by_pattern(name, "tests")
-    return results[0] if results else None
+def matching[T](pattern: str, items: list[T], name: Callable[[T], str]) -> list[T]:
+    if any(char in pattern for char in "*?[]"):
+        return [item for item in items if fnmatch.fnmatch(name(item), pattern)]
+    return [item for item in items if name(item) == pattern]
 
 
-def find_checker_by_name(name: str) -> dict | None:
-    """Find a checker by name."""
-    results = find_items_by_pattern(name, "checkers")
-    return results[0] if results else None
-
-
-def find_items_by_pattern(pattern: str, item_type: str) -> list[dict]:
-    """Find tests or checkers by glob pattern.
-
-    Args:
-        pattern: Name or glob pattern to match against
-        item_type: "tests" or "checkers"
-
-    Returns:
-        List of matching items (tests or checkers)
-    """
-    if item_type == "tests":
-        items = load_tests()
-    elif item_type == "checkers":
-        items = load_checkers()
-    else:
-        raise ValueError(f"Invalid item_type: {item_type}")
-
-    # If pattern contains glob characters, use glob matching
-    if any(char in pattern for char in ['*', '?', '[', ']']):
-        return [item for item in items if fnmatch.fnmatch(item["name"], pattern)]
-    else:
-        # Exact match
-        return [item for item in items if item["name"] == pattern]
-
-
-# =============================================================================
-# Source setup - shared by tests and checkers
-# =============================================================================
-
-
-def setup_source_directory(
-    config: dict,
-    base_dir: Path,
-    local_base_path: Path | None = None,
-) -> Path | None:
-    """Set up a source directory for tests or checkers.
-
-    Handles four cases:
-    - url: Clone a git repository
-    - dir: Use a local directory
-    - leanfile: Set up a standalone Test module from a Lean file
-    - neither: Create an empty directory
-
-    Args:
-        config: Test or checker configuration dict with name, url, dir, ref, rev, leanfile
-        base_dir: Base directory where the work/build directory should be created
-        local_base_path: Base path for local directories (defaults to project root)
-
-    Returns the working directory path, or None on failure.
-    """
-    name = config["name"]
-    url = config.get("url")
-    local_dir = config.get("dir")
-    lean_file_path = config.get("leanfile")
-    ref = config.get("ref")
-    rev = config.get("rev")
-
-    if local_base_path is None:
-        local_base_path = get_project_root()
-
-    work_dir = base_dir / name
-
-    # Clean up existing work directory
+def prepare_source(source: Source | None, work_dir: Path, local_base: Path) -> Path:
     if work_dir.exists():
         shutil.rmtree(work_dir)
-    work_dir.mkdir(parents=True, exist_ok=True)
-
+    work_dir.mkdir(parents=True)
     src_dir = work_dir / "src"
 
-    if url:
-        # Clone from git repository
-        print(f"  Cloning {url}...")
-        clone_cmd = ["git", "clone"]
-        if ref:
-            clone_cmd.extend(["--branch", ref])
-        clone_cmd.extend([url, str(src_dir)])
+    match source:
+        case GitSource(url=url, ref=ref, rev=rev):
+            print(f"  Cloning {url}...")
+            branch = ["--branch", ref] if ref else []
+            run_checked("Clone", ["git", "clone", *branch, url, str(src_dir)])
+            if rev:
+                run_checked("Checkout", ["git", "checkout", rev], cwd=src_dir)
+            return src_dir
+        case LocalSource(path=path):
+            source_dir = local_base / path
+            if not source_dir.exists():
+                msg = f"Source directory not found: {source_dir}"
+                raise BuildError(msg)
+            shutil.copytree(source_dir, src_dir)
+            print(f"  Copied {source_dir} to {src_dir}")
+            return src_dir
+        case None:
+            return work_dir
 
-        result = run_cmd(clone_cmd)
-        if result.returncode != 0:
-            print(f"  Error cloning: {result.stderr}")
+
+def scaffold_lean_module(lean_file: str, src_dir: Path) -> None:
+    source_file = PROJECT_ROOT / lean_file
+    if not source_file.exists():
+        msg = f"Source file not found: {source_file}"
+        raise BuildError(msg)
+
+    toolchain = PROJECT_ROOT / "tests" / "lean-toolchain"
+    if not toolchain.exists():
+        msg = f"No lean-toolchain file found at {toolchain}"
+        raise BuildError(msg)
+
+    src_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy(source_file, src_dir / "Test.lean")
+    shutil.copy(toolchain, src_dir / "lean-toolchain")
+    (src_dir / "lakefile.toml").write_text(
+        'name = "test"\n\n[[lean_lib]]\nname = "Test"\n',
+    )
+    print(f"  Copied {source_file} to {src_dir / 'Test.lean'}")
+
+
+def read_lean_toolchain(directory: Path) -> str:
+    toolchain_file = directory / "lean-toolchain"
+    if not toolchain_file.exists():
+        msg = f"No lean-toolchain found in {directory}"
+        raise BuildError(msg)
+    return toolchain_file.read_text().strip()
+
+
+def setup_lean4export(toolchain: str) -> Path:
+    directory = toolchain.replace("/", "_").replace(":", "_")
+    export_dir = PROJECT_ROOT / "_build" / "lean4export" / directory
+    if export_dir.exists():
+        return export_dir
+
+    print(f"  Cloning lean4export for toolchain {toolchain}...")
+    tmp_dir = export_dir.with_name(export_dir.name + ".tmp")
+    if tmp_dir.exists():
+        shutil.rmtree(tmp_dir)
+    tmp_dir.mkdir(parents=True)
+
+    run_checked(
+        "Cloning lean4export",
+        ["git", "clone", "--branch", "master", LEAN4EXPORT_REPO_URL, str(tmp_dir)],
+    )
+    (tmp_dir / "lean-toolchain").write_text(toolchain + "\n")
+
+    print(f"  Building lean4export with toolchain {toolchain}...")
+    run_checked("Building lean4export", "lake build", cwd=tmp_dir)
+
+    tmp_dir.rename(export_dir)
+    return export_dir
+
+
+def run_lean4export(
+    export_dir: Path,
+    module: str,
+    export_decls: tuple[str, ...],
+    cwd: Path,
+    out_file: Path,
+) -> None:
+    binary = export_dir / ".lake" / "build" / "bin" / "lean4export"
+    if not binary.exists():
+        msg = f"lean4export binary not found at {binary}"
+        raise BuildError(msg)
+
+    cmd = f"lake env {shlex.quote(str(binary))} {shlex.quote(module)}"
+    if export_decls:
+        cmd += " -- " + " ".join(shlex.quote(decl) for decl in export_decls)
+    cmd += f" > {shlex.quote(str(out_file))}"
+    run_checked("Export", cmd, cwd=cwd)
+
+
+@dataclass(frozen=True)
+class SourceLinks:
+    declaration_url: str | None
+    source_url: str | None
+
+
+@dataclass(frozen=True)
+class ExportInfo:
+    lean4export_version: str | None
+    lean_version: str | None
+    lean_githash: str | None
+
+
+@dataclass(frozen=True)
+class BuiltTest:
+    name: str
+    file: Path
+    outcome: Outcome | None
+    size: int
+    lines: int
+    description: str | None
+    compare_perf: bool
+    skip_on_ci: bool
+    yaml_file: str
+    links: SourceLinks
+    export: ExportInfo
+
+    @property
+    def size_str(self) -> str:
+        return format_memory(self.size)
+
+    @property
+    def lines_str(self) -> str:
+        return format_unitless(self.lines)
+
+    @property
+    def description_html(self) -> str:
+        return render_markdown(self.description)
+
+    def to_json(self) -> dict[str, Any]:
+        data = dataclasses.asdict(self)
+        del data["file"]
+        return data
+
+    @classmethod
+    def from_json(cls, data: dict[str, Any], file: Path) -> "BuiltTest":
+        return cls(
+            name=data["name"],
+            file=file,
+            outcome=data["outcome"],
+            size=data["size"],
+            lines=data["lines"],
+            description=data["description"],
+            compare_perf=data["compare_perf"],
+            skip_on_ci=data["skip_on_ci"],
+            yaml_file=data["yaml_file"],
+            links=SourceLinks(**data["links"]),
+            export=ExportInfo(**data["export"]),
+        )
+
+
+def read_export_info(ndjson_file: Path) -> ExportInfo:
+    with open(ndjson_file) as f:
+        first_line = f.readline().strip()
+    try:
+        meta = as_dict(as_dict(json.loads(first_line)).get("meta"))
+    except json.JSONDecodeError:
+        return ExportInfo(None, None, None)
+    lean = as_dict(meta.get("lean"))
+    return ExportInfo(
+        lean4export_version=as_dict(meta.get("exporter")).get("version"),
+        lean_version=lean.get("version"),
+        lean_githash=lean.get("githash"),
+    )
+
+
+def source_url(
+    source: Source | None,
+    lean_file: str | None,
+    directory_prefix: str,
+    git_revision: str,
+) -> str | None:
+    match source:
+        case GitSource(url=url, rev=rev):
+            repo = url.removesuffix(".git")
+            return f"{repo}/tree/{rev}" if rev and "github.com" in repo else url
+        case LocalSource(path=path):
+            return f"{ARENA_REPO_URL}/tree/{git_revision}/{directory_prefix}{path}"
+        case None:
+            if lean_file:
+                return f"{ARENA_REPO_URL}/blob/{git_revision}/{lean_file}"
             return None
 
-        # Checkout specific revision if specified
-        if rev:
-            result = run_cmd(["git", "checkout", rev], cwd=src_dir)
-            if result.returncode != 0:
-                print(f"  Error checking out {rev}: {result.stderr}")
-                return None
 
-        return src_dir
-
-    elif local_dir:
-        # Use a local directory (copy it to work dir)
-        source_dir = local_base_path / local_dir
-        if not source_dir.exists():
-            print(f"  Source directory not found: {source_dir}")
-            return None
-
-        shutil.copytree(source_dir, src_dir)
-        print(f"  Copied {source_dir} to {src_dir}")
-        return src_dir
-
-    elif lean_file_path:
-        # Set up a standalone Test module from a Lean file
-        source_file = get_project_root() / lean_file_path
-        if not source_file.exists():
-            print(f"  Source file not found: {source_file}")
-            return None
-
-        # Create src directory and copy the lean file as Test.lean
-        src_dir.mkdir(parents=True, exist_ok=True)
-        dest_file = src_dir / "Test.lean"
-        shutil.copy(source_file, dest_file)
-        print(f"  Copied {source_file} to {dest_file}")
-
-        # Copy lean-toolchain from tests/ directory to src directory (for consistency with url flow)
-        tests_toolchain = get_project_root() / "tests" / "lean-toolchain"
-        dest_toolchain = src_dir / "lean-toolchain"
-        if tests_toolchain.exists():
-            shutil.copy(tests_toolchain, dest_toolchain)
-            print("  Copied lean-toolchain from tests/ to src directory")
-        else:
-            print("  Warning: No lean-toolchain file found in tests/ directory")
-
-        # Create a trivial lakefile in the src directory
-        lakefile_content = '''name = "test"
-
-[[lean_lib]]
-name = "Test"'''
-        lakefile_path = src_dir / "lakefile.toml"
-        with open(lakefile_path, "w") as f:
-            f.write(lakefile_content)
-        print("  Created trivial lakefile")
-
-        return src_dir
-
-    else:
-        # Empty directory
-        src_dir.mkdir(parents=True, exist_ok=True)
-        return src_dir
+def source_links(
+    name: str,
+    config_type: str,
+    source: Source | None,
+    lean_file: str | None,
+    git_revision: str | None,
+) -> SourceLinks:
+    if git_revision is None:
+        return SourceLinks(None, None)
+    prefix = "checkers/" if config_type == "checkers" else ""
+    return SourceLinks(
+        declaration_url=f"{ARENA_REPO_URL}/blob/{git_revision}/{config_type}/{name}.yaml",
+        source_url=source_url(source, lean_file, prefix, git_revision),
+    )
 
 
-# =============================================================================
-# build-test command
-# =============================================================================
+def test_source_links(test: Test, git_revision: str | None) -> SourceLinks:
+    lean_file = test.build.path if isinstance(test.build, LeanFileExport) else None
+    return source_links(test.name, "tests", test.source, lean_file, git_revision)
 
 
-def _gather_ndjson_stats(ndjson_file: Path) -> dict:
-    """Gather size, line count, and metadata from an NDJSON file."""
-    file_size = ndjson_file.stat().st_size
-    with open(ndjson_file, "r") as f:
-        line_count = sum(1 for _ in f)
-    metadata = extract_ndjson_metadata(ndjson_file)
-    return {
-        "size": file_size,
-        "size_str": format_memory(file_size),
-        "lines": line_count,
-        "lines_str": format_unitless(line_count),
-        **metadata,
-    }
+@dataclass(frozen=True)
+class BuildInfo:
+    timestamp: str
+    git_revision: str | None
+    git_revision_short: str | None
+    github_url: str | None
+    github_run_id: str | None
+    github_action_url: str | None
 
 
-def create_test(test: dict, output_dir: Path) -> bool:
-    """Create a single test."""
-    name = test["name"]
-    module = test.get("module")
-    run_cmd_str = test.get("run")
-    file_path = test.get("file")
-    lean_file_path = test.get("leanfile")
-    export_decls = test.get("export-decls")
-    pre_build = test.get("pre-build")
-    multiple = test.get("multiple", False)
+def github_commit_url(remote_url: str, git_revision: str) -> str | None:
+    if "github.com" not in remote_url:
+        return None
+    repo = remote_url.removesuffix(".git")
+    repo = (
+        repo.split(":")[-1]
+        if repo.startswith("git@")
+        else repo.split("github.com/")[-1]
+    )
+    return f"https://github.com/{repo}/commit/{git_revision}"
 
-    # Determine test type based on fields present
-    if module:
-        test_type = "module"
-    elif run_cmd_str:
-        test_type = "run"
-    elif lean_file_path:
-        test_type = "leanfile"
-    elif file_path:
-        test_type = "file"
-    else:
-        print(f"  Error: Test {name} must have 'module', 'run', 'leanfile', or 'file' field")
-        return False
 
-    # Validate multiple flag
-    if multiple and test_type != "run":
-        print(f"  Error: Test {name} uses 'multiple' flag but this is only valid with 'run' field")
-        return False
+@functools.cache
+def get_build_metadata() -> BuildInfo:
+    revision = run_cmd(["git", "rev-parse", "HEAD"])
+    git_revision = revision.stdout.strip() if revision.returncode == 0 else None
 
-    print(f"Creating test: {name} (type: {test_type}{'multiple' if multiple else ''})")
+    github_url = None
+    if git_revision:
+        remote = run_cmd(["git", "remote", "get-url", "origin"])
+        if remote.returncode == 0:
+            github_url = github_commit_url(remote.stdout.strip(), git_revision)
+
+    server = os.environ.get("GITHUB_SERVER_URL")
+    repository = os.environ.get("GITHUB_REPOSITORY")
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    action_url = (
+        f"{server}/{repository}/actions/runs/{run_id}"
+        if server and repository and run_id
+        else None
+    )
+
+    return BuildInfo(
+        timestamp=datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S UTC"),
+        git_revision=git_revision,
+        git_revision_short=git_revision[:8] if git_revision else None,
+        github_url=github_url,
+        github_run_id=run_id if action_url else None,
+        github_action_url=action_url,
+    )
+
+
+def prepare_test_work_dir(test: Test, work_base: Path) -> Path:
+    src_dir = prepare_source(test.source, work_base / test.name, PROJECT_ROOT)
+    if isinstance(test.build, LeanFileExport):
+        scaffold_lean_module(test.build.path, src_dir)
+    if test.pre_build:
+        print(f"  Running pre-build: {test.pre_build}")
+        run_checked("Pre-build", test.pre_build, cwd=src_dir)
+    return src_dir
+
+
+def export_test_module(
+    test: Test,
+    build: LeanFileExport | ModuleExport,
+    work_base: Path,
+    out_file: Path,
+) -> None:
+    src_dir = prepare_test_work_dir(test, work_base)
+    export_dir = setup_lean4export(read_lean_toolchain(src_dir))
+    module = "Test" if isinstance(build, LeanFileExport) else build.module
+
+    print(f"  Building module {module}...")
+    run_checked("Build", f"lake build {shlex.quote(module)}", cwd=src_dir)
+
+    decls = f" ({', '.join(build.export_decls)})" if build.export_decls else ""
+    print(f"  Exporting module {module}{decls}...")
+    run_lean4export(export_dir, module, build.export_decls, src_dir, out_file)
+
+
+def run_test_script(test: Test, command: str, work_base: Path, out: Path) -> None:
+    src_dir = prepare_test_work_dir(test, work_base)
+    print(f"  Running: {command}")
+    run_checked("Script", command, cwd=src_dir, env=os.environ | {"OUT": str(out)})
+
+
+def produce_ndjson(test: Test, work_base: Path, out_file: Path) -> None:
+    match test.build:
+        case StaticFile(path=path):
+            source_file = PROJECT_ROOT / path
+            if not source_file.exists():
+                msg = f"Source file not found: {source_file}"
+                raise BuildError(msg)
+            shutil.copy(source_file, out_file)
+            print(f"  Copied {source_file}")
+        case LeanFileExport() | ModuleExport():
+            export_test_module(test, test.build, work_base, out_file)
+        case RunScript(command=command):
+            run_test_script(test, command, work_base, out_file)
+
+
+def built_test(
+    test: Test,
+    name: str,
+    ndjson_file: Path,
+    outcome: Outcome | None,
+    description: str | None,
+) -> BuiltTest:
+    with open(ndjson_file) as f:
+        lines = sum(1 for _ in f)
+    return BuiltTest(
+        name=name,
+        file=ndjson_file,
+        outcome=outcome,
+        size=ndjson_file.stat().st_size,
+        lines=lines,
+        description=description,
+        compare_perf=test.compare_perf,
+        skip_on_ci=test.skip_on_ci,
+        yaml_file=test.yaml_file,
+        links=test_source_links(test, get_build_metadata().git_revision),
+        export=read_export_info(ndjson_file),
+    )
+
+
+def write_json(path: Path, data: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def create_single_test(test: Test, output_dir: Path) -> None:
+    output_file = output_dir / f"{test.name}.ndjson"
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    tmp_file = output_file.with_name(output_file.name + ".tmp")
+
+    produce_ndjson(test, output_dir / "work", tmp_file)
+    tmp_file.rename(output_file)
+
+    stats = built_test(test, test.name, output_file, test.outcome, test.description)
+    print(f"  Created {output_file} ({stats.size_str}, {stats.lines_str} lines)")
+    write_json(output_dir / f"{test.name}.stats.json", stats.to_json())
+
+
+def subtest_description(info_file: Path) -> str | None:
+    if not info_file.exists():
+        return None
+    try:
+        return as_dict(json.loads(info_file.read_text())).get("description")
+    except json.JSONDecodeError as e:
+        print(f"  Warning: Could not read {info_file}: {e}")
+        return None
+
+
+def create_multiple_tests(test: Test, command: str, output_dir: Path) -> None:
+    final_dir = output_dir / test.name
+    tmp_dir = output_dir / f"{test.name}.tmp"
+    if tmp_dir.exists():
+        shutil.rmtree(tmp_dir)
+    tmp_dir.mkdir(parents=True)
+
+    run_test_script(test, command, output_dir / "work", tmp_dir)
+
+    outcomes: list[tuple[Path, Outcome]] = [
+        (tmp_dir / "good", "accept"),
+        (tmp_dir / "bad", "reject"),
+    ]
+    subtests = [
+        (ndjson_file, outcome)
+        for directory, outcome in outcomes
+        if directory.exists()
+        for ndjson_file in sorted(directory.glob("*.ndjson"))
+    ]
+    if not subtests:
+        msg = f"No .ndjson files found in {tmp_dir}/good/ or {tmp_dir}/bad/"
+        raise BuildError(msg)
+
+    for ndjson_file, outcome in subtests:
+        stats = built_test(
+            test,
+            f"{test.name}/{ndjson_file.stem}",
+            ndjson_file,
+            outcome,
+            subtest_description(ndjson_file.with_suffix(".info.json")),
+        )
+        write_json(ndjson_file.with_suffix(".stats.json"), stats.to_json())
+
+    if final_dir.exists():
+        shutil.rmtree(final_dir)
+    tmp_dir.rename(final_dir)
+    print(f"  Created {len(subtests)} subtests in {final_dir}")
+
+
+def create_test(test: Test, output_dir: Path) -> None:
+    print(f"Creating test: {test.name} ({type(test.build).__name__})")
     output_dir.mkdir(parents=True, exist_ok=True)
+    match test.build:
+        case RunScript(command=command, multiple=True):
+            create_multiple_tests(test, command, output_dir)
+        case _:
+            create_single_test(test, output_dir)
 
-    if multiple:
-        # For multiple tests, output directory is testname/ instead of testname.ndjson
-        final_output_dir = output_dir / name
-        tmp_output_dir = output_dir / f"{name}.tmp"
-    else:
-        # Regular single test
-        output_file = output_dir / f"{name}.ndjson"
-        tmp_file = output_dir / f"{name}.ndjson.tmp"
-        # Ensure parent directories exist (for tests in subdirectories like perf/)
-        output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    # Produce .ndjson file(s) based on test type
-    if file_path:
-        # Static file case (no work directory needed)
-        if multiple:
-            print(f"  Error: Test {name} cannot use 'multiple' flag with static file")
-            return False
-        source_file = get_project_root() / file_path
-        if not source_file.exists():
-            print(f"  Source file not found: {source_file}")
-            return False
-        shutil.copy(source_file, tmp_file)
-        print(f"  Copied {source_file}")
-
-    elif module or lean_file_path:
-        # Both module and leanfile variants use lean4export workflow
-        # leanfile is treated like module with hardcoded module name "Test"
-        work_dir = setup_source_directory(test, output_dir / "work")
-        if work_dir is None:
-            return False
-
-        # Get the toolchain from the src directory (consistent for both leanfile and module tests)
-        toolchain = get_lean_toolchain(work_dir)
-
-        if not toolchain:
-            print(f"  Error: No lean-toolchain found in {work_dir}")
-            return False
-
-        # Set up lean4export for this specific toolchain
-        lean4export_dir = setup_lean4export(toolchain)
-        if lean4export_dir is None:
-            return False
-
-        # Run pre-build command if specified
-        if pre_build:
-            print(f"  Running pre-build: {pre_build}")
-            result = run_cmd(pre_build, cwd=work_dir, shell=True, print_on_failure=True)
-            if result.returncode != 0:
-                print(f"  Pre-build failed")
-                return False
-
-        build_dir = work_dir
-
-        # Determine module name
-        if lean_file_path:
-            module_name = "Test"
-        else:
-            module_name = module
-
-        # Build the module
-        print(f"  Building module {module_name}...")
-        result = run_cmd(f"lake build {module_name}", cwd=build_dir, shell=True, print_on_failure=True)
-        if result.returncode != 0:
-            print(f"  Build failed")
-            return False
-
-        # Export using lean4export
-        if export_decls and not isinstance(export_decls, list):
-            print("  Error: export-decls must be a list of strings")
-            return False
-
-        if export_decls:
-            decls_str = ", ".join(export_decls)
-            print(f"  Exporting module {module_name} ({decls_str})...")
-        else:
-            print(f"  Exporting module {module_name} ...")
-
-        if not run_lean4export(lean4export_dir, module_name, export_decls, cwd=build_dir, out_file=tmp_file):
-            return False
-
-    elif run_cmd_str:
-        # Set up work directory (url, dir, or empty)
-        work_dir = setup_source_directory(test, output_dir / "work")
-        if work_dir is None:
-            return False
-
-        # Run pre-build command if specified
-        if pre_build:
-            print(f"  Running pre-build: {pre_build}")
-            result = run_cmd(pre_build, cwd=work_dir, shell=True, print_on_failure=True)
-            if result.returncode != 0:
-                print(f"  Pre-build failed")
-                return False
-
-        # Run the script with $OUT environment variable
-        print(f"  Running: {run_cmd_str}")
-        env = os.environ.copy()
-
-        if multiple:
-            # For multiple tests, $OUT points to a temporary directory
-            tmp_output_dir.mkdir(parents=True, exist_ok=True)
-            env["OUT"] = str(tmp_output_dir)
-        else:
-            # For single tests, $OUT points to the output file
-            env["OUT"] = str(tmp_file)
-
-        result = run_cmd(run_cmd_str, cwd=work_dir, shell=True, env=env, print_on_failure=True)
-        if result.returncode != 0:
-            print(f"  Script failed")
-            return False
-
-    if multiple:
-        # For multiple tests, validate directory structure
-        if not tmp_output_dir.exists():
-            print(f"  Error: Script did not create output directory {tmp_output_dir}")
-            return False
-
-        # Check that we have good/ and/or bad/ subdirectories with .ndjson files
-        good_dir = tmp_output_dir / "good"
-        bad_dir = tmp_output_dir / "bad"
-
-        subtests_found = []
-        if good_dir.exists():
-            # Sort files alphabetically to avoid dependency on filesystem order
-            for ndjson_file in sorted(good_dir.glob("*.ndjson")):
-                subtest_name = ndjson_file.stem
-                subtests_found.append((subtest_name, "good"))
-
-        if bad_dir.exists():
-            # Sort files alphabetically to avoid dependency on filesystem order
-            for ndjson_file in sorted(bad_dir.glob("*.ndjson")):
-                subtest_name = ndjson_file.stem
-                subtests_found.append((subtest_name, "bad"))
-
-        if not subtests_found:
-            print(f"  Error: No .ndjson files found in {tmp_output_dir}/good/ or {tmp_output_dir}/bad/")
-            return False
-
-        # Generate stats for each subtest
-        build_info = get_build_metadata()
-        for subtest_name, outcome in subtests_found:
-            subtest_file = tmp_output_dir / outcome / f"{subtest_name}.ndjson"
-
-            stats = _gather_ndjson_stats(subtest_file)
-            stats["name"] = f"{name}/{subtest_name}"
-            stats["outcome"] = "accept" if outcome == "good" else "reject"
-            stats["yaml_file"] = f"tests/{name}.yaml"
-
-            # Generate and store source links from parent test
-            stats.update(generate_source_links(test, "tests", build_info.get("git_revision")))
-
-            # Check for subtest-name.info.json file with description
-            info_file = tmp_output_dir / outcome / f"{subtest_name}.info.json"
-            if info_file.exists():
-                try:
-                    with open(info_file, "r") as f:
-                        info_data = json.load(f)
-                    if "description" in info_data:
-                        stats["description"] = info_data["description"]
-                except Exception as e:
-                    print(f"  Warning: Could not read {info_file}: {e}")
-
-            stats_file = tmp_output_dir / outcome / f"{subtest_name}.stats.json"
-            with open(stats_file, "w") as f:
-                json.dump(stats, f, indent=2)
-
-        # Move to final location after writing statistics
-        if final_output_dir.exists():
-            shutil.rmtree(final_output_dir)
-        tmp_output_dir.rename(final_output_dir)
-
-        print(f"  Created {len(subtests_found)} subtests in {final_output_dir}")
-        return True
-
-    else:
-        # Single test: move tmp file to final location and gather stats
-        tmp_file.rename(output_file)
-
-        stats = _gather_ndjson_stats(output_file)
-        stats["name"] = name
-        stats["yaml_file"] = f"tests/{name}.yaml"
-        stats["outcome"] = test.get("outcome")
-
-        print(f"  Created {output_file} ({stats['size_str']}, {stats['lines_str']} lines)")
-
-        # Add description from YAML if present
-        if test.get("description"):
-            stats["description"] = test["description"]
-
-        # Add compare-perf field if present
-        if test.get("compare-perf"):
-            stats["compare-perf"] = test["compare-perf"]
-
-        # Add skip-on-ci field if present
-        if test.get("skip-on-ci"):
-            stats["skip-on-ci"] = test["skip-on-ci"]
-
-        # Generate and store source links
-        build_info = get_build_metadata()
-        stats.update(generate_source_links(test, "tests", build_info.get("git_revision")))
-
-        stats_file = output_dir / f"{name}.stats.json"
-        with open(stats_file, "w") as f:
-            json.dump(stats, f, indent=2)
-
-        return True
+def report_totals(succeeded: int, failed: int) -> int:
+    print(f"\nResults: {succeeded} succeeded, {failed} failed")
+    return 0 if failed == 0 else 1
 
 
 def cmd_build_test(args: argparse.Namespace) -> int:
-    """Handle the build-test command."""
-    output_dir = get_project_root() / "_build" / "tests"
+    output_dir = PROJECT_ROOT / "_build" / "tests"
+    tests = load_test_definitions()
 
     if args.name:
-        # For building, we need to find from base tests, not expanded tests
-        base_tests = load_test_descriptions()
-        # Use pattern matching on test descriptions
-        if any(char in args.name for char in ['*', '?', '[', ']']):
-            tests = [test for test in base_tests if fnmatch.fnmatch(test["name"], args.name)]
-        else:
-            tests = [test for test in base_tests if test["name"] == args.name]
-
+        tests = matching(args.name, tests, lambda test: test.name)
         if not tests:
             print(f"No tests found matching pattern: {args.name}")
             return 1
-    else:
-        tests = load_test_descriptions()
 
-    # Filter out tests marked with skip-on-ci
     if args.skip_ci:
-        original_count = len(tests)
-        tests = [test for test in tests if not test.get("skip-on-ci", False)]
-        skipped_count = original_count - len(tests)
-        if skipped_count > 0:
-            print(f"Skipping {skipped_count} test(s) due to --skip-ci flag")
+        selected = [test for test in tests if not test.skip_on_ci]
+        if len(selected) < len(tests):
+            print(
+                f"Skipping {len(tests) - len(selected)} test(s) due to --skip-ci flag"
+            )
+        tests = selected
 
     if not tests:
         print("No tests found.")
         return 0
 
-    success = 0
+    succeeded = 0
     failed = 0
     for test in tests:
-        if create_test(test, output_dir):
-            success += 1
-        else:
+        try:
+            create_test(test, output_dir)
+            succeeded += 1
+        except BuildError as e:
+            print(f"  Error: {e}")
             failed += 1
-
-    print(f"\nResults: {success} succeeded, {failed} failed")
-    return 0 if failed == 0 else 1
+    return report_totals(succeeded, failed)
 
 
-# =============================================================================
-# build-checker command
-# =============================================================================
+def checker_work_dir(checker: Checker, build_dir: Path) -> Path:
+    root = build_dir / checker.name
+    return root / "src" if checker.source else root
 
 
-def build_checker(checker: dict, build_dir: Path) -> bool:
-    """Build a single checker."""
-    name = checker["name"]
-    version = checker.get("version", "unknown")
-    build_cmd = checker.get("build")
+def build_checker(checker: Checker, build_dir: Path) -> None:
+    print(f"Building checker: {checker.name} (version: {checker.version})")
+    local_base = PROJECT_ROOT / "checkers"
+    work_dir = prepare_source(checker.source, build_dir / checker.name, local_base)
 
-    print(f"Building checker: {name} (version: {version})")
+    if checker.build:
+        separator = "\n    " if "\n" in checker.build else " "
+        print(
+            f"  Building:{separator}{separator.join(checker.build.strip().splitlines())}"
+        )
+        run_checked("Build", checker.build, cwd=work_dir)
 
-    # Set up source directory (for checkers, local dirs are relative to checkers/ subfolder)
-    local_base_path = get_project_root() / "checkers" if checker.get("dir") else get_project_root()
-    work_dir = setup_source_directory(checker, build_dir, local_base_path)
-    if work_dir is None:
-        return False
-
-    # Determine the actual working directory for build commands
-    if checker.get("url") or checker.get("dir"):
-        # Git repos and local dirs are copied to src/ subdirectory
-        actual_work_dir = work_dir
-    else:
-        # Empty directory case - use the checker directory directly
-        actual_work_dir = build_dir / name
-
-    # Run build command if specified
-    if build_cmd:
-        # Format the build command for display
-        if '\n' in build_cmd:
-            # Multi-line command: indent each line
-            lines = build_cmd.strip().split('\n')
-            formatted_cmd = '\n    '.join(lines)
-            print(f"  Building:\n    {formatted_cmd}")
-        else:
-            # Single-line command
-            print(f"  Building: {build_cmd}")
-
-        result = run_cmd(build_cmd, cwd=actual_work_dir, shell=True, print_on_failure=True)
-        if result.returncode != 0:
-            print(f"  Build failed")
-            return False
-
-    print(f"  Checker {name} built successfully")
-    return True
+    print(f"  Checker {checker.name} built successfully")
 
 
 def cmd_build_checker(args: argparse.Namespace) -> int:
-    """Handle the build-checker command."""
-    build_dir = get_project_root() / "_build" / "checkers"
+    build_dir = PROJECT_ROOT / "_build" / "checkers"
+    checkers = load_checkers()
 
     if args.name:
-        checkers = find_items_by_pattern(args.name, "checkers")
+        checkers = matching(args.name, checkers, lambda checker: checker.name)
         if not checkers:
             print(f"No checkers found matching pattern: {args.name}")
             return 1
-    else:
-        checkers = load_checkers()
 
     if not checkers:
         print("No checkers found.")
         return 0
 
-    success = 0
+    succeeded = 0
     failed = 0
     for checker in checkers:
-        if build_checker(checker, build_dir):
-            success += 1
-        else:
+        try:
+            build_checker(checker, build_dir)
+            succeeded += 1
+        except BuildError as e:
+            print(f"  Error: {e}")
             failed += 1
-
-    print(f"\nResults: {success} succeeded, {failed} failed")
-    return 0 if failed == 0 else 1
+    return report_totals(succeeded, failed)
 
 
-# =============================================================================
-# run command
-# =============================================================================
+@dataclass(frozen=True)
+class Result:
+    checker: str
+    test: str
+    status: Status
+    correctness: Correctness
+    exit_code: int
+    wall_time: float
+    cpu_time: float
+    max_rss: int
+    instructions: int
+    stdout: str
+    stderr: str
+
+    @property
+    def virtual_cpu_time(self) -> float:
+        if self.instructions > 0:
+            return self.instructions / INSTRUCTIONS_PER_SECOND
+        return self.cpu_time
+
+    @classmethod
+    def from_json(cls, data: dict[str, Any]) -> "Result":
+        return cls(
+            checker=data["checker"],
+            test=data["test"],
+            status=data["status"],
+            correctness=data["correctness"],
+            exit_code=data["exit_code"],
+            wall_time=data["wall_time"],
+            cpu_time=data["cpu_time"],
+            max_rss=data["max_rss"],
+            instructions=data["instructions"],
+            stdout=data["stdout"],
+            stderr=data["stderr"],
+        )
 
 
-def run_checker_on_test(checker: dict, test: dict, build_dir: Path, tests_dir: Path, results_dir: Path) -> dict:
-    """Run a checker on a test and return the result."""
-    checker_name = checker["name"]
-    test_name = test["name"]
-    checker_run_cmd = checker["run"]
+def exit_code_status(exit_code: int) -> Status:
+    match exit_code:
+        case 0:
+            return "accepted"
+        case 1:
+            return "rejected"
+        case 2:
+            return "declined"
+        case _:
+            return "error"
 
-    # Use the file path stored in the test dict
-    test_file = test["file"]
 
-    if not test_file.exists():
-        result_data = {
-            "checker": checker_name,
-            "test": test_name,
-            "status": "error",
-            "correctness": "error",
-            "message": f"Test file not found: {test_file}",
-            "exit_code": -1,
-            "wall_time": 0,
-            "cpu_time": 0,
-            "max_rss": 0,
-            "instructions": 0,
-            "stdout": "",
-            "stderr": "",
-        }
-        # Write result to JSON file (replace "/" with "_" for valid filename)
-        results_dir.mkdir(parents=True, exist_ok=True)
-        safe_test_name = test_name.replace("/", "_")
-        result_file = results_dir / f"{checker_name}_{safe_test_name}.json"
-        with open(result_file, "w") as f:
-            json.dump(result_data, f, indent=2)
-        return result_data
+def judge(status: Status, expected: Outcome | None) -> Correctness:
+    match status:
+        case "declined" | "error":
+            return status
+        case "accepted":
+            return "correct" if expected == "accept" else "incorrect"
+        case "rejected":
+            return "correct" if expected == "reject" else "incorrect"
 
-    # Determine working directory
-    checker_dir = build_dir / checker_name
-    if checker.get("url") or checker.get("dir"):
-        work_dir = checker_dir / "src"
+
+def run_checker_on_test(
+    checker: Checker,
+    test: BuiltTest,
+    build_dir: Path,
+    results_dir: Path,
+) -> Result:
+    if not test.file.exists():
+        result = Result(
+            checker=checker.name,
+            test=test.name,
+            status="error",
+            correctness="error",
+            exit_code=-1,
+            wall_time=0.0,
+            cpu_time=0.0,
+            max_rss=0,
+            instructions=0,
+            stdout="",
+            stderr=f"Test file not found: {test.file}",
+        )
     else:
-        work_dir = checker_dir
+        work_dir = checker_work_dir(checker, build_dir)
+        work_dir.mkdir(parents=True, exist_ok=True)
+        command = run_cmd(
+            checker.run,
+            cwd=work_dir,
+            env=os.environ | {"IN": str(test.file)},
+            measure_perf=True,
+        )
+        status = exit_code_status(command.returncode)
+        result = Result(
+            checker=checker.name,
+            test=test.name,
+            status=status,
+            correctness=judge(status, test.outcome),
+            exit_code=command.returncode,
+            wall_time=command.metrics.wall_time,
+            cpu_time=command.metrics.cpu_time,
+            max_rss=command.metrics.max_rss,
+            instructions=command.metrics.instructions,
+            stdout=command.stdout,
+            stderr=command.stderr,
+        )
 
-    work_dir.mkdir(parents=True, exist_ok=True)
+    safe_test_name = test.name.replace("/", "_")
+    write_json(
+        results_dir / f"{checker.name}_{safe_test_name}.json",
+        dataclasses.asdict(result),
+    )
+    return result
 
-    # Run the checker and track detailed performance metrics
-    # Set up environment with IN variable pointing to test file
-    env = os.environ.copy()
-    env["IN"] = str(test_file)
 
-    result = run_cmd(checker_run_cmd, cwd=work_dir, shell=True, env=env, measure_perf=True)
+def load_built_tests() -> list[BuiltTest]:
+    build_tests_dir = PROJECT_ROOT / "_build" / "tests"
+    if not build_tests_dir.exists():
+        return []
 
-    exit_code = result.returncode
-    if exit_code == 0:
-        status = "accepted"
-    elif exit_code == 1:
-        status = "rejected"
-    elif exit_code == 2:
-        status = "declined"
-    else:
-        status = "error"
+    tests = []
+    for stats_file in sorted(build_tests_dir.rglob("*.stats.json")):
+        ndjson_file = stats_file.with_name(
+            stats_file.name.removesuffix(".stats.json") + ".ndjson",
+        )
+        if not ndjson_file.exists():
+            print(f"Warning: No corresponding .ndjson file for {stats_file}")
+            continue
+        tests.append(
+            BuiltTest.from_json(json.loads(stats_file.read_text()), ndjson_file),
+        )
 
-    # Determine correctness based on expected outcome
-    expected_outcome = test.get("outcome")
-    if status == "declined":
-        correctness = "declined"
-    elif status == "error":
-        correctness = "error"
-    elif expected_outcome == "accept" and status == "accepted":
-        correctness = "correct"
-    elif expected_outcome == "reject" and status == "rejected":
-        correctness = "correct"
-    else:
-        correctness = "incorrect"
+    tests.sort(key=lambda test: test.name)
+    return tests
 
-    result_data = {
-        "checker": checker_name,
-        "test": test_name,
-        "status": status,
-        "correctness": correctness,
-        "exit_code": exit_code,
-        "wall_time": result.wall_time,
-        "cpu_time": result.cpu_time,
-        "max_rss": result.max_rss,
-        "instructions": getattr(result, 'instructions', 0),
-        "stdout": result.stdout,
-        "stderr": result.stderr,
-    }
 
-    # Write result to JSON file (replace "/" with "_" for valid filename)
-    results_dir.mkdir(parents=True, exist_ok=True)
-    safe_test_name = test_name.replace("/", "_")
-    result_file = results_dir / f"{checker_name}_{safe_test_name}.json"
-    with open(result_file, "w") as f:
-        json.dump(result_data, f, indent=2)
-
-    return result_data
+def load_results() -> dict[tuple[str, str], Result]:
+    results_dir = PROJECT_ROOT / "_results"
+    if not results_dir.exists():
+        return {}
+    results = {}
+    for file in sorted(results_dir.glob("*.json")):
+        result = Result.from_json(json.loads(file.read_text()))
+        results[result.checker, result.test] = result
+    return results
 
 
 def cmd_run_checker(args: argparse.Namespace) -> int:
-    """Handle the run command."""
-    build_dir = get_project_root() / "_build" / "checkers"
-    tests_dir = get_project_root() / "_build" / "tests"
-    results_dir = get_project_root() / "_results"
+    build_dir = PROJECT_ROOT / "_build" / "checkers"
+    results_dir = PROJECT_ROOT / "_results"
+    results_dir.mkdir(parents=True, exist_ok=True)
 
-    # Determine which checkers to run
+    checkers = load_checkers()
     if args.checker:
-        checkers = find_items_by_pattern(args.checker, "checkers")
+        checkers = matching(args.checker, checkers, lambda checker: checker.name)
         if not checkers:
             print(f"No checkers found matching pattern: {args.checker}")
             return 1
     else:
-        checkers = load_checkers()
-        # Filter out checkers that weren't built (no build directory exists)
-        built_checkers = []
-        skipped_checker_names = []
-        for checker in checkers:
-            checker_dir = build_dir / checker["name"]
-            if checker_dir.exists():
-                built_checkers.append(checker)
-            else:
-                skipped_checker_names.append(checker["name"])
-        checkers = built_checkers
-        if skipped_checker_names:
-            print(f"Skipping {len(skipped_checker_names)} checker(s) that weren't built: {', '.join(skipped_checker_names)}")
+        unbuilt = [c.name for c in checkers if not (build_dir / c.name).exists()]
+        checkers = [c for c in checkers if (build_dir / c.name).exists()]
+        if unbuilt:
+            print(
+                f"Skipping {len(unbuilt)} checker(s) that weren't built: "
+                f"{', '.join(unbuilt)}",
+            )
 
-    # Determine which tests to run
+    tests = load_built_tests()
     if args.test:
-        tests = find_items_by_pattern(args.test, "tests")
+        tests = matching(args.test, tests, lambda test: test.name)
         if not tests:
             print(f"No tests found matching pattern: {args.test}")
             return 1
-    else:
-        # Load all built tests
-        tests = load_tests()
 
     if not checkers:
         print("No built checkers found.")
         return 0
-
     if not tests:
         print("No built tests found.")
         return 0
@@ -1306,578 +1171,323 @@ def cmd_run_checker(args: argparse.Namespace) -> int:
     results = []
     for checker in checkers:
         for test in tests:
-            print(f"Running {checker['name']} on {test['name']}...", end="\n" if VERBOSE else " ")
-            result = run_checker_on_test(checker, test, build_dir, tests_dir, results_dir)
+            print(
+                f"Running {checker.name} on {test.name}...",
+                end="\n" if VERBOSE else " ",
+            )
+            result = run_checker_on_test(checker, test, build_dir, results_dir)
             results.append(result)
-            
-            # Choose emoji based on status
-            status = result.get('status', 'error')
-            if status == 'accepted':
-                status_emoji = '👍'
-            elif status == 'rejected':
-                status_emoji = '👎'
-            elif status == 'declined':
-                status_emoji = '⊘'
-            else:  # error
-                status_emoji = '⚠️'
-            
-            # Choose emoji based on correctness
-            correctness = result.get('correctness', 'error')
-            if correctness == 'correct':
-                correctness_emoji = '✅'
-            elif correctness == 'incorrect':
-                correctness_emoji = '❌'
-            elif correctness == 'declined':
-                correctness_emoji = '⊘'
-            else:  # error
-                correctness_emoji = '⚠️'
-            
-            print(f"[{status_emoji} {correctness_emoji} {format_duration(result['wall_time'])}]")
+            print(
+                f"[{status_symbol(result.status)} "
+                f"{correctness_symbol(result.correctness)} "
+                f"{format_duration(result.wall_time)}]",
+            )
 
-    # Summary
     print("\n" + "=" * 60)
     print("Summary:")
     print("=" * 60)
-
-    correctness_counts = {"correct": 0, "incorrect": 0, "declined": 0, "error": 0}
-    for r in results:
-        correctness = r.get("correctness", "error")
-        correctness_counts[correctness] = correctness_counts.get(correctness, 0) + 1
-
-    # Print in order: correct, incorrect, declined, error
-    for correctness in ["correct", "incorrect", "declined", "error"]:
-        count = correctness_counts.get(correctness, 0)
+    for correctness in ("correct", "incorrect", "declined", "error"):
+        count = sum(1 for result in results if result.correctness == correctness)
         if count > 0:
-            if correctness == "correct":
-                emoji = "✅"
-            elif correctness == "incorrect":
-                emoji = "❌"
-            elif correctness == "declined":
-                emoji = "⊘"
-            else:  # error
-                emoji = "⚠️"
-            print(f"  {correctness}: {count} {emoji}")
+            print(f"  {correctness}: {count} {correctness_symbol(correctness)}")
 
     return 0
 
 
-# =============================================================================
-# build-site command
-# =============================================================================
+@dataclass(frozen=True)
+class CheckerStats:
+    accept_correct: int
+    accept_total: int
+    reject_correct: int
+    reject_total: int
+    declined_count: int
+    mathlib: Result | None
+
+    @property
+    def mathlib_instructions(self) -> int:
+        return self.mathlib.instructions if self.mathlib else 0
+
+    @property
+    def mathlib_virtual_cpu_time(self) -> float | None:
+        return self.mathlib.virtual_cpu_time if self.mathlib else None
+
+    @property
+    def mathlib_max_rss(self) -> int | None:
+        return self.mathlib.max_rss if self.mathlib else None
 
 
-def load_results() -> dict:
-    """Load all result JSON files from _results directory.
-
-    Returns a dict keyed by (checker_name, test_name) tuples.
-    """
-    results = {}
-    results_dir = get_project_root() / "_results"
-    if not results_dir.exists():
-        return results
-
-    # Sort files alphabetically to avoid dependency on filesystem order
-    for file in sorted(results_dir.glob("*.json")):
-        with open(file, "r") as f:
-            data = json.load(f)
-            key = (data["checker"], data["test"])
-            results[key] = data
-
-    return results
+@dataclass(frozen=True)
+class CheckerReport:
+    name: str
+    version: str | None
+    description_html: str
+    serious: bool
+    links: SourceLinks
+    stats: CheckerStats
 
 
-def load_tests() -> list[dict]:
-    """Load all built tests by recursively finding .stats.json files.
-
-    Returns a list of test dictionaries with all data from the stats files.
-    Only returns tests that have been successfully built.
-    """
-    tests = []
-    build_tests_dir = get_project_root() / "_build" / "tests"
-
-    if not build_tests_dir.exists():
-        return tests
-
-    # Recursively find all .stats.json files, sorted alphabetically
-    for stats_file in sorted(build_tests_dir.rglob("*.stats.json")):
-        try:
-            with open(stats_file, "r") as f:
-                test_data = json.load(f)
-
-            # Determine the corresponding .ndjson file path based on stats file location
-            ndjson_file = stats_file.parent / (stats_file.stem.replace('.stats', '') + '.ndjson')
-            if ndjson_file.exists():
-                # Add the file path that callers expect
-                test_data["file"] = ndjson_file
-                tests.append(test_data)
-            else:
-                print(f"Warning: No corresponding .ndjson file for {stats_file}")
-
-        except Exception as e:
-            print(f"Warning: Could not read stats file {stats_file}: {e}")
-
-    tests.sort(key=lambda t: t["name"])
-    return tests
+def percent_change(baseline: float, current: float, minimum: float) -> int | None:
+    if baseline < minimum or current <= 0:
+        return None
+    return round((current - baseline) / baseline * 100)
 
 
-def sort_tests_by_line_count(tests: list[dict]) -> list[dict]:
-    """Sort tests by line count in ascending order.
+@dataclass(frozen=True)
+class ResultRow:
+    test: BuiltTest
+    result: Result
+    official: Result | None
 
-    Args:
-        tests: List of test dictionaries with line count data
+    @property
+    def status_class(self) -> str:
+        match self.result.correctness:
+            case "correct":
+                return ""
+            case "incorrect":
+                return "bg-error"
+            case _:
+                return "bg-warning"
 
-    Returns:
-        Sorted list of tests (ascending by line count)
-    """
-    def get_line_count(test):
-        return test.get("lines", 0)
+    @property
+    def baseline(self) -> Result | None:
+        if self.test.outcome != "accept" or self.result.status != "accepted":
+            return None
+        if self.official is None or self.official.status != "accepted":
+            return None
+        return self.official
 
-    return sorted(tests, key=get_line_count)
+    @property
+    def speed_delta(self) -> int | None:
+        if self.baseline is None:
+            return None
+        return percent_change(
+            self.baseline.virtual_cpu_time,
+            self.result.virtual_cpu_time,
+            MIN_COMPARABLE_CPU_TIME,
+        )
+
+    @property
+    def memory_delta(self) -> int | None:
+        if self.baseline is None:
+            return None
+        return percent_change(
+            self.baseline.max_rss,
+            self.result.max_rss,
+            MIN_COMPARABLE_MAX_RSS,
+        )
+
+    @property
+    def timed(self) -> bool:
+        return (
+            self.test.compare_perf
+            and self.test.outcome == "accept"
+            and self.result.status == "accepted"
+        )
 
 
-def compute_checker_stats(checker: dict, tests: list[dict], results: dict) -> dict:
-    """Compute statistics for a checker across all tests.
-
-    Returns a dict with:
-    - accept_correct: number of tests with outcome=accept that checker accepted
-    - accept_total: number of tests with outcome=accept that weren't declined
-    - reject_correct: number of tests with outcome=reject that checker rejected
-    - reject_total: number of tests with outcome=reject that weren't declined
-    - declined_count: number of tests that checker declined
-    - mathlib_time: wall time for the mathlib test (or None)
-    - mathlib_cpu_time: CPU time for the mathlib test (or None)
-    - mathlib_max_rss: Max RSS for the mathlib test (or None)
-    - mathlib_instructions: instruction count for the mathlib test (or None)
-    """
-    checker_name = checker["name"]
-
+def compute_checker_stats(
+    checker: Checker,
+    tests: list[BuiltTest],
+    results: dict[tuple[str, str], Result],
+) -> CheckerStats:
     accept_correct = 0
     accept_total = 0
     reject_correct = 0
     reject_total = 0
     declined_count = 0
-    mathlib_time = None
-    mathlib_cpu_time = None
-    mathlib_max_rss = None
-    mathlib_instructions = 0
+    mathlib = None
 
     for test in tests:
-        test_name = test["name"]
-        expected_outcome = test.get("outcome")
-
-        key = (checker_name, test_name)
-        result = results.get(key)
-
+        result = results.get((checker.name, test.name))
         if result is None:
             continue
 
-        status = result.get("status")
+        if test.name == MATHLIB_TEST and result.status == "accepted":
+            mathlib = result
 
-        # Track mathlib performance metrics only if the test was accepted
-        if test_name == "mathlib" and status == "accepted":
-            mathlib_time = result.get("wall_time")
-            mathlib_cpu_time = result.get("cpu_time")
-            mathlib_max_rss = result.get("max_rss")
-            mathlib_instructions = result.get("instructions", 0) or 0
-
-        # Count declined and error tests
-        # Errors don't make any assertion about correctness, so treat them like declines
-        if status == "declined" or status == "error":
+        if result.status in {"declined", "error"}:
             declined_count += 1
-            continue
-
-        if expected_outcome == "accept":
+        elif test.outcome == "accept":
             accept_total += 1
-            if status == "accepted":
-                accept_correct += 1
-        elif expected_outcome == "reject":
+            accept_correct += result.status == "accepted"
+        elif test.outcome == "reject":
             reject_total += 1
-            if status == "rejected":
-                reject_correct += 1
+            reject_correct += result.status == "rejected"
 
-    return {
-        "accept_correct": accept_correct,
-        "accept_total": accept_total,
-        "reject_correct": reject_correct,
-        "reject_total": reject_total,
-        "declined_count": declined_count,
-        "mathlib_time": mathlib_time,
-        "mathlib_cpu_time": mathlib_cpu_time,
-        "mathlib_max_rss": mathlib_max_rss,
-        "mathlib_instructions": mathlib_instructions,
-    }
+    return CheckerStats(
+        accept_correct=accept_correct,
+        accept_total=accept_total,
+        reject_correct=reject_correct,
+        reject_total=reject_total,
+        declined_count=declined_count,
+        mathlib=mathlib,
+    )
 
 
-def get_build_metadata() -> dict:
-    """Get build metadata including timestamp, git revision, and GitHub action info."""
-    metadata = {
-        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC"),
-        "git_revision": None,
-        "git_revision_short": None,
-        "github_url": None,
-        "github_action_url": None,
-    }
-
-    # Get git revision
-    try:
-        result = run_cmd(["git", "rev-parse", "HEAD"], capture_output=True)
-        if result.returncode == 0:
-            git_revision = result.stdout.strip()
-            metadata["git_revision"] = git_revision
-            metadata["git_revision_short"] = git_revision[:8]
-            # Build GitHub URL (assuming GitHub)
-            try:
-                remote_result = run_cmd(["git", "remote", "get-url", "origin"], capture_output=True)
-                if remote_result.returncode == 0:
-                    remote_url = remote_result.stdout.strip()
-                    # Convert git URL to GitHub web URL
-                    if "github.com" in remote_url:
-                        if remote_url.startswith("git@"):
-                            # Convert git@github.com:user/repo.git to https://github.com/user/repo
-                            repo_path = remote_url.split(":")[-1].replace(".git", "")
-                            metadata["github_url"] = f"https://github.com/{repo_path}/commit/{git_revision}"
-                        elif remote_url.startswith("https://"):
-                            repo_path = remote_url.replace("https://github.com/", "").replace(".git", "")
-                            metadata["github_url"] = f"https://github.com/{repo_path}/commit/{git_revision}"
-            except Exception:
-                pass
-    except Exception:
-        pass
-
-    # Get GitHub Action info from environment variables
-    github_server = os.environ.get("GITHUB_SERVER_URL")
-    github_repo = os.environ.get("GITHUB_REPOSITORY")
-    github_run_id = os.environ.get("GITHUB_RUN_ID")
-
-    if github_server and github_repo and github_run_id:
-        metadata["github_run_id"] = github_run_id
-        metadata["github_action_url"] = f"{github_server}/{github_repo}/actions/runs/{github_run_id}"
-
-    return metadata
+def checker_rank(report: CheckerReport) -> tuple[int, int, float, int]:
+    stats = report.stats
+    return (
+        stats.reject_total - stats.reject_correct,
+        stats.accept_total - stats.accept_correct,
+        stats.mathlib_instructions or float("inf"),
+        stats.declined_count,
+    )
 
 
-def generate_source_links(config: dict, config_type: str, git_revision: str | None = None) -> dict:
-    """Generate Declaration and Source links for a test or checker configuration.
-
-    Args:
-        config: Test or checker configuration dict
-        config_type: "tests" or "checkers"
-        git_revision: Git revision for GitHub links
-
-    Returns dict with:
-        declaration_url: Link to the YAML file in GitHub
-        source_url: Link to the source (either URL or local dir in GitHub)
-    """
-    links = {
-        "declaration_url": None,
-        "source_url": None,
-    }
-
-    if not git_revision:
-        return links
-
-    # Generate declaration URL (YAML file in GitHub)
-    base_github_url = "https://github.com/leanprover/lean-kernel-arena"
-    declaration_path = f"{config_type}/{config['name']}.yaml"
-    links["declaration_url"] = f"{base_github_url}/blob/{git_revision}/{declaration_path}"
-
-    # Generate source URL
-    url = config.get("url")
-    local_dir = config.get("dir")
-    leanfile = config.get("leanfile")
-    rev = config.get("rev")
-
-    if url:
-        # External repository - check if it's a GitHub URL and we have a rev
-        if rev and "github.com" in url:
-            # Convert repository URL to tree/commit URL
-            if url.endswith(".git"):
-                repo_url = url[:-4]  # Remove .git suffix
-            else:
-                repo_url = url
-            links["source_url"] = f"{repo_url}/tree/{rev}"
-        else:
-            # Use the repository URL as-is
-            links["source_url"] = url
-    elif local_dir:
-        # Local directory in this repository
-        if config_type == "checkers":
-            source_path = f"checkers/{local_dir}"
-        else:
-            source_path = local_dir
-        links["source_url"] = f"{base_github_url}/tree/{git_revision}/{source_path}"
-    elif leanfile:
-        # Lean file in this repository
-        links["source_url"] = f"{base_github_url}/blob/{git_revision}/{leanfile}"
-
-    return links
+@dataclass(frozen=True)
+class TarballInfo:
+    tarball_size: int
+    good_count: int
+    bad_count: int
 
 
-def create_test_tarball(tests: list, output_dir: Path) -> dict:
-    """Create a tarball containing test files, organized by expected outcome.
-
-    Returns dict with tarball_size (in bytes), good_count, and bad_count.
-    """
-    import tarfile
-
+def create_test_tarball(tests: list[BuiltTest], output_dir: Path) -> TarballInfo:
     tarball_path = output_dir / "lean-arena-tests.tar.gz"
-
     good_count = 0
     bad_count = 0
 
     with tarfile.open(tarball_path, "w:gz") as tar:
         for test in tests:
-            # Skip tests larger than 10 MB
-            if test.get("size", 0) > 10*1024*1024:
+            if test.size > MAX_TARBALL_ENTRY_SIZE or not test.file.exists():
                 continue
+            good = test.outcome == "accept"
+            good_count += good
+            bad_count += not good
+            subdir = "good" if good else "bad"
+            tar.add(test.file, arcname=f"{subdir}/{test.name}.ndjson")
 
-            # Use the file path from test data
-            test_file = test["file"]
-            if not test_file.exists():
-                continue
-
-            outcome = test.get("outcome", "unknown")
-            if outcome == "accept":
-                subdir = "good"
-                good_count += 1
-            else:
-                subdir = "bad"
-                bad_count += 1
-
-            # Add file to tarball with appropriate subdirectory
-            arcname = f"{subdir}/{test['name']}.ndjson"
-            tar.add(test_file, arcname=arcname)
-
-    # Get tarball size
-    tarball_size = tarball_path.stat().st_size if tarball_path.exists() else 0
-
-    return {
-        "tarball_size": tarball_size,
-        "good_count": good_count,
-        "bad_count": bad_count
-    }
+    return TarballInfo(
+        tarball_size=tarball_path.stat().st_size,
+        good_count=good_count,
+        bad_count=bad_count,
+    )
 
 
-def cmd_build_site(args: argparse.Namespace) -> int:
-    """Handle the build-site command."""
-    output_dir = Path(args.outdir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+def report_observed_rate(results: dict[tuple[str, str], Result]) -> None:
+    measured = [r for r in results.values() if r.cpu_time > 0 and r.instructions > 0]
+    if not measured:
+        print("No instruction count measurements available for conversion rate")
+        return
+    rate = sum(r.instructions for r in measured) / sum(r.cpu_time for r in measured)
+    print(
+        f"Observed conversion rate: {format_unitless(rate)}inst/s "
+        f"from {len(measured)} samples",
+    )
 
-    templates_dir = get_project_root() / "templates"
-    if not templates_dir.exists():
-        print(f"Templates directory not found: {templates_dir}")
-        return 1
 
+def make_environment(templates_dir: Path, build_info: BuildInfo) -> Environment:
     env = Environment(
         loader=FileSystemLoader(templates_dir),
         autoescape=select_autoescape(),
     )
+    template_globals: dict[str, Any] = env.globals
+    template_globals.update(
+        format_duration=format_duration,
+        format_memory=format_memory,
+        format_unitless=format_unitless,
+        status_symbol=status_symbol,
+        build_info=build_info,
+        official_checker=OFFICIAL_CHECKER,
+        min_comparable_cpu_time=MIN_COMPARABLE_CPU_TIME,
+        instructions_per_second=INSTRUCTIONS_PER_SECOND,
+    )
+    return env
 
-    checkers = load_checkers()
-    results = load_results()
-    tests = load_tests()
 
-    # Calculate global instructions per second from results with both cpu_time and instructions
-    total_instructions = 0
-    total_cpu_time = 0
-    instruction_samples = 0
+def render(env: Environment, template: str, output_file: Path, **data: Any) -> None:
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    env.get_template(template).stream(data).dump(str(output_file))
+    print(f"Generated: {output_file}")
 
-    for result in results.values():
-        cpu_time = result.get("cpu_time", 0)
-        instructions = result.get("instructions", 0)
-        if cpu_time > 0 and instructions > 0:
-            total_instructions += instructions
-            total_cpu_time += cpu_time
-            instruction_samples += 1
 
-    # Calculate observed instructions per second and report it
-    if total_cpu_time > 0 and instruction_samples > 0:
-        observed_instructions_per_second = total_instructions / total_cpu_time
-        print(f"Observed conversion rate: {format_unitless(observed_instructions_per_second)}inst/s from {instruction_samples} samples")
-    else:
-        observed_instructions_per_second = 0
-        print("No instruction count measurements available for conversion rate calculation")
+def cmd_build_site(args: argparse.Namespace) -> int:
+    templates_dir = PROJECT_ROOT / "templates"
+    if not templates_dir.exists():
+        print(f"Templates directory not found: {templates_dir}")
+        return 1
 
-    # Use fixed hardcoded conversion rate of 6 Ginst/s
-    instructions_per_second = 6_000_000_000  # 6 billion instructions per second
+    output_dir = Path(args.outdir)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Compute stats for each checker
-    for checker in checkers:
-        checker["stats"] = compute_checker_stats(checker, tests, results)
-
-    # Sort checkers by the specified criteria:
-    # 1. Number of bad tests not rejected (ascending - giving a bad response to a
-    #    negative test is the worst failure)
-    # 2. Number of good (non-declined) tests not accepted (ascending - wrongly
-    #    rejecting a good test is a serious bug; declines don't count here)
-    # 3. Instruction count for processing mathlib (ascending, with None/0 values
-    #    last - checkers that cope with mathlib rank on top, sorted by speed,
-    #    others below)
-    # 4. Number of tests declined (ascending - a final tie-breaker; serious
-    #    checkers may decline less important tests without being penalized)
-    def sort_key(checker):
-        stats = checker["stats"]
-        bad_not_rejected = stats["reject_total"] - stats["reject_correct"]  # Should be low
-        good_not_accepted = stats["accept_total"] - stats["accept_correct"]  # Should be low
-        declined_count = stats["declined_count"]  # Should be low
-        mathlib_instructions = stats["mathlib_instructions"]
-
-        # For mathlib_instructions: None/0 values should be treated as infinity (sort last)
-        instructions_sort_key = mathlib_instructions if mathlib_instructions and mathlib_instructions > 0 else float('inf')
-
-        return (bad_not_rejected, good_not_accepted, instructions_sort_key, declined_count)
-
-    checkers.sort(key=sort_key)
-
-    # Get build metadata
     build_info = get_build_metadata()
+    tests = load_built_tests()
+    results = load_results()
+    report_observed_rate(results)
 
-    # Create test tarball
-    tarball_info = create_test_tarball(tests, output_dir)
+    reports = sorted(
+        (
+            CheckerReport(
+                name=checker.name,
+                version=checker.version,
+                description_html=render_markdown(checker.description),
+                serious=checker.serious,
+                links=source_links(
+                    checker.name,
+                    "checkers",
+                    checker.source,
+                    None,
+                    build_info.git_revision,
+                ),
+                stats=compute_checker_stats(checker, tests, results),
+            )
+            for checker in load_checkers()
+        ),
+        key=checker_rank,
+    )
 
-    # Build context data
-    data = {
-        "tests": tests,
-        "checkers": checkers,
-        "test_results": results,  # Pass results dict with (checker, test) keys
-        "format_duration": format_duration,
-        "format_memory": format_memory,
-        "format_instructions": format_instructions,
-        "format_unitless": format_unitless,
-        "convert_instructions_to_time": convert_instructions_to_time,
-        "instructions_per_second": instructions_per_second,
-        "build_info": build_info,
-        "tarball_info": tarball_info,
+    rows = {
+        (report.name, test.name): ResultRow(
+            test=test,
+            result=result,
+            official=results.get((OFFICIAL_CHECKER, test.name)),
+        )
+        for report in reports
+        for test in tests
+        if (result := results.get((report.name, test.name))) is not None
     }
 
-    # Render index.html
-    try:
-        template = env.get_template("index.html")
-        output_file = output_dir / "index.html"
-        template.stream(data).dump(str(output_file))
-        print(f"Generated: {output_file}")
-    except Exception as e:
-        print(f"Error rendering template: {e}")
-        return 1
+    columns = sorted(
+        (report for report in reports if report.serious),
+        key=lambda report: report.name != OFFICIAL_CHECKER,
+    )
 
-    # Generate per-checker pages
-    try:
-        checker_template = env.get_template("checker.html")
-        for checker in checkers:
-            checker_dir = output_dir / "checker" / checker["name"]
-            checker_dir.mkdir(parents=True, exist_ok=True)
+    env = make_environment(templates_dir, build_info)
+    render(
+        env,
+        "index.html",
+        output_dir / "index.html",
+        tests=tests,
+        checkers=reports,
+        columns=columns,
+        rows=rows,
+        tarball_info=create_test_tarball(tests, output_dir),
+    )
 
-            # Generate checker links
-            checker_links = generate_source_links(checker, "checkers", build_info.get("git_revision"))
+    for report in reports:
+        render(
+            env,
+            "checker.html",
+            output_dir / "checker" / report.name / "index.html",
+            checker=report,
+            rows=[
+                rows[key] for test in tests if (key := (report.name, test.name)) in rows
+            ],
+        )
 
-            # Gather results for this checker
-            checker_results = []
-            for test in tests:
-                key = (checker["name"], test["name"])
-                if key in results:
-                    result = results[key].copy()
-                    result["expected"] = test.get("outcome")
-                    # Add test stats (test object contains all stats data)
-                    result["test_stats"] = {k: v for k, v in test.items() if k not in ["name", "file"]}
-                    # Add test description from stats (rendered from markdown)
-                    stats_description = test.get("description", "")
-                    result["test_description"] = render_markdown(stats_description)
-                    # Test links are already stored in test object
-                    result["test_links"] = {
-                        "declaration_url": test.get("declaration_url"),
-                        "source_url": test.get("source_url")
-                    }
+    for test in tests:
+        render(
+            env,
+            "test.html",
+            output_dir / "test" / test.name / "index.html",
+            test=test,
+            root_path="../" * (test.name.count("/") + 2),
+            rows=[
+                rows[key]
+                for report in reports
+                if (key := (report.name, test.name)) in rows
+            ],
+        )
 
-                    # Add official checker results for comparison (if available)
-                    official_key = ("official", test["name"])
-                    official_result = results.get(official_key)
-                    result["official"] = official_result
-
-                    checker_results.append(result)
-
-            # Sort checker results by name (alphabetical order)
-            checker_results.sort(key=lambda result: result.get("test", ""))
-
-            # Create a copy of checker data with rendered description
-            checker_with_rendered_desc = checker.copy()
-            checker_with_rendered_desc["description"] = render_markdown(checker.get("description", ""))
-
-            checker_data = {
-                "checker": checker_with_rendered_desc,
-                "checker_links": checker_links,
-                "results": checker_results,
-                "format_duration": format_duration,
-                "format_memory": format_memory,
-                "format_instructions": format_instructions,
-                "format_unitless": format_unitless,
-                "convert_instructions_to_time": convert_instructions_to_time,
-                "instructions_per_second": instructions_per_second,
-                "build_info": build_info,
-            }
-
-            output_file = checker_dir / "index.html"
-            checker_template.stream(checker_data).dump(str(output_file))
-            print(f"Generated: {output_file}")
-    except Exception as e:
-        print(f"Error rendering checker template: {e}")
-        return 1
-
-    # Generate per-test pages
-    try:
-        test_template = env.get_template("test.html")
-        for test in tests:
-            test_dir = output_dir / "test" / test["name"]
-            test_dir.mkdir(parents=True, exist_ok=True)
-
-            # Generate test links
-            test_links = {
-                "declaration_url": test.get("declaration_url"),
-                "source_url": test.get("source_url")
-            }
-
-            # Gather results from all checkers for this test
-            test_results = []
-            for checker in checkers:
-                key = (checker["name"], test["name"])
-                if key in results:
-                    result = results[key].copy()
-                    result["checker"] = checker["name"]
-
-                    # Add official checker results for comparison
-                    official_key = ("official", test["name"])
-                    official_result = results.get(official_key)
-                    result["official"] = official_result
-
-                    test_results.append(result)
-
-            # Compute relative path to site root from test/name/index.html
-            # e.g. "app-lam" -> "../../", "perf/app-lam" -> "../../../"
-            depth = test["name"].count("/") + 2  # +2 for "test/" and trailing "/"
-            root_path = "../" * depth
-
-            test_data = {
-                "test": test,
-                "test_links": test_links,
-                "test_description": render_markdown(test.get("description", "")),
-                "results": test_results,
-                "root_path": root_path,
-                "format_duration": format_duration,
-                "format_memory": format_memory,
-                "format_instructions": format_instructions,
-                "format_unitless": format_unitless,
-                "convert_instructions_to_time": convert_instructions_to_time,
-                "instructions_per_second": instructions_per_second,
-                "build_info": build_info,
-            }
-
-            output_file = test_dir / "index.html"
-            test_template.stream(test_data).dump(str(output_file))
-            print(f"Generated: {output_file}")
-    except Exception as e:
-        print(f"Error rendering test template: {e}")
-        return 1
-
-    # Copy static files if they exist
     static_dir = templates_dir / "static"
     if static_dir.exists():
         shutil.copytree(static_dir, output_dir / "static", dirs_exist_ok=True)
@@ -1887,27 +1497,19 @@ def cmd_build_site(args: argparse.Namespace) -> int:
     return 0
 
 
-# =============================================================================
-# Main entry point
-# =============================================================================
-
-
-def main() -> int:
-    """Main entry point."""
-    global VERBOSE
-
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="lka",
         description="Lean Kernel Arena - Tool for managing Lean kernel tests and checkers",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Print commands being executed and their stats",
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # build-test command
     build_test_parser = subparsers.add_parser(
         "build-test",
         help="Build test files from test definitions",
@@ -1923,7 +1525,6 @@ def main() -> int:
         help="Skip tests marked with 'skip-on-ci: true' in YAML",
     )
 
-    # build-checker command
     build_checker_parser = subparsers.add_parser(
         "build-checker",
         help="Build checkers from checker definitions",
@@ -1934,11 +1535,7 @@ def main() -> int:
         help="Name or glob pattern of the checker to build (default: all checkers)",
     )
 
-    # run command
-    run_checker_parser = subparsers.add_parser(
-        "run",
-        help="Run checkers on tests",
-    )
+    run_checker_parser = subparsers.add_parser("run", help="Run checkers on tests")
     run_checker_parser.add_argument(
         "--checker",
         help="Name or glob pattern of the checker to run (default: all checkers)",
@@ -1947,38 +1544,39 @@ def main() -> int:
         "--test",
         help="Name or glob pattern of the test to run (default: all tests)",
     )
-
-    # build-site command
-    build_site_parser = subparsers.add_parser(
-        "build-site",
-        help="Build the website",
-    )
+    build_site_parser = subparsers.add_parser("build-site", help="Build the website")
     build_site_parser.add_argument(
         "--outdir",
         default="_out",
         help="Output directory for the website (default: _out)",
     )
 
-    args = parser.parse_args()
+    return parser
 
-    # Set global verbose flag
+
+def main() -> int:
+    global VERBOSE
+
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(line_buffering=True, write_through=True)
+
+    parser = build_parser()
+    args = parser.parse_args()
     VERBOSE = args.verbose
 
-    if args.command is None:
-        parser.print_help()
-        return 0
-
-    if args.command == "build-test":
-        return cmd_build_test(args)
-    elif args.command == "build-checker":
-        return cmd_build_checker(args)
-    elif args.command == "run":
-        return cmd_run_checker(args)
-    elif args.command == "build-site":
-        return cmd_build_site(args)
-    else:
-        parser.print_help()
-        return 1
+    match args.command:
+        case "build-test":
+            return cmd_build_test(args)
+        case "build-checker":
+            return cmd_build_checker(args)
+        case "run":
+            return cmd_run_checker(args)
+        case "build-site":
+            return cmd_build_site(args)
+        case _:
+            parser.print_help()
+            return 0 if args.command is None else 1
 
 
 if __name__ == "__main__":

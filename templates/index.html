@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros.html" import summary_cell %}
 
 {% block static_path %}{% endblock %}
 
@@ -23,6 +24,11 @@
 .official-column {
     border-right: 2px solid #6c757d;
 }
+.cell-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
 table thead th {
     vertical-align: bottom;
 }
@@ -31,7 +37,7 @@ table thead th {
 {% block content %}
 <section>
     <img src="static/kernel-arena-banner.jpg" alt="Lean Kernel Arena" class="banner">
-    
+
     <p>
         The <strong>Lean Kernel Arena</strong> presents, tests and benchmarks proof checkers for the <a href="https://lean-lang.org/">Lean Theorem Prover</a>.
     </p>
@@ -59,31 +65,32 @@ table thead th {
         </thead>
         <tbody>
             {% for checker in checkers %}
+            {% set stats = checker.stats %}
             <tr>
                 <td><a href="checker/{{ checker.name }}/">{{ checker.name }}</a></td>
                 <td>{{ checker.version }}</td>
                 <td class="spacer-col"></td>
-                <td class="text-center {% if checker.stats.accept_correct == checker.stats.accept_total and checker.stats.accept_total > 0 %}bg-success{% elif checker.stats.accept_correct < checker.stats.accept_total %}bg-error{% endif %}">
-                    {{ checker.stats.accept_correct }}/{{ checker.stats.accept_total }}
+                <td class="text-center {% if stats.accept_correct == stats.accept_total and stats.accept_total > 0 %}bg-success{% elif stats.accept_correct < stats.accept_total %}bg-error{% endif %}">
+                    {{ stats.accept_correct }}/{{ stats.accept_total }}
                 </td>
-                <td class="text-center {% if checker.stats.reject_correct == checker.stats.reject_total and checker.stats.reject_total > 0 %}bg-success{% elif checker.stats.reject_correct < checker.stats.reject_total %}bg-error{% endif %}">
-                    {{ checker.stats.reject_correct }}/{{ checker.stats.reject_total }}
+                <td class="text-center {% if stats.reject_correct == stats.reject_total and stats.reject_total > 0 %}bg-success{% elif stats.reject_correct < stats.reject_total %}bg-error{% endif %}">
+                    {{ stats.reject_correct }}/{{ stats.reject_total }}
                 </td>
                 <td class="text-center">
-                    {{ checker.stats.declined_count }}
+                    {{ stats.declined_count }}
                 </td>
                 <td class="text-right">
-                    {% if checker.stats.get('mathlib_instructions', 0) > 0 and instructions_per_second > 0 %}
-                        <span title="{{ format_instructions(checker.stats.get('mathlib_instructions', 0)) }} instructions">{{ format_duration(convert_instructions_to_time(checker.stats.get('mathlib_instructions', 0), instructions_per_second)) }}</span>
-                    {% elif checker.stats.mathlib_cpu_time is not none %}
-                        {{ format_duration(checker.stats.mathlib_cpu_time) }}
+                    {% if stats.mathlib_instructions > 0 %}
+                        <span title="{{ format_unitless(stats.mathlib_instructions) }} instructions">{{ format_duration(stats.mathlib_virtual_cpu_time) }}</span>
+                    {% elif stats.mathlib_virtual_cpu_time is not none %}
+                        {{ format_duration(stats.mathlib_virtual_cpu_time) }}
                     {% else %}
                         -
                     {% endif %}
                 </td>
                 <td class="text-right">
-                    {% if checker.stats.mathlib_max_rss is not none %}
-                        {{ format_memory(checker.stats.mathlib_max_rss) }}
+                    {% if stats.mathlib_max_rss is not none %}
+                        {{ format_memory(stats.mathlib_max_rss) }}
                     {% else %}
                         -
                     {% endif %}
@@ -109,15 +116,8 @@ table thead th {
             <tr>
                 <th style="vertical-align: bottom;">Name</th>
                 <th class="spacer-col"></th>
-                {% for checker in checkers %}
-                {% if checker.get('serious', true) and checker.name == 'official' %}
-                <th class="text-center official-column" style="vertical-align: bottom;"><a href="checker/{{ checker.name }}/" class="rotated-header">{{ checker.name }}</a></th>
-                {% endif %}
-                {% endfor %}
-                {% for checker in checkers %}
-                {% if checker.get('serious', true) and checker.name != 'official' %}
-                <th class="text-center" style="vertical-align: bottom;"><a href="checker/{{ checker.name }}/" class="rotated-header">{{ checker.name }}</a></th>
-                {% endif %}
+                {% for column in columns %}
+                <th class="text-center{{ ' official-column' if column.name == official_checker }}" style="vertical-align: bottom;"><a href="checker/{{ column.name }}/" class="rotated-header">{{ column.name }}</a></th>
                 {% endfor %}
                 <th class="text-right" style="vertical-align: bottom;">Size</th>
             </tr>
@@ -127,65 +127,8 @@ table thead th {
             <tr>
                 <td><a href="test/{{ test.name }}/">{{ test.name }}</a></td>
                 <td class="spacer-col"></td>
-                {% for checker in checkers %}
-                    {% if checker.get('serious', true) and checker.name == 'official' %}
-                    {% set key = (checker.name, test.name) %}
-                    {% set result = test_results.get(key) %}
-                    <td class="text-center official-column {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' or result.status == 'error' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
-                        {% if result %}
-                        <a href="checker/{{ checker.name }}/#test-{{ test.name }}" style="text-decoration: none; color: inherit; display: block;">
-                            {% if test.outcome == 'accept' and result.status == 'accepted' and test.get('compare-perf') %}
-                                {# Show absolute virtual time for perf-compared tests #}
-                                {% set official_cpu_time = convert_instructions_to_time(result.get('instructions', 0), instructions_per_second) if result.get('instructions', 0) > 0 and instructions_per_second > 0 else result.cpu_time %}
-                                {% if official_cpu_time and official_cpu_time >= 0.05 %}
-                                    {{ format_duration(official_cpu_time) }}
-                                {% else %}
-                                    👍
-                                {% endif %}
-                            {% else %}
-                                {# Show result status for other tests #}
-                                {% if result.status == 'accepted' %}👍{% elif result.status == 'rejected' %}✋{% elif result.status == 'declined' %}🚫{% else %}💥{% endif %}
-                            {% endif %}
-                        </a>
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                    {% endif %}
-                {% endfor %}
-                {% for checker in checkers %}
-                    {% if checker.get('serious', true) and checker.name != 'official' %}
-                    {% set key = (checker.name, test.name) %}
-                    {% set result = test_results.get(key) %}
-                    <td class="text-center {% if result %}{% if (test.outcome == 'accept' and result.status == 'accepted') or (test.outcome == 'reject' and result.status == 'rejected') %}{% elif result.status == 'declined' or result.status == 'error' %}bg-warning{% else %}bg-error{% endif %}{% endif %}">
-                        {% if result %}
-                        <a href="checker/{{ checker.name }}/#test-{{ test.name }}" style="text-decoration: none; color: inherit; display: block;">
-                            {% if test.outcome == 'accept' and result.status == 'accepted' and test.get('compare-perf') %}
-                                {# Show performance comparison for perf-compared tests #}
-                                {% set official_key = ('official', test.name) %}
-                                {% set official_result = test_results.get(official_key) %}
-                                {% if official_result and official_result.status == 'accepted' %}
-                                    {% set official_cpu_time = convert_instructions_to_time(official_result.get('instructions', 0), instructions_per_second) if official_result.get('instructions', 0) > 0 and instructions_per_second > 0 else official_result.cpu_time %}
-                                    {% set current_cpu_time = convert_instructions_to_time(result.get('instructions', 0), instructions_per_second) if result.get('instructions', 0) > 0 and instructions_per_second > 0 else result.cpu_time %}
-                                    {% if official_cpu_time and official_cpu_time >= 0.05 and current_cpu_time %}
-                                        {% set percent_change = ((current_cpu_time - official_cpu_time) / official_cpu_time * 100) | round(0) | int %}
-                                        {% if percent_change > 0 %}+{{ percent_change }}%{% elif percent_change < 0 %}{{ percent_change }}%{% else %}0%{% endif %}
-                                    {% else %}
-                                        👍
-                                    {% endif %}
-                                {% else %}
-                                    👍
-                                {% endif %}
-                            {% else %}
-                                {# Show result status for other tests #}
-                                {% if result.status == 'accepted' %}👍{% elif result.status == 'rejected' %}✋{% elif result.status == 'declined' %}🚫{% else %}💥{% endif %}
-                            {% endif %}
-                        </a>
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                    {% endif %}
+                {% for column in columns %}
+                {{ summary_cell(column, test, rows.get((column.name, test.name))) }}
                 {% endfor %}
                 <td class="text-right">{{ test.size_str }}</td>
             </tr>
@@ -208,8 +151,8 @@ table thead th {
     </p>
 
     <p>
-        The time and space measurements refer to the <tt>mathlib</tt> test case, the largest correct test in the suite. 
-        The ⏱️ column shows virtual CPU time, calculated from instruction counts using a fixed rate of {{ format_unitless(instructions_per_second|round|int) }}instr/s. 
+        The time and space measurements refer to the <tt>mathlib</tt> test case, the largest correct test in the suite.
+        The ⏱️ column shows virtual CPU time, calculated from instruction counts using a fixed rate of {{ format_unitless(instructions_per_second) }}instr/s.
         This provides consistent performance comparison across different hardware, though it does not reflect parallel processing capabilities that some checkers may use.
     </p>
 
@@ -222,7 +165,7 @@ table thead th {
     </p>
 
     <p>
-        A tarball of the test suite (excluding tests larger than 10 MB) is available for download: <a href="lean-arena-tests.tar.gz"><tt>lean-arena-tests.tar.gz</tt></a> ({{ tarball_info.good_count }} good tests, {{ tarball_info.bad_count }} bad tests, {{ format_memory(tarball_info.tarball_size) }}). 
+        A tarball of the test suite (excluding tests larger than 10 MB) is available for download: <a href="lean-arena-tests.tar.gz"><tt>lean-arena-tests.tar.gz</tt></a> ({{ tarball_info.good_count }} good tests, {{ tarball_info.bad_count }} bad tests, {{ format_memory(tarball_info.tarball_size) }}).
         The tarball contains subdirectories <tt>good/</tt> and <tt>bad/</tt> based on expected results, making it easy to test your own checker implementation.
     </p>
 

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "macros.html" import detail_styles, result_status_cell, perf_cells, perf_header %}
+{% from "macros.html" import detail_styles, status_cell, perf_cells, perf_header %}
 
 {% block static_path %}{{ root_path }}{% endblock %}
 
@@ -22,30 +22,30 @@
         {% if test.outcome == 'accept' %}👍 accept{% elif test.outcome == 'reject' %}✋ reject{% else %}⚠️ {{ test.outcome }}{% endif %}
         · <strong>Size:</strong> {{ test.size_str }}
         · <strong>Lines:</strong> {{ test.lines_str }}
-        {% if test.lean4export_version %}
-        · <strong>lean4export:</strong> {{ test.lean4export_version }}
+        {% if test.export.lean4export_version %}
+        · <strong>lean4export:</strong> {{ test.export.lean4export_version }}
         {% endif %}
-        {% if test.lean_version %}
-        · <strong>Lean:</strong> {{ test.lean_version }}
+        {% if test.export.lean_version %}
+        · <strong>Lean:</strong> {{ test.export.lean_version }}
         {% endif %}
-        {% if test_links.declaration_url or test_links.source_url %} · {% endif %}
-        {% if test_links.declaration_url %}
-        <a href="{{ test_links.declaration_url }}" target="_blank">📄 Declaration</a>
+        {% if test.links.declaration_url or test.links.source_url %} · {% endif %}
+        {% if test.links.declaration_url %}
+        <a href="{{ test.links.declaration_url }}" target="_blank">📄 Declaration</a>
         {% endif %}
-        {% if test_links.declaration_url and test_links.source_url %} · {% endif %}
-        {% if test_links.source_url %}
-        <a href="{{ test_links.source_url }}" target="_blank">🔗 Source</a>
+        {% if test.links.declaration_url and test.links.source_url %} · {% endif %}
+        {% if test.links.source_url %}
+        <a href="{{ test.links.source_url }}" target="_blank">🔗 Source</a>
         {% endif %}
     </p>
 
-    {% if test_description %}
+    {% if test.description_html %}
     <div class="description">
-        {{ test_description | safe }}
+        {{ test.description_html | safe }}
     </div>
     {% endif %}
 </section>
 
-{% if results %}
+{% if rows %}
 <section>
     <div style="overflow-x:auto">
     <table class="striped">
@@ -58,12 +58,12 @@
             </tr>
         </thead>
         <tbody>
-            {% for result in results %}
+            {% for row in rows %}
             <tr>
-                <td><a href="{{ root_path }}checker/{{ result.checker }}/#test-{{ test.name }}">{{ result.checker }}</a></td>
+                <td><a href="{{ root_path }}checker/{{ row.result.checker }}/#test-{{ test.name }}">{{ row.result.checker }}</a></td>
                 <td class="spacer-col"></td>
-                {{ result_status_cell(test.outcome, result.status) }}
-                {{ perf_cells(result, test.outcome, instructions_per_second, format_duration, format_memory, format_instructions, convert_instructions_to_time) }}
+                {{ status_cell(row) }}
+                {{ perf_cells(row) }}
             </tr>
             {% endfor %}
         </tbody>
