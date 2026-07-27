@@ -1,0 +1,19 @@
+url = "https://github.com/nomeata/nanobruijn"
+ref = "master"
+rev = "5a42fcc40f97901f886f8fe176d2f4dcd798db7e"
+build = """
+cargo build --release
+cat > config.json <<__END__
+ {
+   "use_stdin": true,
+   "nat_extension": true,
+   "string_extension": true,
+   "unpermitted_axiom_hard_error": false,
+   "unsafe_permit_all_axioms": true,
+   "num_threads": 4
+ }
+__END__
+"""
+run = """
+timeout 3600 target/release/nanobruijn config.json < "$IN" || exit 1
+"""

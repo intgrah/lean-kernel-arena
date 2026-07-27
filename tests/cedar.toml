@@ -1,0 +1,10 @@
+url = "https://github.com/cedar-policy/cedar-spec/"
+ref = "main"
+rev = "f36af0f9fc038b9e6a340960fc24f3b610a84aee"
+module = "Cedar"
+pre_build = """
+shopt -s dotglob && find . -mindepth 1 -maxdepth 1 ! -name cedar-lean -exec rm -rf {} + && mv cedar-lean/* . && rmdir cedar-lean
+"""
+outcome = "accept"
+compare_perf = true
+skip_on_ci = true

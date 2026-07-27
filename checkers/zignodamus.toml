@@ -1,0 +1,16 @@
+url = "https://github.com/intgrah/zignodamus"
+ref = "master"
+rev = "045df24df33d3be976f9cf7cbb9f79b3f62e9dea"
+build = """
+zig build -Drelease
+"""
+run = """
+./zig-out/bin/zignodamus \
+  --use-stdin \
+  --nat-extension \
+  --string-extension \
+  --unsafe-permit-all-axioms \
+  --no-unpermitted-axiom-hard-error \
+  -j4 \
+  < "$IN" || exit 1
+"""

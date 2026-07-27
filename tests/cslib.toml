@@ -1,0 +1,8 @@
+url = "https://github.com/leanprover/cslib"
+ref = "main"
+rev = "d1dbe1ec53e08957ff4cb893d82f3e0f7eaa4b00"
+module = "Cslib"
+pre_build = "lake exe cache get"
+outcome = "accept"
+compare_perf = true
+skip_on_ci = true

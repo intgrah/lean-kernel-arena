@@ -1,0 +1,3 @@
+leanfile = "tests/perf/grind-ring-5.lean"
+export_decls = ["thm", "String.ofList", "Char.ofNat"]
+outcome = "accept"

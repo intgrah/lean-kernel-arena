@@ -2,112 +2,95 @@
 
 ## Architecture Overview
 
-This is a **benchmarking framework for Lean kernel implementations** that tests proof checkers against standardized test cases and generates comparative reports.
+This is a **benchmarking framework for Lean kernel implementations** that tests proof checkers against standardized test cases and generates comparative reports. Everything is one Lake package.
 
 ### Core Components
-- **`lka.py`**: Single-file CLI tool (884 lines) - main entry point for all operations
-- **Test Definitions** (`tests/*.yaml`): Specify Lean export data sources (git repos, modules)
-- **Checker Definitions** (`checkers/*.yaml`): Define proof checker build/run commands
-- **Templates** (`templates/`): Jinja2 templates for static site generation
-- **Nix Environment**: Reproducible Python 3 + dependencies via `flake.nix`
+- **`Arena/`** + **`Main.lean`**: the `lka` CLI — builds tests, builds checkers, runs them, assembles site data
+- **`ArenaSite/`** + **`ArenaSite.lean`**: the Verso site (`arena-site` executable) rendering the results
+- **`ArenaSite/Descriptions.lean`**: prose for every test and checker, authored in Verso markup
+- **Test definitions** (`tests/*.toml`): where the export data comes from, and the expected outcome
+- **Checker definitions** (`checkers/*.toml`): how to build and run a proof checker
+- **Nix environment**: reproducible toolchain via `flake.nix`
 
 ### Data Flow
-1. **Tests** → Generate `.ndjson` files with Lean export data in `_build/tests/`
-2. **Checkers** → Build executables/scripts in `_build/checkers/`
-3. **Results** → Run checkers on tests, save JSON results to `_results/`
-4. **Website** → Generate static site in `_out/` with performance comparisons
+1. **Tests** → `.ndjson` export files plus `.stats.json` metadata in `_build/tests/`
+2. **Checkers** → built in `_build/checkers/`
+3. **Results** → one JSON per (checker, test) in `_results/`
+4. **Site data** → `site-data/arena.json`, read by `ArenaSite` at elaboration time
+5. **Website** → static site in `_out/`
 
 ## Essential Workflows
-
-### Development Commands
 
 If `direnv` is not active, prepend commands with `nix develop -c`.
 
 ```bash
-./lka.py build-test [name]      # Generate test files from YAML definitions
-./lka.py build-checker [name]   # Build checker executables
-./lka.py run                    # Execute all checkers on all tests
-./lka.py build-site             # Generate website from results
+lake exe lka build-test [names...]     # Generate test exports
+lake exe lka build-checker [names...]  # Build checkers
+lake exe lka run                       # Execute checkers on tests
+lake exe lka site-data                 # Refresh site-data/arena.json only
+lake exe lka build-site                # Regenerate data, site, tutorial viewer, tarball
 ```
 
-### Key Conventions
-- **Exit codes determine status**: 0=accepted, 1=rejected, 2=declined
-- **YAML-driven configuration**: Tests and checkers defined in separate YAML files
-- **Name derivation**: File stem becomes the entity name (no explicit `name` field needed)
-- **Stats tracking**: File sizes, line counts with SI prefixes (5.6M lines, 290.7 MB)
+`build-test` and `build-checker` accept any number of names or globs; `run` narrows with the comma-separated `--checker` and `--test`. `-v` traces commands and measurements, and goes after the subcommand. The command tree is built with [lean4-cli](https://github.com/leanprover/lean4-cli), so `--help` works at every level.
 
-### Configuration Schema
-- **Test configurations**: See `schemas/test.json` for complete YAML validation schema
-- **Checker configurations**: See `schemas/checker.json` for complete YAML validation schema
-- **Schema validation**: Enforced automatically with helpful error messages
-- **Common patterns**: Git repositories, local directories, module exports via lean4export
+### Key Conventions
+- **Exit codes determine status**: 0=accepted, 1=rejected, 2=declined, anything else=error
+- **TOML-driven configuration**: one file per test and per checker
+- **Name derivation**: the path under `tests/` or `checkers/` without the extension is the name, so `tests/perf/app-lam.toml` is the test `perf/app-lam`
+- **Descriptions live in Lean**, not in the config files: add an entry to `ArenaSite/Descriptions.lean` and to the lookup at the bottom of that file
+- **Config validity is a type**: `Arena.Source` and `Arena.Production` encode which field combinations are legal; the TOML decoder in `Arena/Config.lean` rejects the rest
 
 ### Result Data Structure
 Results stored as `_results/{checker}_{test}.json`:
 ```json
 {
   "checker": "checker-name",
-  "test": "test-name", 
+  "test": "test-name",
   "status": "accepted|rejected|declined|error",
+  "correctness": "correct|incorrect|declined|error",
   "exit_code": 0,
   "wall_time": 1.23,
   "cpu_time": 1.18,
   "max_rss": 1048576,
+  "instructions": 0,
   "stdout": "...",
   "stderr": "..."
 }
 ```
 
-### Template Architecture
-- **Base template inheritance**: `base.html` → `index.html`, `checker.html`
-- **Chota CSS framework**: Minimal, responsive styling
-- **Per-checker pages**: URL structure `checker/{name}/index.html`
-- **Collapsible details**: Test YAML definitions in `<details>` elements
+### Site Architecture
+- `Arena/SiteData.lean` writes `site-data/arena.json`; `ArenaSite/Data.lean` reads it in `TermElabM`
+- `ArenaSite/Pages.lean` declares one top-level `Part Page` per page via the `generate_arena_pages` command, then `checker_pages%` / `test_pages%` reference those constants. Splicing the page contents inline instead overflows the code generator.
+- Times cross the JSON boundary as integer nanoseconds; `Float` has no `Quote` instance
+- URL structure: `checker/{name}/`, `test/{name}/`, with intermediate `test/{group}/` index pages for nested test names
 
 ## Critical Integration Points
 
 ### Lean4Export Dependency
-Tests using `module` or `leanfile` fields auto-clone and build `lean4export` tool from GitHub. Multiple lean4export builds are cached per toolchain in `_build/lean4export/{toolchain}/` directories, allowing tests with different Lean versions to coexist.
+Tests using `module` or `leanfile` auto-clone and build `lean4export`. Builds are cached per toolchain in `_build/lean4export/{toolchain}/`, so tests on different Lean versions coexist.
 
 ### File System Layout
 ```
 _build/tests/{name}.ndjson        # Generated test data
-_build/tests/{name}.stats.json    # File size/line count metadata  
+_build/tests/{name}.stats.json    # Size, line count, exporter metadata
 _build/lean4export/{toolchain}/   # Per-toolchain lean4export builds
 _build/checkers/{name}/           # Checker build directories
+_build/work/tests/{name}/         # Scratch clones and checkouts
 _results/{checker}_{test}.json    # Individual run results
+site-data/arena.json              # Site input
 _out/                             # Generated website
 ```
 
 ### GitHub Actions Integration
 - Manual trigger workflow: `build-and-deploy.yml`
 - Nix environment setup via `cachix/install-nix-action`
-- GitHub Pages deployment from `_out/` directory
+- GitHub Pages deployment from `_out/`
 
 ## Project-Specific Patterns
 
-### Verbose Mode Implementation
-Global `VERBOSE` flag enables command tracing via `run_cmd()` helper with timing stats.
-
-### Template Data Binding
-Checker pages receive enriched data: YAML source, test stats, result details with color-coded status badges.
+### Verbose Mode
+`Arena.verboseRef` gates command tracing in `Arena.run`, including perf and GNU time measurements. Each subcommand declares its own `-v` flag: lean4-cli does not give a subcommand access to its parent's parsed flags.
 
 ### Error Handling Strategy
-- Functions return boolean success/failure
-- Commands continue on individual failures, report summary counts
-- Missing test files handled gracefully (status: "error")
-
-## Development Workflow
-
-### Task Completion Protocol
-**Always commit changes after completing each task or logical unit of work:**
-```bash
-git add .
-git commit -m "Brief description of changes made"
-```
-
-This ensures:
-- Progress is preserved between AI agent sessions
-- Changes can be easily reviewed and reverted if needed
-- Development history remains clean and traceable
-- Collaboration with human developers is seamless
+- Failures are thrown as `IO.Error`; `forEachReporting` in `Main.lean` catches per item and reports a summary count
+- A missing test file yields a recorded result with status `error`

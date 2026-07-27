@@ -1,4 +1,0 @@
-description: |
-  The `Init.Prelude` module export.
-leanfile: tests/init_prelude_module.lean
-outcome: accept

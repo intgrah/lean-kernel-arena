@@ -1,0 +1,3 @@
+leanfile = "tests/ctor-num-fields.lean"
+export_decls = ["bad"]
+outcome = "reject"

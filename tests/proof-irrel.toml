@@ -1,0 +1,3 @@
+leanfile = "tests/proof-irrel.lean"
+export_decls = ["bar"]
+outcome = "accept"

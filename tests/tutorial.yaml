@@ -1,6 +1,0 @@
-description: Multiple tutorial tests generated from a Lean project in the tutorial directory.
-dir: tutorial
-multiple: true
-run: |
-  lake clean
-  LEAN_ABORT_ON_PANIC=1 lake build Tutorial

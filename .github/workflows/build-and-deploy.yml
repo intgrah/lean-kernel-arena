@@ -87,26 +87,19 @@ jobs:
         continue-on-error: true
       
       - name: Build checkers
-        run: ./lka.py build-checker
+        run: lake exe lka build-checker
         shell: 'nix develop -c bash -euxo pipefail {0}'
 
       - name: Generate tests
-        run: ./lka.py build-test ${{ github.event_name != 'workflow_dispatch' && '--skip-ci' || '' }}
+        run: lake exe lka build-test ${{ github.event_name != 'workflow_dispatch' && '--skip-ci' || '' }}
         shell: 'nix develop -c bash -euxo pipefail {0}'
       
       - name: Run checkers on tests
-        run: ./lka.py run
+        run: lake exe lka run
         shell: 'nix develop -c bash -euxo pipefail {0}'
       
-      - name: Build tutorial test viewer
-        run: |
-          cd test-printer
-          lake build
-          lake exe test-printer ../_build/tests/tutorial/ ../_out/tutorial/index.html
-        shell: 'nix develop -c bash -euxo pipefail {0}'
-
       - name: Generate website
-        run: ./lka.py build-site
+        run: lake exe lka build-site
         shell: 'nix develop -c bash -euxo pipefail {0}'
       
       - name: Upload artifact

@@ -1,0 +1,3 @@
+version = "1.0"
+run = "exit 1"
+serious = false

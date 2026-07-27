@@ -1,0 +1,3 @@
+leanfile = "tests/k-rec-conv.lean"
+export_decls = ["bad"]
+outcome = "reject"

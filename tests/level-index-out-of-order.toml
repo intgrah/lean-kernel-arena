@@ -1,0 +1,2 @@
+file = "tests/level-index-out-of-order.ndjson"
+outcome = "accept"

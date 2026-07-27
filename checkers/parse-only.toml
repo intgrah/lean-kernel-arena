@@ -1,0 +1,5 @@
+version = "v4.27.0-rc1"
+dir = "official"
+build = "lake build"
+run = ".lake/build/bin/kernel --parse-only \"$IN\""
+serious = false

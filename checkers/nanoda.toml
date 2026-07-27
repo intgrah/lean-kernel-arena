@@ -1,0 +1,24 @@
+url = "https://github.com/ammkrn/nanoda_lib"
+ref = "master"
+rev = "f58f2f6d535e189a40fcb02ede8eb95f97a92d37"
+build = """
+cargo build --release
+cat > config.json <<__END__
+ {
+   "use_stdin": true,
+   "nat_extension": true,
+   "string_extension": true,
+   "unpermitted_axiom_hard_error": false,
+   "unsafe_permit_all_axioms": true,
+   "num_threads": 4
+ }
+__END__
+"""
+run = """
+target/release/nanoda_bin config.json < "$IN"
+case $? in 
+  0) exit 0 ;;
+  2) exit 2 ;;
+  *) exit 1 ;;
+esac
+"""

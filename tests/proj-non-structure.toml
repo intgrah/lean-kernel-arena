@@ -1,0 +1,3 @@
+leanfile = "tests/proj-non-structure.lean"
+export_decls = ["bad"]
+outcome = "reject"

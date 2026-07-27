@@ -1,0 +1,6 @@
+url = "https://github.com/nomeata/lean-mini-kernel"
+ref = "master"
+rev = "ad8ebe0e061a76b520061800b47bb60c3ce7d81e"
+build = "lake build"
+run = "timeout 30s .lake/build/bin/mini-kernel \"$IN\""
+serious = false

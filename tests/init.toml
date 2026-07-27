@@ -1,0 +1,4 @@
+leanfile = "tests/init_module.lean"
+outcome = "accept"
+compare_perf = true
+skip_on_ci = true
