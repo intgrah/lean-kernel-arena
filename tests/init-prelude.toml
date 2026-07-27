@@ -1,2 +1,0 @@
-leanfile = "tests/init_prelude_module.lean"
-outcome = "accept"

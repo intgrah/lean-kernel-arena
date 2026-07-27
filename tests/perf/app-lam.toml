@@ -1,4 +1,0 @@
-leanfile = "tests/perf/app-lam.lean"
-export_decls = ["dag_app_binder"]
-outcome = "accept"
-compare_perf = true

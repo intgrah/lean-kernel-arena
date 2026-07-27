@@ -20,7 +20,7 @@ The Lean Kernel Arena provides a systematic way to:
 
 Everything lives in one Lake package.
 
-- **Test definitions** (`tests/*.toml`): where the Lean export data comes from, and whether it should be accepted or rejected
+- **Test definitions** (`Tests/*.toml`): where the Lean export data comes from, and whether it should be accepted or rejected
 - **Checker definitions** (`checkers/*.toml`): how to build and run a proof checker
 - **`Arena/`**: the `lka` command-line tool that builds tests, builds checkers, runs them, and assembles the site data
 - **`ArenaSite/`**: the [Verso](https://github.com/leanprover/verso) site that renders the results
@@ -77,7 +77,7 @@ Contributions are welcome! We especially encourage:
 
 **We need more tests with tricky corner cases!** Tests that expose bugs or edge cases in existing checkers are particularly valuable.
 
-To contribute a test, create a TOML file in `tests/`, and add its description to `ArenaSite/Descriptions.lean`. Tests can be defined in several ways.
+To contribute a test, create a TOML file in `Tests/`, and add its description to `ArenaSite/Descriptions.lean`. Tests can be defined in several ways.
 
 #### Module-based test (from a Lean repository)
 
@@ -92,20 +92,22 @@ export_decls = ["myTheorem"]      # optional: export only these declarations and
 
 #### Single file test
 
-When a full lake project is overkill and a single file suffices, use `leanfile`:
+When a full lake project is overkill and a single file suffices, use `leanfile`. The file is a module of the Lake project rooted at `Tests/`, so it is named in PascalCase and added to the `roots` list in `lakefile.lean`:
 
 ```toml
-leanfile = "tests/my-test.lean"
+leanfile = "Tests/MyTest.lean"
 outcome = "accept"
 export_decls = ["myTheorem"]      # optional
 ```
+
+The test's own name comes from the `.toml` path, so `tests/proj-of-prop.toml` stays the test `proj-of-prop` whatever its Lean file is called.
 
 #### Static export file
 
 For a hand-crafted export file, use `file`:
 
 ```toml
-file = "tests/my-export.ndjson"
+file = "Tests/my-export.ndjson"
 outcome = "reject"
 ```
 

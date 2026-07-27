@@ -74,6 +74,10 @@ private def decodeSource (t : Table) : EDecodeM Source := do
   | _, _, _ =>
     throwDecodeErrorAt .missing "at most one of `url`, `dir`, `leanfile` may be given"
 
+def moduleOfLeanFile (path : String) : String :=
+  let rel := if path.startsWith "Tests/" then (path.drop 6).toString else path
+  (dropSuffix ".lean" rel).replace "/" "."
+
 private def decodeProduction (t : Table) (source : Source) : EDecodeM Production := do
   let module? ← t.decode? (α := String) `module
   let run? ← t.decode? (α := String) `run
@@ -83,7 +87,7 @@ private def decodeProduction (t : Table) (source : Source) : EDecodeM Production
   | some module, none, none, _ => return .exportModule module
   | none, some run, none, _ => return .script run multiple
   | none, none, some file, .empty => return .staticFile file
-  | none, none, none, .leanFile _ => return .exportModule "Test"
+  | none, none, none, .leanFile path => return .exportModule (moduleOfLeanFile path)
   | none, none, some _, _ =>
     throwDecodeErrorAt .missing "`file` cannot be combined with a source"
   | none, none, none, _ =>
@@ -149,8 +153,12 @@ def loadTestConfig (name : String) : IO TestConfig :=
 def loadCheckerConfig (name : String) : IO CheckerConfig :=
   Decode.decodeFile _ (checkersDir / (name ++ ".toml")) name Decode.decodeChecker
 
+def isLakeBookkeeping (name : String) : Bool :=
+  name == "lakefile" || name.endsWith "/lakefile"
+
 def loadTestConfigs : IO (Array TestConfig) := do
-  (← findNamesUnder testsDir ".toml" 2).mapM loadTestConfig
+  let names := (← findNamesUnder testsDir ".toml" 2).filter (!isLakeBookkeeping ·)
+  names.mapM loadTestConfig
 
 def loadCheckerConfigs : IO (Array CheckerConfig) := do
   let all ← (← findNamesIn checkersDir ".toml").mapM loadCheckerConfig

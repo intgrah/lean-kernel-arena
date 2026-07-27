@@ -69,24 +69,6 @@ def runSiteData (p : Parsed) : IO UInt32 := do
   generateSiteData
   return 0
 
-def renderTutorial (outdir : System.FilePath) : IO Unit := do
-  let tutorialTests := builtTestsDir / "tutorial"
-  unless ← tutorialTests.isDir do
-    IO.println "  No tutorial tests built; skipping the tutorial viewer"
-    return
-  let build ← runShell "lake build" (cwd := "test-printer") (printOnFailure := true)
-  unless build.ok do throw <| .userError "failed to build test-printer"
-  let target := outdir / "tutorial" / "index.html"
-  IO.FS.createDirAll (outdir / "tutorial")
-  let printer ← run {
-    cmd := "lake"
-    args := #["exe", "test-printer", (← IO.FS.realPath tutorialTests).toString,
-      (← absolute target).toString]
-    cwd := "test-printer"
-  }
-  unless printer.ok do throw <| .userError s!"test-printer failed: {printer.stderr}"
-  IO.println s!"Generated: {target}"
-
 def runBuildSite (p : Parsed) : IO UInt32 := do
   applyVerbosity p
   let outdir : System.FilePath := p.flag! "outdir" |>.as! String
@@ -100,7 +82,6 @@ def runBuildSite (p : Parsed) : IO UInt32 := do
   unless site.ok do throw <| .userError "site generation failed"
   copyFile tarballPath (outdir / tarballName)
   IO.println s!"Generated: {outdir / tarballName}"
-  renderTutorial outdir
   IO.println s!"\nSite built successfully in: {outdir}"
   return 0
 
@@ -147,7 +128,7 @@ def siteDataCmd := `[Cli|
 
 def buildSiteCmd := `[Cli|
   "build-site" VIA runBuildSite;
-  "Regenerate the site data, render the Verso site, the tutorial viewer and the test tarball."
+  "Regenerate the site data, render the Verso site and pack the test tarball."
 
   FLAGS:
     v, verbose;        "Print each command as it runs, with its timing and memory."

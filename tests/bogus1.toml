@@ -1,3 +1,0 @@
-leanfile = "tests/bogus1.lean"
-export_decls = ["thm"]
-outcome = "reject"

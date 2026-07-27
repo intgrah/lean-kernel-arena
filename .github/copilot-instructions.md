@@ -8,7 +8,7 @@ This is a **benchmarking framework for Lean kernel implementations** that tests 
 - **`Arena/`** + **`Main.lean`**: the `lka` CLI — builds tests, builds checkers, runs them, assembles site data
 - **`ArenaSite/`** + **`ArenaSite.lean`**: the Verso site (`arena-site` executable) rendering the results
 - **`ArenaSite/Descriptions.lean`**: prose for every test and checker, authored in Verso markup
-- **Test definitions** (`tests/*.toml`): where the export data comes from, and the expected outcome
+- **Test definitions** (`Tests/*.toml`): where the export data comes from, and the expected outcome
 - **Checker definitions** (`checkers/*.toml`): how to build and run a proof checker
 - **Nix environment**: reproducible toolchain via `flake.nix`
 
@@ -36,7 +36,7 @@ lake exe lka build-site                # Regenerate data, site, tutorial viewer,
 ### Key Conventions
 - **Exit codes determine status**: 0=accepted, 1=rejected, 2=declined, anything else=error
 - **TOML-driven configuration**: one file per test and per checker
-- **Name derivation**: the path under `tests/` or `checkers/` without the extension is the name, so `tests/perf/app-lam.toml` is the test `perf/app-lam`
+- **Name derivation**: the path under `Tests/` or `checkers/` without the extension is the name, so `Tests/Perf/AppLam.toml` is the test `perf/app-lam`. The Lean file it points at is a module of the `Tests/` Lake project and is PascalCase — test identity and module name are deliberately decoupled
 - **Descriptions live in Lean**, not in the config files: add an entry to `ArenaSite/Descriptions.lean` and to the lookup at the bottom of that file
 - **Config validity is a type**: `Arena.Source` and `Arena.Production` encode which field combinations are legal; the TOML decoder in `Arena/Config.lean` rejects the rest
 

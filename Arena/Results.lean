@@ -18,9 +18,8 @@ structure TestStats extends ExportMeta where
   generatedDescription : Option String := none
   declarationUrl : Option String := none
   sourceUrl : Option String := none
+  ndjsonPath : System.FilePath := ""
 
-def TestStats.ndjsonPath (s : TestStats) : System.FilePath :=
-  builtTestsDir / (s.name ++ ".ndjson")
 
 private def field [ToJson α] (key : String) : Option α → List (String × Json)
   | some v => [(key, toJson v)]
@@ -114,9 +113,11 @@ private def loadAll (α) [FromJson α] (dir : System.FilePath) (ext : String)
     | .error err => throw <| .userError s!"{name}{ext}: {err}"
 
 def loadTestStats : IO (Array TestStats) := do
-  let stats ← loadAll TestStats builtTestsDir ".stats.json"
-    (← findNamesUnder builtTestsDir ".stats.json" 2)
-  return stats.qsort (·.name < ·.name)
+  let paths ← findNamesUnder builtTestsDir ".stats.json" 2
+  let stats ← loadAll TestStats builtTestsDir ".stats.json" paths
+  let located := stats.zipWith (fun s path =>
+    { s with ndjsonPath := builtTestsDir / (path ++ ".ndjson") }) paths
+  return located.qsort (·.name < ·.name)
 
 def loadRunResults : IO (Array RunResult) := do
   loadAll RunResult resultsDir ".json" (← findNamesIn resultsDir ".json")

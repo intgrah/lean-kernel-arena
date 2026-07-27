@@ -32,16 +32,13 @@ def testDescriptionBlocks (test : TestInfo) : Array (Block Page) :=
 def checkerDescriptionBlocks (name : String) : Array (Block Page) :=
   (Descriptions.checkerDescription? name).getD #[]
 
-private def expectationCell (expectation : Option Expectation) : Html :=
-  match expectation with
-  | some expectation =>
-    {{ <td class="cell" title={{toString expectation}}>
-         {{textHtml (expectationGlyph expectation)}}</td> }}
-  | none => {{ <td class="cell">{{textHtml missing}}</td> }}
-
-private def statusOnlyCell (test : TestInfo) (result : ResultInfo) : Html :=
-  {{ <td class={{(toneOf result.status test.expectation).className}}
-        title={{toString result.status}}>{{textHtml (statusGlyph result.status)}}</td> }}
+private def expectationColumn (test : α → TestInfo) : Column α :=
+  column columnExpected (align := .center) fun row =>
+    match (test row).expectation with
+    | some expectation =>
+      {{ <td class="cell" title={{toString expectation}} data-sort={{toString expectation}}>
+           {{textHtml (expectationGlyph expectation)}}</td> }}
+    | none => {{ <td class="cell">{{textHtml missing}}</td> }}
 
 private def testMetaRow (test : TestInfo) : Html :=
   let items := #[
@@ -102,21 +99,14 @@ def checkerPart (checker : CheckerInfo) (rows : Array CheckerRow) (rate : Nat) :
     blockHtml (metaRow #[metaItem versionLabel checker.version]
       (linkGroup checker.declarationUrl checker.sourceUrl))
   ]
-  let summary := dataTable "" (
-      #[{{ <th>{{textHtml columnTest}}</th> }},
-        {{ <th class="center">{{textHtml columnExpected}}</th> }},
-        {{ <th class="center">{{textHtml columnResult}}</th> }}]
-      ++ perfHeaderCells)
-    (rows.map fun row => {{
-      <tr>
-        <td class="name">
-          <a href={{"#" ++ anchorId row.test.name}}>{{textHtml row.test.name}}</a>
-        </td>
-        {{expectationCell row.test.expectation}}
-        {{statusOnlyCell row.test row.result}}
-        {{perfCells row.test row.result row.baseline rate}}
-      </tr>
-    }})
+  let summary := renderTable {
+    nameLabel := columnTest
+    name := (·.test.name)
+    href := fun name => "#" ++ anchorId name
+    columns :=
+      #[expectationColumn (·.test), statusColumn columnResult (·.test) (·.result)]
+      ++ perfColumns (·.test) (·.result) (·.baseline) rate
+  } rows
   let body :=
     if rows.isEmpty then #[para #[text noResults]]
     else #[scoreCards checker.stats, summary, heading detailedResultsHeading]
@@ -140,19 +130,14 @@ def testPart (test : TestInfo) (rows : Array TestRow) (baseline : Option ResultI
   ]
   let table :=
     if rows.isEmpty then #[para #[text noCheckerResults]]
-    else #[dataTable "" (
-        #[{{ <th>{{textHtml columnChecker}}</th> }},
-          {{ <th class="center">{{textHtml columnResult}}</th> }}]
-        ++ perfHeaderCells)
-      (rows.map fun row => {{
-        <tr>
-          <td class="name">
-            <a href={{resultHref row.checker test.name}}>{{textHtml row.checker}}</a>
-          </td>
-          {{statusOnlyCell test row.result}}
-          {{perfCells test row.result baseline rate}}
-        </tr>
-      }})]
+    else #[renderTable {
+      nameLabel := columnChecker
+      name := (·.checker)
+      href := fun checker => resultHref checker test.name
+      columns :=
+        #[statusColumn columnResult (fun _ => test) (·.result)]
+        ++ perfColumns (fun _ => test) (·.result) (fun _ => baseline) rate
+    } rows]
   pagePart test.name (header ++ testDescriptionBlocks test ++ table)
 
 def groupPart (title : String) (children : Array String) : Part Page :=

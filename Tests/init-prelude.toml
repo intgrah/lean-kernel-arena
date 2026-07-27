@@ -1,0 +1,2 @@
+leanfile = "Tests/InitPreludeModule.lean"
+outcome = "accept"

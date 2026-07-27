@@ -1,0 +1,3 @@
+leanfile = "Tests/ProjOfProp.lean"
+export_decls = ["badFalse"]
+outcome = "reject"

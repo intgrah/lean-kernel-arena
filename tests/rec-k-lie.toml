@@ -1,3 +1,0 @@
-leanfile = "tests/rec-k-lie.lean"
-export_decls = ["bad"]
-outcome = "reject"

@@ -1,6 +1,6 @@
 namespace Arena
 
-def testsDir : System.FilePath := "tests"
+def testsDir : System.FilePath := "Tests"
 def checkersDir : System.FilePath := "checkers"
 
 def buildDir : System.FilePath := "_build"

@@ -32,39 +32,32 @@ private def heroSection (payload : Payload) : Block Page :=
     }}
   ]
 
-private def checkerRow (checker : CheckerInfo) (rate : Nat) : Html :=
-  let stats := checker.stats
-  let accept := fractionTone stats.acceptCorrect stats.acceptTotal
-  let reject := fractionTone stats.rejectCorrect stats.rejectTotal
-  {{
-    <tr>
-      <td class="name"><a href={{checkerHref checker.name}}>{{textHtml checker.name}}</a></td>
-      <td class="version">{{textHtml checker.version}}</td>
-      <td class={{accept.className}}>
-        {{textHtml (fraction stats.acceptCorrect stats.acceptTotal)}}
-      </td>
-      <td class={{reject.className}}>
-        {{textHtml (fraction stats.rejectCorrect stats.rejectTotal)}}
-      </td>
-      <td class="cell">{{textHtml (toString stats.declined)}}</td>
-      {{durationCell stats.benchmark rate missing}}
-      {{memoryCell stats.benchmark missing}}
-    </tr>
-  }}
-
 private def checkersTable (payload : Payload) : Block Page :=
   if payload.checkers.isEmpty then
     para #[text noCheckers]
   else
-    dataTable "" #[
-      {{ <th>{{textHtml columnChecker}}</th> }},
-      {{ <th>{{textHtml columnVersion}}</th> }},
-      {{ <th class="center" title={{acceptedColumnTitle}}>{{textHtml acceptedGlyph}}</th> }},
-      {{ <th class="center" title={{rejectedColumnTitle}}>{{textHtml rejectedGlyph}}</th> }},
-      {{ <th class="center" title={{declinedColumnTitle}}>{{textHtml declinedGlyph}}</th> }},
-      {{ <th class="numeric" title={{timeColumnTitle}}>{{textHtml timeGlyph}}</th> }},
-      {{ <th class="numeric" title={{memoryColumnTitle}}>{{textHtml memoryGlyph}}</th> }}
-    ] (payload.checkers.map (checkerRow · payload.instructionsPerSecond))
+    let rate := payload.instructionsPerSecond
+    renderTable {
+      nameLabel := columnChecker
+      name := (·.name)
+      href := checkerHref
+      columns := #[
+        column columnVersion fun checker =>
+          {{ <td class="version">{{textHtml checker.version}}</td> }},
+        column completenessColumn (align := .center) (title := acceptedColumnTitle)
+          fun checker => fractionCell .incomplete checker.stats.acceptCorrect
+            checker.stats.acceptTotal,
+        column soundnessColumn (align := .center) (title := rejectedColumnTitle)
+          fun checker => fractionCell .unsound checker.stats.rejectCorrect
+            checker.stats.rejectTotal,
+        column declinedColumn (align := .center) (title := declinedColumnTitle)
+          fun checker => {{ <td class="cell">{{textHtml (toString checker.stats.declined)}}</td> }},
+        column timeColumn (align := .numeric) (title := timeColumnTitle)
+          fun checker => durationCell checker.stats.benchmark rate missing,
+        column memoryColumn (align := .numeric) (title := memoryColumnTitle)
+          fun checker => memoryCell checker.stats.benchmark missing
+      ]
+    } payload.checkers
 
 private def matrixCell (index : ResultIndex) (baseline : Option Float) (isBaseline : Bool)
     (checker : CheckerInfo) (test : TestInfo) (rate : Nat) : Html :=
@@ -81,33 +74,39 @@ private def matrixCell (index : ResultIndex) (baseline : Option Float) (isBaseli
     statusCell (toneOf result.status test.expectation) (resultHref checker.name test.name)
       (comparison.getD (textHtml (statusGlyph result.status)))
 
-private def testRow (index : ResultIndex) (checkers : Array CheckerInfo) (payload : Payload)
-    (test : TestInfo) : Html :=
+private def sizeColumn : Column TestInfo :=
+  column columnSize (align := .numeric)
+    (groupCell := fun tests => sizeCell (tests.foldl (init := 0) fun n test => n + test.size))
+    fun test => sizeCell test.size
+
+private def checkerColumn (index : ResultIndex) (payload : Payload) (checker : CheckerInfo) :
+    Column TestInfo :=
   let rate := payload.instructionsPerSecond
-  let baseline := baselineSeconds (findResult index payload.baselineChecker test.name) rate
-  {{
-    <tr>
-      <td class="name"><a href={{testHref test.name}}>{{textHtml test.name}}</a></td>
-      {{checkers.map fun checker =>
-        matrixCell index baseline (checker.name == payload.baselineChecker) checker test rate}}
-      <td class="numeric">{{textHtml (Arena.formatMemory test.size.toFloat)}}</td>
-    </tr>
-  }}
+  {
+    header := {{ <th class="rotated">
+                   <a href={{checkerHref checker.name}}>{{textHtml checker.name}}</a>
+                 </th> }}
+    cell := fun test =>
+      let baseline := baselineSeconds (findResult index payload.baselineChecker test.name) rate
+      matrixCell index baseline (checker.name == payload.baselineChecker) checker test rate
+    groupCell := fun tests =>
+      tallyCell <| tests.filterMap fun test =>
+        (findResult index checker.name test.name).map fun result =>
+          ({ status := result.status, expectation := test.expectation } : Verdict)
+  }
 
 private def testsTable (payload : Payload) : Block Page :=
   if payload.tests.isEmpty then
     para #[text noTests]
   else
     let index := indexOf payload
-    let checkers := seriousCheckers payload
-    let headers :=
-      #[{{ <th>{{textHtml columnName}}</th> }}]
-      ++ checkers.map (fun checker =>
-        {{ <th class="rotated">
-             <a href={{checkerHref checker.name}}>{{textHtml checker.name}}</a>
-           </th> }})
-      ++ #[{{ <th class="numeric">{{textHtml columnSize}}</th> }}]
-    dataTable " matrix" headers (payload.tests.map (testRow index checkers payload))
+    renderTable {
+      extraClasses := " matrix"
+      nameLabel := columnName
+      name := (·.name)
+      href := testHref
+      columns := #[sizeColumn] ++ (seriousCheckers payload).map (checkerColumn index payload)
+    } payload.tests
 
 private def measurementsBlock (payload : Payload) : Block Page :=
   let rate := Arena.formatUnitless payload.instructionsPerSecond.toFloat

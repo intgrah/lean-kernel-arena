@@ -8,9 +8,6 @@ private def freshDir (path : System.FilePath) : IO Unit := do
   removeIfExists path
   IO.FS.createDirAll path
 
-private def standaloneLakefile : String :=
-  "name = \"test\"\n\n[[lean_lib]]\nname = \"Test\"\n"
-
 def setupSource (source : Source) (work : System.FilePath) (dirBase : System.FilePath) :
     IO System.FilePath := do
   freshDir work
@@ -30,13 +27,7 @@ def setupSource (source : Source) (work : System.FilePath) (dirBase : System.Fil
     copyTree source src
     IO.println s!"  Copied {source} to {src}"
   | .leanFile path =>
-    unless ← System.FilePath.pathExists path do
-      throw <| .userError s!"source file not found: {path}"
-    IO.FS.createDirAll src
-    copyFile path (src / "Test.lean")
-    copyFile (testsDir / "lean-toolchain") (src / "lean-toolchain")
-    IO.FS.writeFile (src / "lakefile.toml") standaloneLakefile
-    IO.println s!"  Prepared standalone Test module from {path}"
+    throw <| .userError s!"leanFile sources build in place, not via setupSource: {path}"
   | .empty =>
     IO.FS.createDirAll src
   return src
@@ -168,7 +159,7 @@ private def buildSingle (config : TestConfig) (produce : System.FilePath → IO 
   IO.FS.rename staging ndjson
   let stats ← gatherStats config.name config ndjson config.expectation none links
   writeJsonFile (builtTestsDir / (config.name ++ ".stats.json")) (Lean.toJson stats)
-  IO.println s!"  Created {stats.ndjsonPath} ({formatMemory stats.size.toFloat}, \
+  IO.println s!"  Created {ndjson} ({formatMemory stats.size.toFloat}, \
 {formatUnitless stats.lines.toFloat} lines)"
 
 def buildTest (config : TestConfig) (revision : Option String) : IO Unit := do
@@ -177,7 +168,10 @@ def buildTest (config : TestConfig) (revision : Option String) : IO Unit := do
   if let .staticFile path := config.production then
     IO.println s!"Creating test: {config.name} (static file)"
     return ← buildSingle config (fun staging => copyFile path staging) links
-  let src ← setupSource config.source (workRoot / "tests" / config.name) "."
+  let src ←
+    match config.source with
+    | .leanFile _ | .empty => pure ("." : System.FilePath)
+    | source => setupSource source (workRoot / "tests" / config.name) "."
   match config.production with
   | .staticFile _ => pure ()
   | .exportModule module =>

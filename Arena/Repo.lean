@@ -71,7 +71,7 @@ def sourceLinks (configPath : String) (source : Source) (dirPrefix : String)
         | .empty => none }
 
 def TestConfig.configPath (config : TestConfig) : String :=
-  s!"tests/{config.name}.toml"
+  s!"Tests/{config.name}.toml"
 
 def CheckerConfig.configPath (config : CheckerConfig) : String :=
   s!"checkers/{config.name}.toml"

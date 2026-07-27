@@ -1,0 +1,3 @@
+leanfile = "Tests/AccRec/Fuel.lean"
+export_decls = ["bad"]
+outcome = "accept"

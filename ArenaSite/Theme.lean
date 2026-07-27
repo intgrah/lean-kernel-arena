@@ -46,6 +46,8 @@ def theme : Theme := {
           <link rel="icon" type="image/svg+xml" href="static/favicon.svg"/>
           <link rel="stylesheet" href="static/style.css"/>
           <script src="static/theme-toggle.js"></script>
+          <script type="module" src="static/groups.js"></script>
+          <script type="module" src="static/sort.js"></script>
         </head>
         <body class={{bodyClass}}>
           <div class="site-shell">
@@ -56,11 +58,6 @@ def theme : Theme := {
                   <span class="wordmark-text">{{textHtml wordmarkText}}</span>
                 </a>
                 <div class="topbar-actions">
-                  <nav class="top">
-                    <ol>
-                      <li><a href="tutorial/">{{textHtml navTutorial}}</a></li>
-                    </ol>
-                  </nav>
                   <a class="topbar-github" href={{repoUrl}} aria-label={{topbarGithubAria}}
                      target="_blank" rel="noopener">{{githubIcon}}</a>
                   <button class="theme-toggle" type="button" aria-label={{themeToggleAria}}>
