@@ -1,49 +1,35 @@
 import Lean.Data.Json
+import Arena.Verdict
+import Arena.Layout
 
 namespace Arena
 
-def thinSpace : String := " " -- narrow no-break space U+202F
-
-private def roundTo (digits : Nat) (x : Float) : Nat :=
-  let scale := (10 ^ digits).toFloat
-  (x * scale + 0.5).floor.toUInt64.toNat
+def thinSpace : String := " " -- narrow no-break space U+202F
 
 def fixed (digits : Nat) (x : Float) : String :=
+  let scale := 10 ^ digits
+  let n := (x * scale.toFloat).round.toUInt64.toNat
   if digits == 0 then
-    toString (roundTo 0 x)
+    ToString.toString n
   else
-    let n := roundTo digits x
-    let scale := 10 ^ digits
-    let frac := toString (n % scale)
+    let frac := ToString.toString (n % scale)
     s!"{n / scale}.{"".pushn '0' (digits - frac.length)}{frac}"
 
+private def scaled (x : Float) (units : List (Float × String)) (fallback : String) : String :=
+  match units.find? fun (threshold, _) => x ≥ threshold with
+  | some (threshold, unit) => s!"{fixed 1 (x / threshold)}{thinSpace}{unit}"
+  | none => s!"{fixed 0 x}{thinSpace}{fallback}"
+
 def formatDuration (seconds : Float) : String :=
-  if seconds ≥ 3600 then s!"{fixed 1 (seconds / 3600)}{thinSpace}h"
-  else if seconds ≥ 60 then s!"{fixed 1 (seconds / 60)}{thinSpace}m"
-  else if seconds ≥ 1 then s!"{fixed 1 seconds}{thinSpace}s"
+  if seconds ≥ 1 then scaled seconds [(3600, "h"), (60, "m"), (1, "s")] "s"
   else s!"{fixed 0 (seconds * 1000)}{thinSpace}ms"
 
 def formatMemory (bytes : Float) : String :=
-  if bytes ≥ 1073741824 then s!"{fixed 1 (bytes / 1073741824)}{thinSpace}GB"
-  else if bytes ≥ 1048576 then s!"{fixed 1 (bytes / 1048576)}{thinSpace}MB"
-  else if bytes ≥ 1024 then s!"{fixed 1 (bytes / 1024)}{thinSpace}KB"
-  else s!"{fixed 0 bytes}{thinSpace}B"
+  scaled bytes [(1073741824, "GB"), (1048576, "MB"), (1024, "KB")] "B"
 
 def formatUnitless (count : Float) : String :=
-  if count ≥ 1e12 then s!"{fixed 1 (count / 1e12)}{thinSpace}T"
-  else if count ≥ 1e9 then s!"{fixed 1 (count / 1e9)}{thinSpace}G"
-  else if count ≥ 1e6 then s!"{fixed 1 (count / 1e6)}{thinSpace}M"
-  else if count ≥ 1e3 then s!"{fixed 1 (count / 1e3)}{thinSpace}k"
-  else toString (roundTo 0 count)
-
-def formatInstructions (count : Float) : String :=
-  if count ≥ 1e9 then s!"{fixed 1 (count / 1e9)}{thinSpace}G"
-  else if count ≥ 1e6 then s!"{fixed 1 (count / 1e6)}{thinSpace}M"
-  else if count ≥ 1e3 then s!"{fixed 1 (count / 1e3)}{thinSpace}k"
-  else toString (roundTo 0 count)
-
-def instructionsToTime (instructions : Nat) (perSecond : Float) : Float :=
-  if perSecond > 0 && instructions > 0 then instructions.toFloat / perSecond else 0.0
+  if count < 1e3 then fixed 0 count
+  else scaled count [(1e12, "T"), (1e9, "G"), (1e6, "M"), (1e3, "k")] ""
 
 partial def globMatch (pattern name : String) : Bool :=
   go pattern.toList name.toList
@@ -62,7 +48,12 @@ where
     | _ :: _, [] => false
 
 def dropSuffix (suffix s : String) : String :=
-  if s.endsWith suffix then (s.dropEnd suffix.length).toString else s
+  (s.toSlice.dropSuffix suffix).toString
+
+abbrev PairIndex (α : Type) := Std.HashMap (String × String) α
+
+def indexPairs (key : α → String × String) (items : Array α) : PairIndex α :=
+  items.foldl (init := {}) fun index item => index.insert (key item) item
 
 def relativeName (base path : System.FilePath) (ext : String) : Option String := do
   let base := base.toString
@@ -80,18 +71,19 @@ def findNamesIn (dir : System.FilePath) (ext : String) : IO (Array String) := do
   let entries ← sortedEntries dir
   return entries.filterMap fun entry => relativeName dir entry.path ext
 
-partial def findNamesUnder (dir : System.FilePath) (ext : String) : IO (Array String) :=
-  go dir
+partial def findNamesUnder (dir : System.FilePath) (ext : String) (depth : Nat) :
+    IO (Array String) :=
+  go dir depth
 where
-  go (d : System.FilePath) : IO (Array String) := do
+  go (d : System.FilePath) (remaining : Nat) : IO (Array String) := do
     let mut out := #[]
     for entry in ← sortedEntries d do
       if entry.fileName.startsWith "." then
         continue
-      else if ← entry.path.isDir then
-        out := out ++ (← go entry.path)
       else if let some name := relativeName dir entry.path ext then
         out := out.push name
+      else if remaining > 0 && (← entry.path.isDir) then
+        out := out ++ (← go entry.path (remaining - 1))
     return out
 
 def absolute (path : System.FilePath) : IO System.FilePath := do

@@ -53,14 +53,23 @@ private def spawnCapturing (inv : Invocation) : IO (UInt32 × String × String) 
     }
     return (← child.wait, "", "")
 
-private def elapsedSince (startNanos : Nat) : IO Float := do
-  return ((← IO.monoNanosNow) - startNanos).toFloat / 1e9
+private def timed (inv : Invocation) : IO Outcome := do
+  let startNanos ← IO.monoNanosNow
+  let (exitCode, stdout, stderr) ← spawnCapturing inv
+  let elapsed := ((← IO.monoNanosNow) - startNanos).toFloat / 1e9
+  return { exitCode, stdout, stderr, wallTime := elapsed }
+
+initialize perfAvailableRef : IO.Ref (Option Bool) ← IO.mkRef none
 
 private def perfAvailable : IO Bool := do
-  try
-    let out ← IO.Process.output { cmd := "perf", args := #["--version"] }
-    return out.exitCode == 0
-  catch _ => return false
+  if let some known := ← perfAvailableRef.get then return known
+  let available ←
+    try
+      let out ← IO.Process.output { cmd := "perf", args := #["--version"] }
+      pure (out.exitCode == 0)
+    catch _ => pure false
+  perfAvailableRef.set (some available)
+  return available
 
 private def asFloat? : Json → Option Float
   | .num n => some n.toFloat
@@ -94,10 +103,7 @@ private def parseMaxRssBytes (gnuTimeReport : String) : Nat :=
     | _ => rss
 
 private def measured (inv : Invocation) : IO Outcome := do
-  let startNanos ← IO.monoNanosNow
-  if !(← perfAvailable) then
-    let (exitCode, stdout, stderr) ← spawnCapturing inv
-    return { exitCode, stdout, stderr, wallTime := ← elapsedSince startNanos }
+  if !(← perfAvailable) then return ← timed inv
   IO.FS.withTempDir fun tmp => do
     let perfPath := tmp / "perf.json"
     let timePath := tmp / "time.txt"
@@ -109,35 +115,31 @@ private def measured (inv : Invocation) : IO Outcome := do
       inv.cmd
     ]
     let localeIndependent := inv.env.push ("LC_ALL", some "C")
-    let (exitCode, stdout, stderr) ← spawnCapturing {
+    let outcome ← timed {
       inv with cmd := "perf", args := wrapper ++ inv.args, env := localeIndependent
     }
-    let wallFallback ← elapsedSince startNanos
     let perf := parsePerfReport (← IO.FS.readFile perfPath)
     let maxRss := parseMaxRssBytes (← IO.FS.readFile timePath)
-    let wallTime := if perf.wallTime > 0 then perf.wallTime else wallFallback
-    return { perf with exitCode, stdout, stderr, wallTime, maxRss }
+    let wallTime := if perf.wallTime > 0 then perf.wallTime else outcome.wallTime
+    return { outcome with
+      cpuTime := perf.cpuTime, instructions := perf.instructions, wallTime, maxRss }
 
 def run (inv : Invocation) (measurePerf := false) (printOnFailure := false) : IO Outcome := do
-  if ← verbose then
+  let loud ← verbose
+  if loud then
     let inDir := match inv.cwd with | some d => s!" (in {d})" | none => ""
     IO.println s!"    $ {inv.display}{inDir}"
-  let startNanos ← IO.monoNanosNow
-  let outcome ←
-    if measurePerf then measured inv
-    else do
-      let (exitCode, stdout, stderr) ← spawnCapturing inv
-      pure { exitCode, stdout, stderr, wallTime := ← elapsedSince startNanos }
-  if ← verbose then
+  let outcome ← if measurePerf then measured inv else timed inv
+  if loud then
     let status := if outcome.ok then "ok" else s!"FAILED (exit {outcome.exitCode})"
     let mut detail := s!"wall: {formatDuration outcome.wallTime}"
     if outcome.cpuTime > 0 then detail := detail ++ s!", cpu: {formatDuration outcome.cpuTime}"
     if outcome.maxRss > 0 then detail := detail ++ s!", rss: {formatMemory outcome.maxRss.toFloat}"
     if outcome.instructions > 0 then
-      detail := detail ++ s!", inst: {formatInstructions outcome.instructions.toFloat}"
+      detail := detail ++ s!", inst: {formatUnitless outcome.instructions.toFloat}"
     IO.println s!"      -> {status} ({detail})"
-  if (← verbose) || (printOnFailure && !outcome.ok) then
-    let pad := if ← verbose then "               " else "          "
+  if loud || (printOnFailure && !outcome.ok) then
+    let pad := if loud then "               " else "          "
     unless outcome.stdout.isEmpty do
       IO.println s!"  stdout: {indentAfterNewlines pad outcome.stdout}"
     unless outcome.stderr.isEmpty do
@@ -157,6 +159,11 @@ def capture (cmd : String) (args : Array String) (cwd : Option System.FilePath :
 def copyFile (src dst : System.FilePath) : IO Unit := do
   if let some parent := dst.parent then IO.FS.createDirAll parent
   IO.FS.writeBinFile dst (← IO.FS.readBinFile src)
+
+def linkFile (src dst : System.FilePath) : IO Unit := do
+  if let some parent := dst.parent then IO.FS.createDirAll parent
+  let outcome ← run { cmd := "cp", args := #["-l", src.toString, dst.toString] }
+  unless outcome.ok do copyFile src dst
 
 def copyTree (src dst : System.FilePath) : IO Unit := do
   if let some parent := dst.parent then IO.FS.createDirAll parent

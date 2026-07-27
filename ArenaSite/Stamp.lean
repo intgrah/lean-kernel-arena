@@ -9,14 +9,14 @@ namespace ArenaSite
 
 open ArenaSite.Copy
 
+def payloadField (project : Payload → α) [Quote α] (type : Name) : TermElabM Expr := do
+  let stx : TSyntax `term := quote (project (← loadPayload))
+  elabTerm stx (some (mkConst type))
+
 scoped syntax "build_info%" : term
 
 elab_rules : term
-  | `(build_info%) => do
-    let payload ← loadPayload
-    let stx : TSyntax `term := quote payload.build
-    let expected ← elabTerm (← `(BuildInfo)) none
-    elabTerm stx (some expected)
+  | `(build_info%) => payloadField (·.build) ``BuildInfo
 
 private def separated (label : String) (url : Option String) : Html :=
   let body := match url with

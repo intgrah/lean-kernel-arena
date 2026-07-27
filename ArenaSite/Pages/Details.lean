@@ -14,7 +14,7 @@ open ArenaSite.Copy
 structure CheckerRow where
   test : TestInfo
   result : ResultInfo
-  official : Option ResultInfo
+  baseline : Option ResultInfo
 deriving Inhabited, Quote
 
 structure TestRow where
@@ -32,66 +32,16 @@ def testDescriptionBlocks (test : TestInfo) : Array (Block Page) :=
 def checkerDescriptionBlocks (name : String) : Array (Block Page) :=
   (Descriptions.checkerDescription? name).getD #[]
 
-private def durationCell (result : ResultInfo) (rate : Nat) : Html :=
-  match virtualSeconds result.metrics rate with
-  | some seconds =>
-    let hint := Arena.formatInstructions result.metrics.instructions.toFloat ++ " instructions"
-    {{ <td class="numeric" title={{hint}}>{{textHtml (Arena.formatDuration seconds)}}</td> }}
-  | none => {{ <td class="numeric"></td> }}
-
-private def durationDeltaCell (test : TestInfo) (result : ResultInfo)
-    (official : Option ResultInfo) (rate : Nat) : Html :=
-  let delta : Option Int := do
-    guard (perfComparable test result.status)
-    let official ← official
-    guard (official.status == .accepted)
-    let baseline ← virtualSeconds official.metrics rate
-    guard (baseline ≥ timeComparisonFloor)
-    let seconds ← virtualSeconds result.metrics rate
-    return percentChange baseline seconds
-  match delta with
-  | some percent => {{ <td class="delta">{{textHtml s!"({formatPercent percent})"}}</td> }}
-  | none => {{ <td class="delta"></td> }}
-
-private def memoryCell (result : ResultInfo) : Html :=
-  if result.metrics.maxRss > 0 then
-    {{ <td class="numeric">{{textHtml (Arena.formatMemory result.metrics.maxRss.toFloat)}}</td> }}
-  else
-    {{ <td class="numeric"></td> }}
-
-private def memoryDeltaCell (test : TestInfo) (result : ResultInfo)
-    (official : Option ResultInfo) : Html :=
-  let delta : Option Int := do
-    guard (perfComparable test result.status)
-    let official ← official
-    guard (official.status == .accepted)
-    guard (official.metrics.maxRss ≥ memoryComparisonFloor)
-    guard (result.metrics.maxRss > 0)
-    return percentChange official.metrics.maxRss.toFloat result.metrics.maxRss.toFloat
-  match delta with
-  | some percent => {{ <td class="delta">{{textHtml s!"({formatPercent percent})"}}</td> }}
-  | none => {{ <td class="delta"></td> }}
-
-def perfCells (test : TestInfo) (result : ResultInfo) (official : Option ResultInfo)
-    (rate : Nat) : Array Html :=
-  #[durationCell result rate, durationDeltaCell test result official rate,
-    memoryCell result, memoryDeltaCell test result official]
-
-def perfHeaderCells : Array Html :=
-  #[{{ <th class="numeric">{{textHtml timeGlyph}}</th> }}, {{ <th class="delta"></th> }},
-    {{ <th class="numeric">{{textHtml memoryGlyph}}</th> }}, {{ <th class="delta"></th> }}]
-
 private def expectationCell (expectation : Option Expectation) : Html :=
   match expectation with
   | some expectation =>
-    {{ <td class="cell" title={{expectationLabel expectation}}>
+    {{ <td class="cell" title={{toString expectation}}>
          {{textHtml (expectationGlyph expectation)}}</td> }}
   | none => {{ <td class="cell">{{textHtml missing}}</td> }}
 
 private def statusOnlyCell (test : TestInfo) (result : ResultInfo) : Html :=
-  let tone := toneOf result.status test.expectation
-  {{ <td class={{tone.className}} title={{statusLabel result.status}}>
-       {{textHtml (statusGlyph result.status)}}</td> }}
+  {{ <td class={{(toneOf result.status test.expectation).className}}
+        title={{toString result.status}}>{{textHtml (statusGlyph result.status)}}</td> }}
 
 private def testMetaRow (test : TestInfo) : Html :=
   let items := #[
@@ -103,54 +53,27 @@ private def testMetaRow (test : TestInfo) : Html :=
   metaRow items (linkGroup test.declarationUrl test.sourceUrl)
 
 private def resultLine (test : TestInfo) (result : ResultInfo) : Html :=
-  let tone := toneOf result.status test.expectation
+  let metrics := result.metrics
   let facts := #[
     some s!"{exitCodeLabel} {result.exitCode}",
-    if result.metrics.wallSeconds > 0 then
-      some s!"{wallTimeLabel}: {Arena.formatDuration result.metrics.wallSeconds}"
+    if metrics.wallNanos > 0 then
+      some s!"{wallTimeLabel}: {Arena.formatDuration metrics.wallSeconds}"
     else none,
-    if result.metrics.instructions > 0 then
-      some s!"{instructionsLabel}: {Arena.formatUnitless result.metrics.instructions.toFloat}"
+    if metrics.instructions > 0 then
+      some s!"{instructionsLabel}: {Arena.formatUnitless metrics.instructions.toFloat}"
     else none,
-    if result.metrics.maxRss > 0 then
-      some s!"{memoryLabel}: {Arena.formatMemory result.metrics.maxRss.toFloat}"
+    if metrics.maxRss > 0 then
+      some s!"{memoryLabel}: {Arena.formatMemory metrics.maxRss.toFloat}"
     else none
   ].filterMap id
   {{
     <p class="meta-row">
       <b>{{textHtml resultLabel}}</b>
-      <span class={{tone.className}}>
-        {{textHtml s!"{statusGlyph result.status} {statusLabel result.status}"}}
+      <span class={{(toneOf result.status test.expectation).className}}>
+        {{textHtml s!"{statusGlyph result.status} {result.status}"}}
       </span>
       {{facts.map fun fact => {{ <span class="meta-item">{{textHtml fact}}</span> }} }}
     </p>
-  }}
-
-private def checkerSummaryRow (row : CheckerRow) (rate : Nat) : Html :=
-  {{
-    <tr>
-      <td class="name">
-        <a href={{"#" ++ anchorId row.test.name}}>{{textHtml row.test.name}}</a>
-      </td>
-      {{expectationCell row.test.expectation}}
-      {{statusOnlyCell row.test row.result}}
-      {{perfCells row.test row.result row.official rate}}
-    </tr>
-  }}
-
-private def checkerSummaryTable (rows : Array CheckerRow) (rate : Nat) : Block Page :=
-  blockHtml <| scrollTable {{
-    <table class="arena-table">
-      <thead>
-        <tr>
-          <th>{{textHtml columnTest}}</th>
-          <th class="center">{{textHtml columnExpected}}</th>
-          <th class="center">{{textHtml columnResult}}</th>
-          {{perfHeaderCells}}
-        </tr>
-      </thead>
-      <tbody>{{rows.map (checkerSummaryRow · rate)}}</tbody>
-    </table>
   }}
 
 private def scoreCards (stats : CheckerStats) : Block Page :=
@@ -179,28 +102,34 @@ def checkerPart (checker : CheckerInfo) (rows : Array CheckerRow) (rate : Nat) :
     blockHtml (metaRow #[metaItem versionLabel checker.version]
       (linkGroup checker.declarationUrl checker.sourceUrl))
   ]
+  let summary := dataTable "" (
+      #[{{ <th>{{textHtml columnTest}}</th> }},
+        {{ <th class="center">{{textHtml columnExpected}}</th> }},
+        {{ <th class="center">{{textHtml columnResult}}</th> }}]
+      ++ perfHeaderCells)
+    (rows.map fun row => {{
+      <tr>
+        <td class="name">
+          <a href={{"#" ++ anchorId row.test.name}}>{{textHtml row.test.name}}</a>
+        </td>
+        {{expectationCell row.test.expectation}}
+        {{statusOnlyCell row.test row.result}}
+        {{perfCells row.test row.result row.baseline rate}}
+      </tr>
+    }})
   let body :=
     if rows.isEmpty then #[para #[text noResults]]
-    else
-      #[scoreCards checker.stats, checkerSummaryTable rows rate,
-        blockHtml {{ <h2>{{textHtml detailedResultsHeading}}</h2> }}]
+    else #[scoreCards checker.stats, summary, heading detailedResultsHeading]
       ++ rows.flatMap detailBlocks
   pagePart checker.name (header ++ checkerDescriptionBlocks checker.name ++ body)
 
-private def testResultRow (test : TestInfo) (row : TestRow) (official : Option ResultInfo)
-    (rate : Nat) : Html :=
-  {{
-    <tr>
-      <td class="name">
-        <a href={{resultHref row.checker test.name}}>{{textHtml row.checker}}</a>
-      </td>
-      {{statusOnlyCell test row.result}}
-      {{perfCells test row.result official rate}}
-    </tr>
-  }}
-
-def testPart (test : TestInfo) (rows : Array TestRow) (official : Option ResultInfo)
+def testPart (test : TestInfo) (rows : Array TestRow) (baseline : Option ResultInfo)
     (rate : Nat) : Part Page :=
+  let expectationItem :=
+    match test.expectation with
+    | some expectation =>
+      metaItem expectedLabel s!"{expectationGlyph expectation} {expectation}"
+    | none => metaItem expectedLabel missing
   let header := #[
     breadcrumb test.name,
     heading (testHeading test.name),
@@ -211,25 +140,20 @@ def testPart (test : TestInfo) (rows : Array TestRow) (official : Option ResultI
   ]
   let table :=
     if rows.isEmpty then #[para #[text noCheckerResults]]
-    else #[blockHtml <| scrollTable {{
-      <table class="arena-table">
-        <thead>
-          <tr>
-            <th>{{textHtml columnChecker}}</th>
-            <th class="center">{{textHtml columnResult}}</th>
-            {{perfHeaderCells}}
-          </tr>
-        </thead>
-        <tbody>{{rows.map (testResultRow test · official rate)}}</tbody>
-      </table>
-    }}]
+    else #[dataTable "" (
+        #[{{ <th>{{textHtml columnChecker}}</th> }},
+          {{ <th class="center">{{textHtml columnResult}}</th> }}]
+        ++ perfHeaderCells)
+      (rows.map fun row => {{
+        <tr>
+          <td class="name">
+            <a href={{resultHref row.checker test.name}}>{{textHtml row.checker}}</a>
+          </td>
+          {{statusOnlyCell test row.result}}
+          {{perfCells test row.result baseline rate}}
+        </tr>
+      }})]
   pagePart test.name (header ++ testDescriptionBlocks test ++ table)
-where
-  expectationItem :=
-    match test.expectation with
-    | some expectation =>
-      metaItem expectedLabel s!"{expectationGlyph expectation} {expectationLabel expectation}"
-    | none => metaItem expectedLabel missing
 
 def groupPart (title : String) (children : Array String) : Part Page :=
   pagePart title #[

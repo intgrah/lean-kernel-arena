@@ -40,11 +40,6 @@ def rejectedGlyph : String := "✋"
 def declinedGlyph : String := "🚫"
 def erroredGlyph : String := "💥"
 
-def acceptedLabel : String := "accepted"
-def rejectedLabel : String := "rejected"
-def declinedLabel : String := "declined"
-def erroredLabel : String := "error"
-
 def checkersHeading : String := "Checkers"
 def testsHeading : String := "Tests"
 def detailsHeading : String := "Details"

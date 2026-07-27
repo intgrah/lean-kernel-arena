@@ -6,22 +6,6 @@ open Lake.Toml (Table Value EDecodeM throwDecodeErrorAt)
 
 namespace Arena
 
-inductive Expectation
-  | accept
-  | reject
-deriving DecidableEq, Repr
-
-def Expectation.toString : Expectation → String
-  | .accept => "accept"
-  | .reject => "reject"
-
-instance : ToString Expectation := ⟨Expectation.toString⟩
-
-def Expectation.ofString? : String → Option Expectation
-  | "accept" => some .accept
-  | "reject" => some .reject
-  | _ => none
-
 inductive Source
   | git (url : String) (ref rev : Option String)
   | localDir (path : String)
@@ -54,7 +38,6 @@ structure CheckerConfig where
   runCommand : String
   disabled : Bool
   serious : Bool
-  threads : Nat
 deriving Repr
 
 def CheckerConfig.displayVersion (c : CheckerConfig) : String :=
@@ -139,7 +122,6 @@ private def decodeChecker (name : String) (t : Table) : EDecodeM CheckerConfig :
     runCommand := ← t.decode (α := String) `run
     disabled := ← flag t `disable
     serious := (← t.decode? (α := Bool) `serious).getD true
-    threads := (← t.decode? (α := Nat) `threads).getD 1
   }
 
 private def loadTable (path : System.FilePath) : IO Table := do
@@ -161,9 +143,6 @@ private def decodeFile (α) (path : System.FilePath) (name : String)
 
 end Decode
 
-def testsDir : System.FilePath := "tests"
-def checkersDir : System.FilePath := "checkers"
-
 def loadTestConfig (name : String) : IO TestConfig :=
   Decode.decodeFile _ (testsDir / (name ++ ".toml")) name Decode.decodeTest
 
@@ -171,14 +150,15 @@ def loadCheckerConfig (name : String) : IO CheckerConfig :=
   Decode.decodeFile _ (checkersDir / (name ++ ".toml")) name Decode.decodeChecker
 
 def loadTestConfigs : IO (Array TestConfig) := do
-  (← findNamesUnder testsDir ".toml").mapM loadTestConfig
+  (← findNamesUnder testsDir ".toml" 2).mapM loadTestConfig
 
 def loadCheckerConfigs : IO (Array CheckerConfig) := do
   let all ← (← findNamesIn checkersDir ".toml").mapM loadCheckerConfig
   return all.filter (!·.disabled)
 
-def selectByPatterns (patterns : Array String) (names : Array String) : Array String :=
-  if patterns.isEmpty then names
-  else names.filter fun name => patterns.any (globMatch · name)
+def selectByPatterns (name : α → String) (patterns : Array String) (items : Array α) :
+    Array α :=
+  if patterns.isEmpty then items
+  else items.filter fun item => patterns.any (globMatch · (name item))
 
 end Arena

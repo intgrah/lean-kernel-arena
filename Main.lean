@@ -6,33 +6,17 @@ open Arena Cli
 def applyVerbosity (p : Parsed) : IO Unit :=
   verboseRef.set (p.hasFlag "verbose")
 
-def patternsOf (p : Parsed) : Array String :=
-  p.variableArgsAs! String
-
 def globsOf (p : Parsed) (flag : String) : Array String :=
   match p.flag? flag with
   | some value => value.as! (Array String)
   | none => #[]
 
-def selectTests (patterns : Array String) (skipCi : Bool) : IO (Array TestConfig) := do
-  let configs ← loadTestConfigs
-  let selected := selectByPatterns patterns (configs.map (·.name))
-  if selected.isEmpty then
-    throw <| .userError s!"no tests match {" ".intercalate patterns.toList}"
-  let chosen := configs.filter (selected.contains ·.name)
-  if skipCi then
-    let kept := chosen.filter (!·.skipOnCi)
-    let skipped := chosen.size - kept.size
-    if skipped > 0 then IO.println s!"Skipping {skipped} test(s) marked skip_on_ci"
-    return kept
+def select (name : α → String) (kind : String) (patterns : Array String)
+    (items : Array α) : IO (Array α) := do
+  let chosen := selectByPatterns name patterns items
+  if chosen.isEmpty && !patterns.isEmpty then
+    throw <| .userError s!"no {kind} match {" ".intercalate patterns.toList}"
   return chosen
-
-def selectCheckers (patterns : Array String) : IO (Array CheckerConfig) := do
-  let configs ← loadCheckerConfigs
-  let selected := selectByPatterns patterns (configs.map (·.name))
-  if selected.isEmpty then
-    throw <| .userError s!"no checkers match {" ".intercalate patterns.toList}"
-  return configs.filter (selected.contains ·.name)
 
 def forEachReporting (items : Array α) (act : α → IO Unit) : IO UInt32 := do
   let mut failed := 0
@@ -48,32 +32,36 @@ def forEachReporting (items : Array α) (act : α → IO Unit) : IO UInt32 := do
 def runBuildTest (p : Parsed) : IO UInt32 := do
   applyVerbosity p
   let revision := (← buildInfo).gitRevision
-  let configs ← selectTests (patternsOf p) (p.hasFlag "skip-ci")
+  let configs ← select TestConfig.name "tests" (p.variableArgsAs! String) (← loadTestConfigs)
+  let configs :=
+    if p.hasFlag "skip-ci" then configs.filter (!·.skipOnCi) else configs
   forEachReporting configs fun config => buildTest config revision
 
 def runBuildChecker (p : Parsed) : IO UInt32 := do
   applyVerbosity p
-  forEachReporting (← selectCheckers (patternsOf p)) buildChecker
+  let configs ←
+    select CheckerConfig.name "checkers" (p.variableArgsAs! String) (← loadCheckerConfigs)
+  forEachReporting configs buildChecker
 
 def runRun (p : Parsed) : IO UInt32 := do
   applyVerbosity p
-  let configs ← selectCheckers (globsOf p "checker")
-  let built ← configs.filterM fun config => (builtCheckersDir / config.name).pathExists
-  let unbuilt := configs.filter fun config => !built.any (·.name == config.name)
+  let configs ←
+    select CheckerConfig.name "checkers" (globsOf p "checker") (← loadCheckerConfigs)
+  let mut built := #[]
+  let mut unbuilt := #[]
+  for config in configs do
+    if ← config.isBuilt then built := built.push config else unbuilt := unbuilt.push config
   unless unbuilt.isEmpty do
     IO.println s!"Skipping {unbuilt.size} checker(s) that weren't built: \
 {", ".intercalate (unbuilt.map (·.name)).toList}"
-  let allTests ← loadTestStats
-  let selected := selectByPatterns (globsOf p "test") (allTests.map (·.name))
-  let tests := allTests.filter (selected.contains ·.name)
+  let tests ← select TestStats.name "tests" (globsOf p "test") (← loadTestStats)
   if built.isEmpty then
     IO.println "No built checkers found."
     return 0
   if tests.isEmpty then
     IO.println "No built tests found."
     return 0
-  let tally ← runCheckers built tests
-  tally.report
+  reportTally tests (← runCheckers built tests)
   return 0
 
 def runSiteData (p : Parsed) : IO UInt32 := do
@@ -81,7 +69,7 @@ def runSiteData (p : Parsed) : IO UInt32 := do
   generateSiteData
   return 0
 
-def runTutorialPrinter (outdir : System.FilePath) : IO Unit := do
+def renderTutorial (outdir : System.FilePath) : IO Unit := do
   let tutorialTests := builtTestsDir / "tutorial"
   unless ← tutorialTests.isDir do
     IO.println "  No tutorial tests built; skipping the tutorial viewer"
@@ -112,7 +100,7 @@ def runBuildSite (p : Parsed) : IO UInt32 := do
   unless site.ok do throw <| .userError "site generation failed"
   copyFile tarballPath (outdir / tarballName)
   IO.println s!"Generated: {outdir / tarballName}"
-  runTutorialPrinter outdir
+  renderTutorial outdir
   IO.println s!"\nSite built successfully in: {outdir}"
   return 0
 

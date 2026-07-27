@@ -2,6 +2,7 @@ import Verso.Doc.Html
 import VersoBlog
 import ArenaSite.Copy
 import ArenaSite.Stamp
+import ArenaSite.Render
 
 open Verso.Genre Blog Theme Template
 open Verso.Output Html
@@ -9,7 +10,7 @@ open ArenaSite.Copy
 
 namespace ArenaSite
 
-private def textHtml (s : String) : Html := Html.text true s
+open ArenaSite.Render (textHtml)
 
 def trailingSlashScript : String :=
 r#"(function(){

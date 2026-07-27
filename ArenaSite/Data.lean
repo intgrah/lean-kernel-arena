@@ -1,43 +1,18 @@
 import Lean.Data.Json
 import VersoBlog
+import Arena.Layout
+import Arena.Util
 
 open Lean
 open Lean.Elab Term
 
 namespace ArenaSite
 
-inductive Expectation
-  | accept
-  | reject
-deriving DecidableEq, Repr, Inhabited, Quote
+open Arena (Expectation Status)
+export Arena (Expectation Status)
 
-def Expectation.ofString? : String → Option Expectation
-  | "accept" => some .accept
-  | "reject" => some .reject
-  | _ => none
-
-inductive Status
-  | accepted
-  | rejected
-  | declined
-  | error
-deriving DecidableEq, Repr, Inhabited, Quote
-
-def Status.ofString? : String → Option Status
-  | "accepted" => some .accepted
-  | "rejected" => some .rejected
-  | "declined" => some .declined
-  | "error" => some .error
-  | _ => none
-
-def Status.satisfies : Status → Option Expectation → Bool
-  | .accepted, some .accept => true
-  | .rejected, some .reject => true
-  | _, _ => false
-
-def Status.isInconclusive : Status → Bool
-  | .declined | .error => true
-  | _ => false
+deriving instance Quote for Arena.Expectation
+deriving instance Quote for Arena.Status
 
 structure Metrics where
   wallNanos : Nat
@@ -56,7 +31,7 @@ structure CheckerStats where
   rejectCorrect : Nat
   rejectTotal : Nat
   declined : Nat
-  mathlib : Option Metrics
+  benchmark : Option Metrics
 deriving Repr, Inhabited, Quote
 
 structure CheckerInfo where
@@ -84,12 +59,17 @@ deriving Repr, Inhabited, Quote
 structure ResultInfo where
   checker : String
   test : String
-  status : Status
   exitCode : Int
   metrics : Metrics
   stdout : String
   stderr : String
 deriving Repr, Inhabited, Quote
+
+def ResultInfo.status (result : ResultInfo) : Status :=
+  Status.ofExitCode result.exitCode
+
+def ResultInfo.withoutProcessOutput (result : ResultInfo) : ResultInfo :=
+  { result with stdout := "", stderr := "" }
 
 structure BuildInfo where
   timestamp : String
@@ -109,6 +89,8 @@ deriving Repr, Inhabited, Quote
 structure Payload where
   schemaVersion : Nat
   instructionsPerSecond : Nat
+  benchmarkTest : String
+  baselineChecker : String
   build : BuildInfo
   tarball : TarballInfo
   checkers : Array CheckerInfo
@@ -117,22 +99,15 @@ structure Payload where
 deriving Inhabited, Quote
 
 def Payload.withoutProcessOutput (payload : Payload) : Payload :=
-  { payload with
-    results := payload.results.map fun result => { result with stdout := "", stderr := "" } }
-
-private def optString (json : Json) (key : String) : Option String :=
-  (json.getObjValAs? String key).toOption
-
-private def optBool (json : Json) (key : String) : Bool :=
-  (json.getObjValAs? Bool key).toOption.getD false
+  { payload with results := payload.results.map (·.withoutProcessOutput) }
 
 instance : FromJson Metrics where
   fromJson? json := do
     return {
-      wallNanos := (json.getObjValAs? Nat "wall_nanos").toOption.getD 0
-      cpuNanos := (json.getObjValAs? Nat "cpu_nanos").toOption.getD 0
-      maxRss := (json.getObjValAs? Nat "max_rss").toOption.getD 0
-      instructions := (json.getObjValAs? Nat "instructions").toOption.getD 0
+      wallNanos := (← json.getObjValAs? (Option Nat) "wall_nanos").getD 0
+      cpuNanos := (← json.getObjValAs? (Option Nat) "cpu_nanos").getD 0
+      maxRss := (← json.getObjValAs? (Option Nat) "max_rss").getD 0
+      instructions := (← json.getObjValAs? (Option Nat) "instructions").getD 0
     }
 
 instance : FromJson CheckerStats where
@@ -143,7 +118,7 @@ instance : FromJson CheckerStats where
       rejectCorrect := ← json.getObjValAs? Nat "reject_correct"
       rejectTotal := ← json.getObjValAs? Nat "reject_total"
       declined := ← json.getObjValAs? Nat "declined"
-      mathlib := (json.getObjValAs? Metrics "mathlib").toOption
+      benchmark := ← json.getObjValAs? (Option Metrics) "benchmark"
     }
 
 instance : FromJson CheckerInfo where
@@ -151,9 +126,9 @@ instance : FromJson CheckerInfo where
     return {
       name := ← json.getObjValAs? String "name"
       version := ← json.getObjValAs? String "version"
-      serious := optBool json "serious"
-      declarationUrl := optString json "declaration_url"
-      sourceUrl := optString json "source_url"
+      serious := (← json.getObjValAs? (Option Bool) "serious").getD false
+      declarationUrl := ← json.getObjValAs? (Option String) "declaration_url"
+      sourceUrl := ← json.getObjValAs? (Option String) "source_url"
       stats := ← json.getObjValAs? CheckerStats "stats"
     }
 
@@ -163,38 +138,34 @@ instance : FromJson TestInfo where
       name := ← json.getObjValAs? String "name"
       size := ← json.getObjValAs? Nat "size"
       lines := ← json.getObjValAs? Nat "lines"
-      expectation := (optString json "outcome").bind Expectation.ofString?
-      comparePerf := optBool json "compare_perf"
-      generatedDescription := optString json "description"
-      declarationUrl := optString json "declaration_url"
-      sourceUrl := optString json "source_url"
-      leanVersion := optString json "lean_version"
-      exporterVersion := optString json "lean4export_version"
+      expectation := (← json.getObjValAs? (Option String) "outcome").bind Expectation.ofString?
+      comparePerf := (← json.getObjValAs? (Option Bool) "compare_perf").getD false
+      generatedDescription := ← json.getObjValAs? (Option String) "description"
+      declarationUrl := ← json.getObjValAs? (Option String) "declaration_url"
+      sourceUrl := ← json.getObjValAs? (Option String) "source_url"
+      leanVersion := ← json.getObjValAs? (Option String) "lean_version"
+      exporterVersion := ← json.getObjValAs? (Option String) "lean4export_version"
     }
 
 instance : FromJson ResultInfo where
   fromJson? json := do
-    let statusText ← json.getObjValAs? String "status"
-    let some status := Status.ofString? statusText
-      | .error s!"unknown status: {statusText}"
     return {
       checker := ← json.getObjValAs? String "checker"
       test := ← json.getObjValAs? String "test"
-      status
       exitCode := ← json.getObjValAs? Int "exit_code"
       metrics := ← FromJson.fromJson? json
-      stdout := (optString json "stdout").getD ""
-      stderr := (optString json "stderr").getD ""
+      stdout := (← json.getObjValAs? (Option String) "stdout").getD ""
+      stderr := (← json.getObjValAs? (Option String) "stderr").getD ""
     }
 
 instance : FromJson BuildInfo where
   fromJson? json := do
     return {
       timestamp := ← json.getObjValAs? String "timestamp"
-      shortRevision := optString json "short_revision"
-      commitUrl := optString json "commit_url"
-      actionUrl := optString json "action_url"
-      actionRunId := optString json "action_run_id"
+      shortRevision := ← json.getObjValAs? (Option String) "short_revision"
+      commitUrl := ← json.getObjValAs? (Option String) "commit_url"
+      actionUrl := ← json.getObjValAs? (Option String) "action_url"
+      actionRunId := ← json.getObjValAs? (Option String) "action_run_id"
     }
 
 instance : FromJson TarballInfo where
@@ -211,6 +182,8 @@ instance : FromJson Payload where
     return {
       schemaVersion := ← json.getObjValAs? Nat "schema_version"
       instructionsPerSecond := ← json.getObjValAs? Nat "instructions_per_second"
+      benchmarkTest := ← json.getObjValAs? String "benchmark_test"
+      baselineChecker := ← json.getObjValAs? String "baseline_checker"
       build := ← json.getObjValAs? BuildInfo "build"
       tarball := ← json.getObjValAs? TarballInfo "tarball"
       checkers := ← json.getObjValAs? (Array CheckerInfo) "checkers"
@@ -218,21 +191,35 @@ instance : FromJson Payload where
       results := ← json.getObjValAs? (Array ResultInfo) "results"
     }
 
-def siteDataPath : System.FilePath := "site-data/arena.json"
-
 def expectedSchemaVersion : Nat := 1
 
-def loadPayload : TermElabM Payload := do
-  let raw ← IO.FS.readFile siteDataPath
-  let json ← match Json.parse raw with
+initialize payloadCache : IO.Ref (Option Payload) ← IO.mkRef none
+
+private def readPayload : TermElabM Payload := do
+  let path := Arena.siteDataPath
+  let json ← match Json.parse (← IO.FS.readFile path) with
     | .ok json => pure json
-    | .error err => throwError "failed to parse {siteDataPath}: {err}"
+    | .error err => throwError "failed to parse {path}: {err}"
   let payload ← match FromJson.fromJson? (α := Payload) json with
     | .ok payload => pure payload
-    | .error err => throwError "failed to decode {siteDataPath}: {err}"
+    | .error err => throwError "failed to decode {path}: {err}"
   unless payload.schemaVersion == expectedSchemaVersion do
-    throwError "{siteDataPath} has schema version {payload.schemaVersion}, \
-expected {expectedSchemaVersion}; regenerate it with `lka site-data`"
+    throwError "{path} has schema version {payload.schemaVersion}, expected \
+{expectedSchemaVersion}; regenerate it with `lka site-data`"
   return payload
+
+def loadPayload : TermElabM Payload := do
+  if let some cached := ← payloadCache.get then return cached
+  let payload ← readPayload
+  payloadCache.set (some payload)
+  return payload
+
+abbrev ResultIndex := Arena.PairIndex ResultInfo
+
+def indexOf (payload : Payload) : ResultIndex :=
+  Arena.indexPairs (fun result => (result.checker, result.test)) payload.results
+
+def findResult (index : ResultIndex) (checker test : String) : Option ResultInfo :=
+  Std.HashMap.get? index (checker, test)
 
 end ArenaSite

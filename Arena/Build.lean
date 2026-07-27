@@ -2,8 +2,6 @@ import Arena.Repo
 
 namespace Arena
 
-def workRoot : System.FilePath := buildDir / "work"
-def lean4exportRoot : System.FilePath := buildDir / "lean4export"
 def lean4exportUrl : String := "https://github.com/leanprover/lean4export"
 
 private def freshDir (path : System.FilePath) : IO Unit := do
@@ -106,7 +104,6 @@ def readExportMeta (path : System.FilePath) : IO ExportMeta := do
   return {
     exporterVersion := (exporter.getObjValAs? String "version").toOption
     leanVersion := (lean.getObjValAs? String "version").toOption
-    leanGithash := (lean.getObjValAs? String "githash").toOption
   }
 
 private def gatherStats (name : String) (config : TestConfig) (ndjson : System.FilePath)
@@ -117,8 +114,6 @@ private def gatherStats (name : String) (config : TestConfig) (ndjson : System.F
     toExportMeta := ← readExportMeta ndjson
     name, size, lines, expectation, generatedDescription
     comparePerf := config.comparePerf
-    skipOnCi := config.skipOnCi
-    configFile := config.configPath
     declarationUrl := links.declarationUrl
     sourceUrl := links.sourceUrl
   }
@@ -164,7 +159,7 @@ private def buildMultiple (config : TestConfig) (command : String) (src : System
   return subtests.size
 
 private def buildSingle (config : TestConfig) (produce : System.FilePath → IO Unit)
-    (links : SourceLinks) : IO TestStats := do
+    (links : SourceLinks) : IO Unit := do
   let ndjson := builtTestsDir / (config.name ++ ".ndjson")
   let staging ← absolute (builtTestsDir / (config.name ++ ".tmp"))
   if let some parent := ndjson.parent then IO.FS.createDirAll parent
@@ -173,21 +168,20 @@ private def buildSingle (config : TestConfig) (produce : System.FilePath → IO 
   IO.FS.rename staging ndjson
   let stats ← gatherStats config.name config ndjson config.expectation none links
   writeJsonFile (builtTestsDir / (config.name ++ ".stats.json")) (Lean.toJson stats)
-  return stats
+  IO.println s!"  Created {stats.ndjsonPath} ({formatMemory stats.size.toFloat}, \
+{formatUnitless stats.lines.toFloat} lines)"
 
 def buildTest (config : TestConfig) (revision : Option String) : IO Unit := do
   let links := config.sourceLinks revision
-  let work := workRoot / "tests" / config.name
   IO.FS.createDirAll builtTestsDir
-  match config.production with
-  | .staticFile path =>
+  if let .staticFile path := config.production then
     IO.println s!"Creating test: {config.name} (static file)"
-    let stats ← buildSingle config (fun staging => copyFile path staging) links
-    IO.println s!"  Created {stats.ndjsonPath} ({formatMemory stats.size.toFloat}, \
-{formatUnitless stats.lines.toFloat} lines)"
+    return ← buildSingle config (fun staging => copyFile path staging) links
+  let src ← setupSource config.source (workRoot / "tests" / config.name) "."
+  match config.production with
+  | .staticFile _ => pure ()
   | .exportModule module =>
     IO.println s!"Creating test: {config.name} (export of {module})"
-    let src ← setupSource config.source work "."
     let lean4export ← setupLean4Export (← readToolchain src)
     runPreBuild config src
     IO.println s!"  Building module {module}..."
@@ -197,30 +191,28 @@ def buildTest (config : TestConfig) (revision : Option String) : IO Unit := do
       if config.exportDecls.isEmpty then ""
       else s!" ({", ".intercalate config.exportDecls.toList})"
     IO.println s!"  Exporting module {module}{declList}..."
-    let stats ← buildSingle config
+    buildSingle config
       (fun staging => runLean4Export lean4export module config.exportDecls src staging) links
-    IO.println s!"  Created {stats.ndjsonPath} ({formatMemory stats.size.toFloat}, \
-{formatUnitless stats.lines.toFloat} lines)"
   | .script command multiple =>
     IO.println s!"Creating test: {config.name} (script{if multiple then ", multiple" else ""})"
-    let src ← setupSource config.source work "."
     runPreBuild config src
     if multiple then
       let count ← buildMultiple config command src links
       IO.println s!"  Created {count} subtests in {builtTestsDir / config.name}"
     else
-      let stats ← buildSingle config (fun staging => do
+      buildSingle config (fun staging => do
         IO.println s!"  Running: {command}"
         let outcome ← runShell command (cwd := src)
           (env := #[("OUT", staging.toString)]) (printOnFailure := true)
         unless outcome.ok do throw <| .userError "test script failed") links
-      IO.println s!"  Created {stats.ndjsonPath} ({formatMemory stats.size.toFloat}, \
-{formatUnitless stats.lines.toFloat} lines)"
 
 def checkerWorkDir (config : CheckerConfig) : System.FilePath :=
   match config.source with
   | .empty => builtCheckersDir / config.name
   | _ => builtCheckersDir / config.name / "src"
+
+def CheckerConfig.isBuilt (config : CheckerConfig) : IO Bool :=
+  (builtCheckersDir / config.name).pathExists
 
 def buildChecker (config : CheckerConfig) : IO Unit := do
   IO.println s!"Building checker: {config.name} (version: {config.displayVersion})"

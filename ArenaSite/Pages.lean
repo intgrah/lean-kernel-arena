@@ -54,70 +54,88 @@ structure TestNode where
   fullName : String
   test : Option TestInfo
   children : Array TestNode
-  descendants : Array String
+
+partial def TestNode.descendants (node : TestNode) : Array String :=
+  (if node.test.isSome then #[node.fullName] else #[])
+    ++ node.children.flatMap (·.descendants)
 
 partial def buildNodes (prefixPath : String) (entries : Array (List String × TestInfo)) :
     Array TestNode :=
-  let heads := entries.foldl (init := #[]) fun heads (path, _) =>
-    match path with
-    | segment :: _ => if heads.contains segment then heads else heads.push segment
-    | [] => heads
-  heads.map fun segment =>
-    let matching := entries.filter fun (path, _) => path.head? == some segment
+  let (order, groups) := entries.foldl (init := (#[], ({} : Std.HashMap String _)))
+    fun (order, groups) (path, test) =>
+      match path with
+      | [] => (order, groups)
+      | segment :: rest =>
+        let previous := (Std.HashMap.get? groups segment).getD #[]
+        let order := if previous.isEmpty then order.push segment else order
+        (order, Std.HashMap.insert groups segment (previous.push (rest, test)))
+  order.map fun segment =>
+    let members := (Std.HashMap.get? groups segment).getD #[]
     let fullName := if prefixPath.isEmpty then segment else s!"{prefixPath}/{segment}"
-    let test := matching.findSome? fun (path, test) => if path.length == 1 then some test else none
-    let deeper := matching.filterMap fun (path, test) =>
-      if path.length > 1 then some (path.tail, test) else none
-    let children := buildNodes fullName deeper
-    let descendants :=
-      (if test.isSome then #[fullName] else #[]) ++ children.flatMap (·.descendants)
-    { segment, fullName, test, children, descendants }
+    let test := members.findSome? fun (rest, test) => if rest.isEmpty then some test else none
+    { segment, fullName, test, children := buildNodes fullName (members.filter (!·.1.isEmpty)) }
 
 def testNodes (payload : Payload) : Array TestNode :=
   buildNodes "" (payload.tests.map fun test => (test.name.splitOn "/", test))
 
-private def checkerRows (payload : Payload) (index : ResultIndex) (checker : String) :
-    Array Details.CheckerRow :=
-  payload.tests.filterMap fun test => do
-    let result ← findResult index checker test.name
-    return { test, result, official := findResult index "official" test.name }
+structure PageSources where
+  payload : Payload
+  index : ResultIndex
+  baselines : Std.HashMap String ResultInfo
+  nodes : Array TestNode
 
-private def testRows (payload : Payload) (index : ResultIndex) (test : TestInfo) :
-    Array Details.TestRow :=
-  payload.checkers.filterMap fun checker => do
-    let result ← findResult index checker.name test.name
-    return { checker := checker.name, result }
+def pageSources : TermElabM PageSources := do
+  let payload ← loadPayload
+  let index := indexOf payload
+  let baselines := payload.tests.foldl (init := {}) fun map test =>
+    match findResult index payload.baselineChecker test.name with
+    | some baseline => map.insert test.name baseline
+    | none => map
+  return { payload, index, baselines, nodes := testNodes payload }
+
+def PageSources.baseline (sources : PageSources) (test : String) : Option ResultInfo :=
+  Std.HashMap.get? sources.baselines test
+
+private def checkerRows (sources : PageSources) (checker : String) :
+    Array Details.CheckerRow :=
+  sources.payload.tests.filterMap fun test => do
+    let result ← findResult sources.index checker test.name
+    return { test, result, baseline := sources.baseline test.name }
+
+private def testRows (sources : PageSources) (test : TestInfo) : Array Details.TestRow :=
+  sources.payload.checkers.filterMap fun checker => do
+    let result ← findResult sources.index checker.name test.name
+    return { checker := checker.name, result := result.withoutProcessOutput }
 
 scoped syntax "generate_arena_pages" : command
 
 private def declarePart (name : Name) (value : TSyntax `term) : CommandElabM Unit := do
   elabCommand (← `(def $(mkIdent name) : Part Page := $value))
 
-private partial def declareTestParts (payload : Payload) (index : ResultIndex)
-    (node : TestNode) : CommandElabM Unit := do
-  let rate := payload.instructionsPerSecond
+private partial def declareTestParts (sources : PageSources) (node : TestNode) :
+    CommandElabM Unit := do
+  let rate := sources.payload.instructionsPerSecond
   let value ←
     match node.test with
     | some test =>
-      liftTermElabM `(Details.testPart $(quote test) $(quote (testRows payload index test))
-        $(quote (findResult index "official" test.name)) $(quote rate))
+      liftTermElabM `(Details.testPart $(quote test) $(quote (testRows sources test))
+        $(quote (sources.baseline test.name)) $(quote rate))
     | none =>
       liftTermElabM `(Details.groupPart $(quote node.fullName) $(quote node.descendants))
   declarePart (testPartName node.fullName) value
   for child in node.children do
-    declareTestParts payload index child
+    declareTestParts sources child
 
 elab_rules : command
   | `(generate_arena_pages) => do
-    let payload ← liftTermElabM loadPayload
-    let index := indexOf payload
-    let rate := payload.instructionsPerSecond
-    for checker in payload.checkers do
+    let sources ← liftTermElabM pageSources
+    let rate := sources.payload.instructionsPerSecond
+    for checker in sources.payload.checkers do
       let value ← liftTermElabM `(Details.checkerPart $(quote checker)
-        $(quote (checkerRows payload index checker.name)) $(quote rate))
+        $(quote (checkerRows sources checker.name)) $(quote rate))
       declarePart (checkerPartName checker.name) value
-    for node in testNodes payload do
-      declareTestParts payload index node
+    for node in sources.nodes do
+      declareTestParts sources node
 
 generate_arena_pages
 
