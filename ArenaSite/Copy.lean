@@ -96,6 +96,8 @@ def missing : String := "—"
 def breadcrumbRoot : String := siteTitle
 def breadcrumbSeparator : String := " / "
 
+def sourceHeading : String := "Source"
+
 def checkerHeading (name : String) : String := s!"Checker \"{name}\""
 def testHeading (name : String) : String := s!"Test \"{name}\""
 

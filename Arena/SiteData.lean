@@ -136,6 +136,26 @@ private def observedRate (results : Array RunResult) : Option Float :=
     else (i, s)
   if seconds > 0 then some (instructions / seconds) else none
 
+def extractSources (tests : Array TestStats) : IO Unit := do
+  let modules := tests.foldl (init := #[]) fun found test =>
+    match test.sourceModule with
+    | some module => if found.contains module then found else found.push module
+    | none => found
+  if modules.isEmpty then return
+  removeIfExists siteSourcesDir
+  IO.FS.createDirAll siteSourcesDir
+  let build ← run { cmd := "lake", args := #["build", "Tests"] }
+  unless build.ok do throw <| .userError s!"building the test library failed: {build.stderr}"
+  for module in modules do
+    let target := siteSourcesDir / (module ++ ".json")
+    let outcome ← run {
+      cmd := "lake"
+      args := #["exe", "subverso-extract-mod", module, target.toString]
+    }
+    unless outcome.ok do
+      throw <| .userError s!"highlighting {module} failed: {outcome.stderr}"
+  IO.println s!"Extracted highlighted source for {modules.size} modules"
+
 def generateSiteData : IO Unit := do
   let info ← buildInfo
   let configs ← loadCheckerConfigs
@@ -148,6 +168,7 @@ def generateSiteData : IO Unit := do
   let ranked := rankCheckers <| configs.map fun config =>
     (config, (Std.HashMap.get? stats config.name).getD {})
   let tarball ← createTarball tests
+  extractSources tests
   let payload := Json.mkObj [
     ("schema_version", toJson 1),
     ("instructions_per_second", toJson instructionsPerSecond),

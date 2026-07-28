@@ -8,8 +8,8 @@ require Lean4Export from git "https://github.com/leanprover/lean4export" @ "joac
 package arena where
   leanOptions := #[⟨`weak.linter.missingDocs, false⟩]
 
-input_file siteData where
-  path := "site-data/arena.json"
+input_dir siteData where
+  path := "site-data"
   text := true
 
 lean_lib Tests where

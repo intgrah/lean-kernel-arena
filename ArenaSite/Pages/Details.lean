@@ -5,6 +5,7 @@ open Lean
 open Lean.Elab Term
 open Verso Doc Verso.Genre.Blog
 open Verso.Output Html
+open SubVerso.Highlighting (Highlighted)
 
 namespace ArenaSite.Pages.Details
 
@@ -113,8 +114,14 @@ def checkerPart (checker : CheckerInfo) (rows : Array CheckerRow) (rate : Nat) :
       ++ rows.flatMap detailBlocks
   pagePart checker.name (header ++ checkerDescriptionBlocks checker.name ++ body)
 
+def sourceBlocks : Option Highlighted → Array (Block Page)
+  | none => #[]
+  | some code =>
+    #[heading sourceHeading,
+      .other (BlockExt.highlightedCode { contextName := `arena } code) #[]]
+
 def testPart (test : TestInfo) (rows : Array TestRow) (baseline : Option ResultInfo)
-    (rate : Nat) : Part Page :=
+    (rate : Nat) (source : Option Highlighted) : Part Page :=
   let expectationItem :=
     match test.expectation with
     | some expectation =>
@@ -138,7 +145,7 @@ def testPart (test : TestInfo) (rows : Array TestRow) (baseline : Option ResultI
         #[statusColumn columnResult (fun _ => test) (·.result)]
         ++ perfColumns (fun _ => test) (·.result) (fun _ => baseline) rate
     } rows]
-  pagePart test.name (header ++ testDescriptionBlocks test ++ table)
+  pagePart test.name (header ++ testDescriptionBlocks test ++ table ++ sourceBlocks source)
 
 def groupPart (title : String) (children : Array String) : Part Page :=
   pagePart title #[

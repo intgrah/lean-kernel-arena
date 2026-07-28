@@ -10,7 +10,9 @@ def workRoot : System.FilePath := buildDir / "work"
 def lean4exportRoot : System.FilePath := buildDir / "lean4export"
 
 def resultsDir : System.FilePath := "_results"
-def siteDataPath : System.FilePath := "site-data/arena.json"
+def siteDataDir : System.FilePath := "site-data"
+def siteDataPath : System.FilePath := siteDataDir / "arena.json"
+def siteSourcesDir : System.FilePath := siteDataDir / "sources"
 
 def tarballName : String := "lean-arena-tests.tar.gz"
 def tarballPath : System.FilePath := buildDir / tarballName

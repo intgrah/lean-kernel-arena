@@ -4,6 +4,7 @@ import ArenaSite.Pages.Details
 open Lean
 open Lean.Elab Term Command
 open Verso Doc Verso.Genre.Blog
+open SubVerso.Highlighting (Highlighted)
 
 set_option maxRecDepth 100000
 set_option maxHeartbeats 4000000
@@ -112,14 +113,32 @@ scoped syntax "generate_arena_pages" : command
 private def declarePart (name : Name) (value : TSyntax `term) : CommandElabM Unit := do
   elabCommand (← `(def $(mkIdent name) : Part Page := $value))
 
+private def sourceName (module : String) : Name :=
+  Name.mkSimple s!"source_{module.replace "." "_"}"
+
+private def sourceModules (sources : PageSources) : Array String :=
+  sources.payload.tests.foldl (init := #[]) fun found test =>
+    match test.sourceModule with
+    | some module => if found.contains module then found else found.push module
+    | none => found
+
+private def declareSources (sources : PageSources) : CommandElabM Unit := do
+  for module in sourceModules sources do
+    let mod ← liftTermElabM (loadModuleSource module)
+    let code := Highlighted.seq (mod.items.map (·.code))
+    elabCommand (← `(def $(mkIdent (sourceName module)) : Highlighted := $(quote code)))
+
 private partial def declareTestParts (sources : PageSources) (node : TestNode) :
     CommandElabM Unit := do
   let rate := sources.payload.instructionsPerSecond
   let value ←
     match node.test with
     | some test =>
+      let source ← match test.sourceModule with
+        | some module => `(some $(qualified (sourceName module)))
+        | none => `(none)
       liftTermElabM `(Details.testPart $(quote test) $(quote (testRows sources test))
-        $(quote (sources.baseline test.name)) $(quote rate))
+        $(quote (sources.baseline test.name)) $(quote rate) $source)
     | none =>
       liftTermElabM `(Details.groupPart $(quote node.fullName) $(quote node.descendants))
   declarePart (testPartName node.fullName) value
@@ -129,6 +148,7 @@ private partial def declareTestParts (sources : PageSources) (node : TestNode) :
 elab_rules : command
   | `(generate_arena_pages) => do
     let sources ← liftTermElabM pageSources
+    declareSources sources
     let rate := sources.payload.instructionsPerSecond
     for checker in sources.payload.checkers do
       let value ← liftTermElabM `(Details.checkerPart $(quote checker)

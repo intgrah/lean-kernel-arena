@@ -1,4 +1,5 @@
 import Lean.Data.Json
+import SubVerso.Module
 import VersoBlog
 import Arena.Layout
 import Arena.Util
@@ -54,6 +55,7 @@ structure TestInfo where
   sourceUrl : Option String
   leanVersion : Option String
   exporterVersion : Option String
+  sourceModule : Option String
 deriving Repr, Inhabited, Quote
 
 structure ResultInfo where
@@ -145,6 +147,7 @@ instance : FromJson TestInfo where
       sourceUrl := ← json.getObjValAs? (Option String) "source_url"
       leanVersion := ← json.getObjValAs? (Option String) "lean_version"
       exporterVersion := ← json.getObjValAs? (Option String) "lean4export_version"
+      sourceModule := ← json.getObjValAs? (Option String) "source_module"
     }
 
 instance : FromJson ResultInfo where
@@ -213,6 +216,15 @@ def loadPayload : TermElabM Payload := do
   let payload ← readPayload
   payloadCache.set (some payload)
   return payload
+
+def loadModuleSource (module : String) : TermElabM SubVerso.Module.Module := do
+  let path := Arena.siteSourcesDir / (module ++ ".json")
+  let json ← match Json.parse (← IO.FS.readFile path) with
+    | .ok json => pure json
+    | .error err => throwError "failed to parse {path}: {err}"
+  match FromJson.fromJson? (α := SubVerso.Module.Module) json with
+  | .ok mod => return mod
+  | .error err => throwError "failed to decode {path}: {err}"
 
 abbrev ResultIndex := Arena.PairIndex ResultInfo
 

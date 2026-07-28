@@ -18,6 +18,7 @@ structure TestStats extends ExportMeta where
   generatedDescription : Option String := none
   declarationUrl : Option String := none
   sourceUrl : Option String := none
+  sourceModule : Option String := none
   ndjsonPath : System.FilePath := ""
 
 
@@ -35,6 +36,7 @@ instance : ToJson TestStats where
     ++ field "description" s.generatedDescription
     ++ field "declaration_url" s.declarationUrl
     ++ field "source_url" s.sourceUrl
+    ++ field "source_module" s.sourceModule
     ++ field "lean4export_version" s.exporterVersion
     ++ field "lean_version" s.leanVersion
 
@@ -49,6 +51,7 @@ instance : FromJson TestStats where
       generatedDescription := ← json.getObjValAs? (Option String) "description"
       declarationUrl := ← json.getObjValAs? (Option String) "declaration_url"
       sourceUrl := ← json.getObjValAs? (Option String) "source_url"
+      sourceModule := ← json.getObjValAs? (Option String) "source_module"
       exporterVersion := ← json.getObjValAs? (Option String) "lean4export_version"
       leanVersion := ← json.getObjValAs? (Option String) "lean_version"
     }

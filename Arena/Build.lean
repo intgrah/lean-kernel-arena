@@ -107,6 +107,9 @@ private def gatherStats (name : String) (config : TestConfig) (ndjson : System.F
     comparePerf := config.comparePerf
     declarationUrl := links.declarationUrl
     sourceUrl := links.sourceUrl
+    sourceModule := match config.source with
+      | .leanFile path => some (Decode.moduleOfLeanFile path)
+      | _ => none
   }
 
 private def runPreBuild (config : TestConfig) (cwd : System.FilePath) : IO Unit := do
