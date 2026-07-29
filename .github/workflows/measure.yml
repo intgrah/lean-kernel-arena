@@ -1,0 +1,57 @@
+name: Measure
+
+on:
+  workflow_dispatch:
+    inputs:
+      checker:
+        description: Checker name; blank for all
+        type: string
+      tests:
+        description: Test name or directory; blank for all but the large ones
+        type: string
+      pin:
+        type: string
+      rerun:
+        type: boolean
+        default: false
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  checkers:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.list.outputs.list }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        env:
+          CHECKER: ${{ inputs.checker }}
+        run: |
+          if [ -n "$CHECKER" ]; then
+            printf 'list=["%s"]\n' "$CHECKER" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          names=$(grep -L '^disable = true' checkers/*.toml \
+            | xargs -n1 basename \
+            | sed 's/\.toml$//' \
+            | jq -R . | jq -sc .)
+          printf 'list=%s\n' "$names" >> "$GITHUB_OUTPUT"
+
+  measure:
+    needs: checkers
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        checker: ${{ fromJSON(needs.checkers.outputs.list) }}
+    uses: ./.github/workflows/measure-one.yml
+    permissions:
+      contents: write
+    with:
+      checker: ${{ matrix.checker }}
+      tests: ${{ inputs.tests }}
+      pin: ${{ inputs.pin }}
+      rerun: ${{ inputs.rerun == true }}
+      record: ${{ github.event_name != 'pull_request' }}

@@ -1,0 +1,60 @@
+name: Site
+
+on:
+  push:
+    branches: [results]
+  workflow_dispatch:
+
+concurrency:
+  group: site
+  cancel-in-progress: true
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/configure-pages@v4
+
+      - name: Checkout results
+        uses: actions/checkout@v4
+        with:
+          ref: results
+          path: _results
+
+      - name: Restore exports
+        uses: actions/cache@v4
+        with:
+          path: _build/tests
+          key: exports-site-${{ github.sha }}
+          restore-keys: exports-site-
+
+      - name: Build tests
+        run: lake exe lka build-test
+        shell: 'nix develop -c bash -euxo pipefail {0}'
+
+      - name: Build site
+        run: lake exe lka build-site
+        shell: 'nix develop -c bash -euxo pipefail {0}'
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_out'
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
