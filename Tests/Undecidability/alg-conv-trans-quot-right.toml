@@ -1,0 +1,3 @@
+leanFile = "Tests/Undecidability/AlgConvQuot.lean"
+exportDecls = ["right"]
+outcome = "accept"

@@ -1,3 +1,0 @@
-leanFile = "Tests/AccRec/Fuel.lean"
-exportDecls = ["srReduct"]
-outcome = "accept"

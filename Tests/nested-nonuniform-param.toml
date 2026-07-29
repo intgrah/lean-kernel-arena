@@ -1,0 +1,3 @@
+leanFile = "Tests/NestedNonuniformParam.lean"
+exportDecls = ["E"]
+outcome = "either"

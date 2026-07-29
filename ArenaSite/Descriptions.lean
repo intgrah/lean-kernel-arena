@@ -349,6 +349,167 @@ def «tutorial» : VersoDoc Page :=
   Multiple tutorial tests generated from a Lean project in the tutorial directory.
   :::
 
+def «Undecidability/alg-conv-trans-acc-left» : VersoDoc Page :=
+  verso (Page) "Undecidability/alg-conv-trans-acc-left"
+  :::
+  The creative half of `undecidability/alg-conv-trans-acc`. `Acc.rec` is stuck
+  on the variable `a`, and proof irrelevance admits any other proof of
+  `Acc (· < ·) 1` in its place, including one with a constructor at the head.
+  Given both sides, a checker verifies this immediately; producing the
+  right-hand side unprompted is the step no algorithm takes.
+  :::
+
+def «Undecidability/alg-conv-trans-acc-right» : VersoDoc Page :=
+  verso (Page) "Undecidability/alg-conv-trans-acc-right"
+  :::
+  The mechanical half of `undecidability/alg-conv-trans-acc`. With a
+  constructor in the major premise, `Acc.rec` fires and `step` descends to the
+  predecessor `0`.
+  :::
+
+def «Undecidability/alg-conv-trans-acc» : VersoDoc Page :=
+  verso (Page) "Undecidability/alg-conv-trans-acc"
+  :::
+  As Lean's type theory has undecidable conversion (a.k.a. definitional equality),
+  there are bound to be gaps between so called "algorithmic" conversion (that which is
+  implemented by a typechecker), and the "declarative" conversion.
+
+  In the official kernel, algorithmic conversion fails to be transitive. `f 1 a`
+  is a normal form: `a` is a variable, so `Acc.rec` cannot fire on it. Proof
+  irrelevance admits any other proof of `Acc (· < ·) 1` in its place, and
+  `Acc.intro 1 fun _ => Acc.inv a` carries a constructor at the head, so it
+  reduces. `left` is that substitution, `right` the reduction it unblocks, and
+  `trans` chains the two.
+
+  `acc` asks for the endpoints on their own, which means inventing the middle
+  term: choosing, among the proofs of a proposition, the one that happens to
+  reduce the right way. The kernel has no reason to go looking, the left side
+  being normal already, and unfolding regardless does not terminate here, as
+  each step makes the term larger.
+
+  References:
+
+  - Mario Carneiro, *The Type Theory of Lean*, MSc thesis
+  :::
+
+def «Undecidability/alg-conv-trans-quot-left-def» : VersoDoc Page :=
+  verso (Page) "Undecidability/alg-conv-trans-quot-left-def"
+  :::
+  `left` with `Quot.lift` behind a definition. WHNF does not unfold `lift`, so
+  the arguments are compared and proof irrelevance applies.
+  :::
+
+def «Undecidability/alg-conv-trans-quot-left» : VersoDoc Page :=
+  verso (Page) "Undecidability/alg-conv-trans-quot-left"
+  :::
+  `Quot r` is a `Prop`, so proof irrelevance relates `q` and `Quot.mk r z`.
+  However the official kernel does WHNF first, reducing the right side to `f z`,
+  so congruence never compares the arguments.
+  :::
+
+def «Undecidability/alg-conv-trans-quot-right» : VersoDoc Page :=
+  verso (Page) "Undecidability/alg-conv-trans-quot-right"
+  :::
+  Quotient computation rule.
+  :::
+
+def «Undecidability/alg-conv-trans-quot» : VersoDoc Page :=
+  verso (Page) "Undecidability/alg-conv-trans-quot"
+  :::
+  `left` composed with `right`. Quotients of propositions cause
+  algorithmic conversion transitivity to fail because the typechecker must
+  creatively synthesise the representative of the quotient, and
+  proof irrelevance is definitional.
+
+  References:
+
+  - Mario Carneiro, *The Type Theory of Lean*, MSc thesis
+  :::
+
+def «Undecidability/subject-reduction-redex» : VersoDoc Page :=
+  verso (Page) "Undecidability/subject-reduction-redex"
+  :::
+  Test for subject reduction, as in Carneiro's thesis.
+
+  The annotation on the lambda writes the middle term of
+  `undecidability/alg-conv-trans-acc` down by hand, sparing the kernel from
+  having to invent it. The body checks against `right`, the argument against
+  `left`, and the two endpoints are never compared.
+
+  References:
+
+  - Mario Carneiro, *The Type Theory of Lean*, MSc thesis
+  :::
+
+def «Undecidability/subject-reduction-reduct» : VersoDoc Page :=
+  verso (Page) "Undecidability/subject-reduction-reduct"
+  :::
+  Beta erases the annotation of `undecidability/subject-reduction-redex`, and
+  with it the middle term, leaving the two endpoints to compare: the conversion
+  of `undecidability/alg-conv-trans-acc`. A term the kernel accepts thus
+  reduces to one it rejects.
+
+  References:
+
+  - Mario Carneiro, *The Type Theory of Lean*, MSc thesis
+  :::
+
+def «nested-nonuniform-param» : VersoDoc Page :=
+  verso (Page) "nested-nonuniform-param"
+  :::
+  Checks that a parameter supplied to a nested inductive occurrence really acts
+  as the datatype's parameter, i.e. that it is the parameter itself and does not
+  change between recursive occurrences (as is already enforced for non-nested
+  occurrences).
+
+  The inductive `E : W → Type` has constructor
+  `E.mk : (w : W) → L (E ⟨false⟩) → E w`, where `L (α : Type)` is nested. The
+  occurrence `E ⟨false⟩` inside the nested `L` uses the constant `⟨false⟩` in
+  the position of `E`'s parameter, instead of the actual parameter `w`. That
+  argument is type-correct, so it is not caught by merely type-checking the
+  nested application (leanprover/lean4#14577); a correct checker must also
+  verify that it is the expected parameter.
+
+  This particular declaration is not known to yield a proof of `False`: here `L`
+  stores no value of type `α`, so the nested occurrence is phantom and `E w` is
+  isomorphic to `Unit` for every `w`. The variant where `L` actually stores an
+  `α` (so recursion would descend into an `E ⟨false⟩` while the motive is fixed
+  at `E w`) is already rejected by the kernel's positivity check ("non valid
+  occurrence"). Since it is not a demonstrated unsoundness, it is not settled
+  whether a checker should accept or reject it, so the expected outcome is
+  `either` and the test does not count towards completeness or soundness.
+
+  Origin: raised by @arthur-adjedj on leanprover/lean4#14577
+  (https://github.com/leanprover/lean4/pull/14577#issuecomment-5101819377) as a
+  case not covered by that PR's fix; related to leanprover/lean4#14576.
+  :::
+
+def «nested-unused-param» : VersoDoc Page :=
+  verso (Page) "nested-unused-param"
+  :::
+  Checks that the parameters of a nested inductive application are type-checked
+  even when they do not appear in the auxiliary type generated during
+  nested-inductive compilation.
+
+  When an inductive `E` has a constructor whose type contains a nested
+  application `L (E w) b`, the elaboration of nested inductives replaces that
+  occurrence with an auxiliary type. The argument `b` does not occur in the
+  auxiliary declaration, so a checker that only checks the auxiliary type never
+  sees `b`. A correct checker must still ensure `b` is well-typed; this test
+  rejects if it is not.
+
+  Here `b` is a malformed projection `C.0 (C.0 w)` (applying a `C` projection to
+  a value of the unrelated structure `W`), disguised by a hash collision. If the
+  parameter is not checked, the bogus projection slips through and the resulting
+  `E` can be used to build an axiom-free proof of `False` (`boom`). The
+  projection is merely the payload; the property under test is that the
+  nested-inductive parameter is checked.
+
+  Origin: reported as leanprover/lean4#14576 by @kiranandcode, with the original
+  source recorded by @xrchz (https://github.com/xrchz/collatzlean); fixed in
+  leanprover/lean4#14577.
+  :::
+
 end ArenaSite.Descriptions.Tests
 
 namespace ArenaSite.Descriptions.Checkers
@@ -576,6 +737,17 @@ end ArenaSite.Descriptions.Checkers
 namespace ArenaSite.Descriptions
 
 def testDescription? : String → Option (Array (Block Page))
+  | "Undecidability/alg-conv-trans-acc-left" => some Tests.«Undecidability/alg-conv-trans-acc-left».toPart.content
+  | "Undecidability/alg-conv-trans-acc-right" => some Tests.«Undecidability/alg-conv-trans-acc-right».toPart.content
+  | "Undecidability/alg-conv-trans-acc" => some Tests.«Undecidability/alg-conv-trans-acc».toPart.content
+  | "Undecidability/alg-conv-trans-quot-left-def" => some Tests.«Undecidability/alg-conv-trans-quot-left-def».toPart.content
+  | "Undecidability/alg-conv-trans-quot-left" => some Tests.«Undecidability/alg-conv-trans-quot-left».toPart.content
+  | "Undecidability/alg-conv-trans-quot-right" => some Tests.«Undecidability/alg-conv-trans-quot-right».toPart.content
+  | "Undecidability/alg-conv-trans-quot" => some Tests.«Undecidability/alg-conv-trans-quot».toPart.content
+  | "Undecidability/subject-reduction-redex" => some Tests.«Undecidability/subject-reduction-redex».toPart.content
+  | "Undecidability/subject-reduction-reduct" => some Tests.«Undecidability/subject-reduction-reduct».toPart.content
+  | "nested-nonuniform-param" => some Tests.«nested-nonuniform-param».toPart.content
+  | "nested-unused-param" => some Tests.«nested-unused-param».toPart.content
   | "bogus1" => some Tests.«bogus1».toPart.content
   | "cedar" => some Tests.«cedar».toPart.content
   | "constlevels" => some Tests.«constlevels».toPart.content
