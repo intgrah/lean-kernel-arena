@@ -1,0 +1,3 @@
+leanFile = "Tests/RecKLie.lean"
+exportDecls = ["bad"]
+outcome = "reject"

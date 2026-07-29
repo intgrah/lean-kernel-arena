@@ -1,0 +1,4 @@
+leanFile = "Tests/StdModule.lean"
+outcome = "accept"
+comparePerf = true
+skipOnCi = true

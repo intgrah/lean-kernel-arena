@@ -1,0 +1,3 @@
+leanFile = "Tests/ProjNoConstructors.lean"
+exportDecls = ["d"]
+outcome = "reject"

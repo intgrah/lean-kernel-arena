@@ -1,0 +1,2 @@
+file = "Tests/large-elim-param.ndjson"
+outcome = "reject"

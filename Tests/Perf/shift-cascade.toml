@@ -1,0 +1,4 @@
+leanFile = "Tests/Perf/ShiftCascade.lean"
+exportDecls = ["shift_cascade"]
+outcome = "accept"
+comparePerf = true

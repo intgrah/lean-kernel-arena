@@ -1,0 +1,8 @@
+url = "https://github.com/leanprover-community/mathlib4"
+ref = "v4.29.1"
+rev = "5e932f97dd25535344f80f9dd8da3aab83df0fe6"
+module = "Mathlib"
+preBuild = "lake exe cache get"
+outcome = "accept"
+comparePerf = true
+skipOnCi = true

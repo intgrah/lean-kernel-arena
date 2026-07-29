@@ -1,0 +1,3 @@
+leanFile = "Tests/NestedUnusedParam.lean"
+exportDecls = ["boom"]
+outcome = "reject"

@@ -1,0 +1,4 @@
+leanFile = "Tests/Perf/AppLam.lean"
+exportDecls = ["dag_app_binder"]
+outcome = "accept"
+comparePerf = true

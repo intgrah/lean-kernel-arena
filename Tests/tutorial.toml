@@ -1,0 +1,5 @@
+run = """
+rm -rf .lake/build/lib/lean/Tutorial*
+LEAN_ABORT_ON_PANIC=1 lake build Tutorial
+"""
+multiple = true

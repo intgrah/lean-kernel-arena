@@ -1,0 +1,3 @@
+leanFile = "Tests/CtorNumFields.lean"
+exportDecls = ["bad"]
+outcome = "reject"

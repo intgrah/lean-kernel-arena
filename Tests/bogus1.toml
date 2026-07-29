@@ -1,0 +1,3 @@
+leanFile = "Tests/Bogus1.lean"
+exportDecls = ["thm"]
+outcome = "reject"

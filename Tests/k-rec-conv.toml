@@ -1,0 +1,3 @@
+leanFile = "Tests/KRecConv.lean"
+exportDecls = ["bad"]
+outcome = "reject"

@@ -1,0 +1,3 @@
+leanFile = "Tests/ProofIrrel.lean"
+exportDecls = ["bar"]
+outcome = "accept"

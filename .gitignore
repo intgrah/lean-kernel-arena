@@ -4,16 +4,15 @@ result
 
 .claude/settings.local.json
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
+# Lake
+.lake/
 
 # Output directories
 _out/
 _build/
 _results/
+site-data/
+report.html
 
 # Editor
 .vscode/
