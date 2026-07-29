@@ -59,24 +59,20 @@ private def timed (inv : Invocation) : IO Outcome := do
   let elapsed := ((← IO.monoNanosNow) - startNanos).toFloat / 1e9
   return { exitCode, stdout, stderr, wallTime := elapsed }
 
-initialize perfAvailableRef : IO.Ref (Option Bool) ← IO.mkRef none
-
-private def perfAvailable : IO Bool := do
-  if let some known := ← perfAvailableRef.get then return known
-  let available ←
-    try
-      let out ← IO.Process.output { cmd := "perf", args := #["--version"] }
-      pure (out.exitCode == 0)
-    catch _ => pure false
-  perfAvailableRef.set (some available)
-  return available
-
 private def asFloat? : Json → Option Float
   | .num n => some n.toFloat
   | .str s => match Json.parse s with
     | .ok (.num n) => some n.toFloat
     | _ => none
   | _ => none
+
+private def eventName (event : String) : String :=
+  let unqualified := match event.splitOn "/" with
+    | [_, name, _] => name
+    | _ => event
+  match unqualified.splitOn ":" with
+    | base :: _ => base
+    | [] => unqualified
 
 private def parsePerfReport (text : String) : Metrics :=
   text.splitOn "\n" |>.foldl (init := {}) fun metrics line =>
@@ -89,10 +85,11 @@ private def parsePerfReport (text : String) : Metrics :=
       | some event, some value =>
         let unit := (json.getObjValAs? String "unit").toOption.getD ""
         let seconds := if unit == "msec" then value * 1e-3 else value * 1e-9
-        match event with
+        match eventName event with
         | "duration_time" => { metrics with wallTime := seconds }
         | "task-clock" => { metrics with cpuTime := seconds }
-        | "instructions" => { metrics with instructions := value.toUInt64.toNat }
+        | "instructions" =>
+          { metrics with instructions := metrics.instructions + value.toUInt64.toNat }
         | _ => metrics
       | _, _ => metrics
 
@@ -103,7 +100,6 @@ private def parseMaxRssBytes (gnuTimeReport : String) : Nat :=
     | _ => rss
 
 private def measured (inv : Invocation) : IO Outcome := do
-  if !(← perfAvailable) then return ← timed inv
   IO.FS.withTempDir fun tmp => do
     let perfPath := tmp / "perf.json"
     let timePath := tmp / "time.txt"

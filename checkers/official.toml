@@ -1,7 +1,4 @@
-version = "4.29.0"
 dir = "official"
-build = """
-echo leanprover/lean4:v4.29.0 > lean-toolchain
-lake build
-"""
+toolchain = "leanprover/lean4:v4.32.2"
+build = "lake build"
 run = ".lake/build/bin/kernel \"$IN\""

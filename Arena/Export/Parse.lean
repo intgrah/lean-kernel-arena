@@ -8,7 +8,7 @@ import Lean.Declaration
 import Std.Internal.Parsec.String
 import Lean.Data.Json.Parser
 
-namespace TestPrinter
+namespace Arena.Export
 
 set_option autoImplicit true
 
@@ -247,13 +247,13 @@ def parseAxiomInfo (data : Std.TreeMap.Raw String Json) : M Unit := do
   addConst name <| .axiomInfo { name, levelParams, type, isUnsafe }
 
 def parseDefnInfo (data : Std.TreeMap.Raw String Json) : M Unit := do
-  let some (.num (nameIdx : Nat)) := data["name"]? | fail s!"defnInfo invalid"
-  let some (.arr levelParamsIdxs) := data["levelParams"]? | fail s!"defnInfo invalid"
-  let some (.num (typeIdx : Nat)) := data["type"]? | fail s!"defnInfo invalid"
-  let some (.num (valueIdx : Nat)) := data["value"]? | fail s!"defnInfo invalid"
-  let some hints := data["hints"]? | fail s!"defnInfo invalid"
-  let some (.str safetyStr) := data["safety"]? | fail s!"defnInfo invalid"
-  let some (.arr allIdxs) := data["all"]? | fail s!"defnInfo invalid"
+  let some (.num (nameIdx : Nat)) := data["name"]? | fail s!"defnInfo: bad `name`"
+  let some (.arr levelParamsIdxs) := data["levelParams"]? | fail s!"defnInfo: bad `levelParams`"
+  let some (.num (typeIdx : Nat)) := data["type"]? | fail s!"defnInfo: bad `type`"
+  let some (.num (valueIdx : Nat)) := data["value"]? | fail s!"defnInfo: bad `value`"
+  let some hints := data["hints"]? | fail s!"defnInfo: bad `hints`"
+  let some (.str safetyStr) := data["safety"]? | fail s!"defnInfo: bad `safety`"
+  let some (.arr allIdxs) := data["all"]? | fail s!"defnInfo: bad `all`"
 
   let name ← getName nameIdx
   let levelParams ← getNameList levelParamsIdxs
@@ -264,9 +264,9 @@ def parseDefnInfo (data : Std.TreeMap.Raw String Json) : M Unit := do
     | .str "opaque" => pure .opaque
     | .str "abbrev" => pure .abbrev
     | .obj obj =>
-      let some (.num (level : Nat)) := obj["regular"]? | fail s!"defnInfo invalid"
+      let some (.num (level : Nat)) := obj["regular"]? | fail s!"defnInfo: bad `hints.regular`"
       pure <| .regular level.toUInt32
-    | _ => fail s!"defnInfo invalid"
+    | _ => fail s!"defnInfo: unknown `hints`"
   let safety ←
     match safetyStr with
     | "unsafe" => pure .unsafe
@@ -501,4 +501,4 @@ def parseStream (stream : IO.FS.Stream) : IO ExportedEnv := do
     constOrder,
   }
 
-end TestPrinter
+end Arena.Export

@@ -30,22 +30,44 @@ structure TestConfig where
   skipOnCi : Bool
 deriving Repr
 
+inductive Pin
+  | commit (sha : String)
+  | toolchain (name : String)
+  | fixed
+deriving Repr, Inhabited
+
+def Pin.id : Pin → String
+  | .commit sha => (sha.take 7).toString
+  | .toolchain name => match name.splitOn ":" with
+    | [_, version] => version
+    | _ => name
+  | .fixed => "fixed"
+
 structure CheckerConfig where
   name : String
-  version : Option String
   source : Source
   buildCommand : Option String
   runCommand : String
   disabled : Bool
-  serious : Bool
+  declines : Array String
+  pin : Pin
 deriving Repr
 
-def CheckerConfig.displayVersion (c : CheckerConfig) : String :=
-  match c.version with
-  | some v => v
-  | none => match c.source with
-    | .git _ (some ref) (some rev) => s!"{ref} ({rev.take 7})"
-    | _ => "unknown"
+def CheckerConfig.sourceWith (c : CheckerConfig) (pin : Pin) : Source :=
+  match c.source, pin with
+  | .git url ref _, .commit sha => .git url ref (some sha)
+  | source, _ => source
+
+def CheckerConfig.recipe (c : CheckerConfig) (pin : Pin) : String :=
+  String.intercalate " " [
+    reprStr (c.sourceWith pin),
+    c.buildCommand.getD "",
+    c.runCommand,
+    reprStr pin
+  ]
+
+def CheckerConfig.declines? (c : CheckerConfig) (test : String) : Bool :=
+  c.declines.contains test
 
 namespace Decode
 
@@ -53,7 +75,7 @@ private def decodeExpectation (v : Value) : EDecodeM Expectation := do
   let s ← v.decodeString
   match Expectation.ofString? s with
   | some e => return e
-  | none => throwDecodeErrorAt v.ref s!"expected \"accept\" or \"reject\", got \"{s}\""
+  | none => throwDecodeErrorAt v.ref s!"expected \"accept\", \"reject\" or \"either\", got \"{s}\""
 
 instance : DecodeToml Expectation := ⟨decodeExpectation⟩
 
@@ -115,17 +137,26 @@ private def decodeTest (name : String) (t : Table) : EDecodeM TestConfig := do
     skipOnCi := ← flag t `skip_on_ci
   }
 
+private def decodePin (t : Table) (source : Source) : EDecodeM Pin := do
+  match source, ← t.decode? (α := String) `toolchain with
+  | .git _ _ (some sha), none => return .commit sha
+  | .git _ _ (some _), some _ =>
+    throwDecodeErrorAt .missing "a checker pins `rev` or `toolchain`, not both"
+  | .git .., none => throwDecodeErrorAt .missing "a git-sourced checker must pin `rev`"
+  | _, some name => return .toolchain name
+  | _, none => return .fixed
+
 private def decodeChecker (name : String) (t : Table) : EDecodeM CheckerConfig := do
   let source ← decodeSource t
   if let .leanFile _ := source then
     throwDecodeErrorAt .missing "checkers have no `leanfile` source"
   return {
     name, source
-    version := ← t.decode? (α := String) `version
+    pin := ← decodePin t source
     buildCommand := ← t.decode? (α := String) `build
     runCommand := ← t.decode (α := String) `run
     disabled := ← flag t `disable
-    serious := (← t.decode? (α := Bool) `serious).getD true
+    declines := (← t.decode? (α := Array String) `declines).getD #[]
   }
 
 private def loadTable (path : System.FilePath) : IO Table := do

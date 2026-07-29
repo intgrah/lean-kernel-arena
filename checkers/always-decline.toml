@@ -1,3 +1,0 @@
-version = "1.0"
-run = "exit 2"
-serious = false

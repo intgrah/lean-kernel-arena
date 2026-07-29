@@ -1,5 +1,4 @@
-version = "v4.27.0-rc1"
 dir = "official"
+toolchain = "leanprover/lean4:v4.32.2"
 build = "lake build"
 run = ".lake/build/bin/kernel --parse-only \"$IN\""
-serious = false

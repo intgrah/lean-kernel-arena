@@ -50,10 +50,14 @@ private def testMetaRow (test : TestInfo) : Html :=
   ].filterMap id
   metaRow items (linkGroup test.declarationUrl test.sourceUrl)
 
+private def attemptFact : Attempt → String
+  | .ran exitCode _ _ => s!"{exitCodeLabel} {exitCode}"
+  | .declined reason | .skipped reason => reason
+
 private def resultLine (test : TestInfo) (result : ResultInfo) : Html :=
   let metrics := result.metrics
   let facts := #[
-    some s!"{exitCodeLabel} {result.exitCode}",
+    some (attemptFact result.attempt),
     if metrics.wallNanos > 0 then
       some s!"{wallTimeLabel}: {Arena.formatDuration metrics.wallSeconds}"
     else none,
@@ -90,8 +94,7 @@ private def detailBlocks (row : CheckerRow) : Array (Block Page) :=
     blockHtml (testMetaRow row.test)]
   ++ testDescriptionBlocks row.test
   ++ #[blockHtml (resultLine row.test row.result),
-       blockHtml (Html.fromArray (preBlock stdoutLabel row.result.stdout
-         ++ preBlock stderrLabel row.result.stderr))]
+       blockHtml (Html.fromArray (processOutput row.result.attempt))]
 
 def checkerPart (checker : CheckerInfo) (rows : Array CheckerRow) (rate : Nat) : Part Page :=
   let header := #[
@@ -114,14 +117,13 @@ def checkerPart (checker : CheckerInfo) (rows : Array CheckerRow) (rate : Nat) :
       ++ rows.flatMap detailBlocks
   pagePart checker.name (header ++ checkerDescriptionBlocks checker.name ++ body)
 
-def sourceBlocks : Option Highlighted → Array (Block Page)
+def codeBlocks (title : String) : Option Highlighted → Array (Block Page)
   | none => #[]
   | some code =>
-    #[heading sourceHeading,
-      .other (BlockExt.highlightedCode { contextName := `arena } code) #[]]
+    #[heading title, .other (BlockExt.highlightedCode { contextName := `arena } code) #[]]
 
 def testPart (test : TestInfo) (rows : Array TestRow) (baseline : Option ResultInfo)
-    (rate : Nat) (source : Option Highlighted) : Part Page :=
+    (rate : Nat) (source exported : Option Highlighted) : Part Page :=
   let expectationItem :=
     match test.expectation with
     | some expectation =>
@@ -145,7 +147,8 @@ def testPart (test : TestInfo) (rows : Array TestRow) (baseline : Option ResultI
         #[statusColumn columnResult (fun _ => test) (·.result)]
         ++ perfColumns (fun _ => test) (·.result) (fun _ => baseline) rate
     } rows]
-  pagePart test.name (header ++ testDescriptionBlocks test ++ table ++ sourceBlocks source)
+  pagePart test.name (header ++ testDescriptionBlocks test ++ table
+    ++ codeBlocks sourceHeading source ++ codeBlocks exportHeading exported)
 
 def groupPart (title : String) (children : Array String) : Part Page :=
   pagePart title #[

@@ -13,6 +13,7 @@ def resultsDir : System.FilePath := "_results"
 def siteDataDir : System.FilePath := "site-data"
 def siteDataPath : System.FilePath := siteDataDir / "arena.json"
 def siteSourcesDir : System.FilePath := siteDataDir / "sources"
+def siteExportsDir : System.FilePath := siteDataDir / "exports"
 
 def tarballName : String := "lean-arena-tests.tar.gz"
 def tarballPath : System.FilePath := buildDir / tarballName

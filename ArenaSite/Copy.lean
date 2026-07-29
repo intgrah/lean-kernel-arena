@@ -38,6 +38,7 @@ def acceptedGlyph : String := "✓"
 def rejectedGlyph : String := "✗"
 def declinedGlyph : String := "?"
 def erroredGlyph : String := "!"
+def eitherGlyph : String := "✓/✗"
 
 def checkersHeading : String := "Checkers"
 def testsHeading : String := "Tests"
@@ -97,6 +98,7 @@ def breadcrumbRoot : String := siteTitle
 def breadcrumbSeparator : String := " / "
 
 def sourceHeading : String := "Source"
+def exportHeading : String := "Exported declarations"
 
 def checkerHeading (name : String) : String := s!"Checker \"{name}\""
 def testHeading (name : String) : String := s!"Test \"{name}\""
@@ -150,7 +152,7 @@ def tarballTail : String :=
 def detailsTutorial : VersoDoc Page :=
   verso (Page) "detailsTutorial"
   :::
-  The test suite includes a set of [tutorial test cases](tutorial/) that exercise individual features of the Lean type system step by step, from basic definitions through inductives, recursors, projections, definitional equality rules, and quotient types. Each tutorial test is a small self-contained environment, making them a useful starting point for developing and debugging a new kernel checker.
+  The test suite includes a set of [tutorial test cases](test/tutorial/) that exercise individual features of the Lean type system step by step, from basic definitions through inductives, recursors, projections, definitional equality rules, and quotient types. Each tutorial test is a small self-contained environment, making them a useful starting point for developing and debugging a new kernel checker.
   :::
 
 def detailsExtending : VersoDoc Page :=

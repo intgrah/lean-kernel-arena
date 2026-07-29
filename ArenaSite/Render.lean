@@ -55,6 +55,7 @@ def statusGlyph : Status → String
 def expectationGlyph : Expectation → String
   | .accept => acceptedGlyph
   | .reject => rejectedGlyph
+  | .either => eitherGlyph
 
 def virtualSeconds (metrics : Metrics) (rate : Nat) : Option Float :=
   if metrics.instructions > 0 && rate > 0 then
@@ -333,5 +334,9 @@ def heading (title : String) : Block Page :=
 def preBlock (label content : String) : Array Html :=
   if content.isEmpty then #[]
   else #[{{ <h5>{{textHtml label}}</h5> }}, {{ <pre>{{textHtml content}}</pre> }}]
+
+def processOutput : Attempt → Array Html
+  | .ran _ stdout stderr => preBlock stdoutLabel stdout ++ preBlock stderrLabel stderr
+  | .declined _ | .skipped _ => #[]
 
 end ArenaSite.Render

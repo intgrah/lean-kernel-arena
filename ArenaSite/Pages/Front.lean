@@ -10,10 +10,9 @@ namespace ArenaSite.Pages.Front
 open ArenaSite.Render
 open ArenaSite.Copy
 
-private def seriousCheckers (payload : Payload) : Array CheckerInfo :=
-  let serious := payload.checkers.filter (·.serious)
+private def baselineFirst (payload : Payload) : Array CheckerInfo :=
   let isBaseline (checker : CheckerInfo) := checker.name == payload.baselineChecker
-  serious.filter isBaseline ++ serious.filter (!isBaseline ·)
+  payload.checkers.filter isBaseline ++ payload.checkers.filter (!isBaseline ·)
 
 private def heroSection (payload : Payload) : Block Page :=
   let tiles := #[
@@ -105,7 +104,7 @@ private def testsTable (payload : Payload) : Block Page :=
       nameLabel := columnName
       name := (·.name)
       href := testHref
-      columns := #[sizeColumn] ++ (seriousCheckers payload).map (checkerColumn index payload)
+      columns := #[sizeColumn] ++ (baselineFirst payload).map (checkerColumn index payload)
     } payload.tests
 
 private def measurementsBlock (payload : Payload) : Block Page :=

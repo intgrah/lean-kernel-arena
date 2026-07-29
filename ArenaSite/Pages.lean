@@ -116,6 +116,9 @@ private def declarePart (name : Name) (value : TSyntax `term) : CommandElabM Uni
 private def sourceName (module : String) : Name :=
   Name.mkSimple s!"source_{module.replace "." "_"}"
 
+private def exportName (test : String) : Name :=
+  Name.mkSimple s!"export_{slug test}"
+
 private def sourceModules (sources : PageSources) : Array String :=
   sources.payload.tests.foldl (init := #[]) fun found test =>
     match test.sourceModule with
@@ -128,6 +131,14 @@ private def declareSources (sources : PageSources) : CommandElabM Unit := do
     let code := Highlighted.seq (mod.items.map (·.code))
     elabCommand (← `(def $(mkIdent (sourceName module)) : Highlighted := $(quote code)))
 
+private def declareExport (test : String) : CommandElabM Bool := do
+  let some mod ← liftTermElabM (loadTestExport? test) | return false
+  let separated := mod.items.foldl (init := #[]) fun acc item =>
+    if acc.isEmpty then #[item.code] else acc ++ #[.text "\n\n", item.code]
+  elabCommand (← `(def $(mkIdent (exportName test)) : Highlighted :=
+    $(quote (Highlighted.seq separated))))
+  return true
+
 private partial def declareTestParts (sources : PageSources) (node : TestNode) :
     CommandElabM Unit := do
   let rate := sources.payload.instructionsPerSecond
@@ -137,8 +148,11 @@ private partial def declareTestParts (sources : PageSources) (node : TestNode) :
       let source ← match test.sourceModule with
         | some module => `(some $(qualified (sourceName module)))
         | none => `(none)
+      let exported ←
+        if ← declareExport test.name then `(some $(qualified (exportName test.name)))
+        else `(none)
       liftTermElabM `(Details.testPart $(quote test) $(quote (testRows sources test))
-        $(quote (sources.baseline test.name)) $(quote rate) $source)
+        $(quote (sources.baseline test.name)) $(quote rate) $source $exported)
     | none =>
       liftTermElabM `(Details.groupPart $(quote node.fullName) $(quote node.descendants))
   declarePart (testPartName node.fullName) value

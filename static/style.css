@@ -368,3 +368,40 @@ p code {
   .hero-title { font-size: 2rem; }
   .group-list { columns: 1; }
 }
+
+:root {
+  --verso-code-font-family: var(--font-mono);
+  --verso-code-color: var(--color-text);
+  --verso-code-keyword-color: #7c3aed;
+  --verso-code-const-color: #0f766e;
+  --verso-code-var-color: #b45309;
+  --arena-code-sort: #1d4ed8;
+  --arena-code-level: #9333ea;
+  --arena-code-literal: #a3324e;
+}
+
+.dark-theme {
+  --verso-code-keyword-color: #c4a2ff;
+  --verso-code-const-color: #5ecfc0;
+  --verso-code-var-color: #e8b06a;
+  --arena-code-sort: #7fb0ff;
+  --arena-code-level: #d0a6ff;
+  --arena-code-literal: #f2909f;
+}
+
+.hl.lean .sort { color: var(--arena-code-sort); }
+.hl.lean .level-var { color: var(--arena-code-level); }
+.hl.lean .literal { color: var(--arena-code-literal); }
+.hl.lean .module-name { color: var(--verso-code-const-color); }
+.hl.lean .unknown, .hl.lean .delim, .hl.lean .punctuation { color: var(--color-text-light); }
+.hl.lean .token.binding-hl, .hl.lean .literal:hover, .hl.lean .token.typed:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+}
+
+pre.hl.lean.block {
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+}

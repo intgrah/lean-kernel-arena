@@ -1,4 +1,3 @@
-version = "-"
 dir = "lean4lean"
 build = "./lean4lean-wrapper.py build"
 run = "./lean4lean-wrapper.py run \"$IN\""

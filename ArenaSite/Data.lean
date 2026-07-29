@@ -9,11 +9,12 @@ open Lean.Elab Term
 
 namespace ArenaSite
 
-open Arena (Expectation Status)
-export Arena (Expectation Status)
+open Arena (Expectation Status Attempt)
+export Arena (Expectation Status Attempt)
 
 deriving instance Quote for Arena.Expectation
 deriving instance Quote for Arena.Status
+deriving instance Quote for Arena.Attempt
 
 structure Metrics where
   wallNanos : Nat
@@ -38,7 +39,6 @@ deriving Repr, Inhabited, Quote
 structure CheckerInfo where
   name : String
   version : String
-  serious : Bool
   declarationUrl : Option String
   sourceUrl : Option String
   stats : CheckerStats
@@ -61,17 +61,15 @@ deriving Repr, Inhabited, Quote
 structure ResultInfo where
   checker : String
   test : String
-  exitCode : Int
+  attempt : Attempt
   metrics : Metrics
-  stdout : String
-  stderr : String
 deriving Repr, Inhabited, Quote
 
 def ResultInfo.status (result : ResultInfo) : Status :=
-  Status.ofExitCode result.exitCode
+  result.attempt.status
 
 def ResultInfo.withoutProcessOutput (result : ResultInfo) : ResultInfo :=
-  { result with stdout := "", stderr := "" }
+  { result with attempt := result.attempt.withoutProcessOutput }
 
 structure BuildInfo where
   timestamp : String
@@ -128,7 +126,6 @@ instance : FromJson CheckerInfo where
     return {
       name := ← json.getObjValAs? String "name"
       version := ← json.getObjValAs? String "version"
-      serious := (← json.getObjValAs? (Option Bool) "serious").getD false
       declarationUrl := ← json.getObjValAs? (Option String) "declaration_url"
       sourceUrl := ← json.getObjValAs? (Option String) "source_url"
       stats := ← json.getObjValAs? CheckerStats "stats"
@@ -155,10 +152,8 @@ instance : FromJson ResultInfo where
     return {
       checker := ← json.getObjValAs? String "checker"
       test := ← json.getObjValAs? String "test"
-      exitCode := ← json.getObjValAs? Int "exit_code"
+      attempt := ← json.getObjValAs? Attempt "attempt"
       metrics := ← FromJson.fromJson? json
-      stdout := (← json.getObjValAs? (Option String) "stdout").getD ""
-      stderr := (← json.getObjValAs? (Option String) "stderr").getD ""
     }
 
 instance : FromJson BuildInfo where
@@ -217,14 +212,20 @@ def loadPayload : TermElabM Payload := do
   payloadCache.set (some payload)
   return payload
 
-def loadModuleSource (module : String) : TermElabM SubVerso.Module.Module := do
-  let path := Arena.siteSourcesDir / (module ++ ".json")
+private def loadModuleFile (path : System.FilePath) : TermElabM SubVerso.Module.Module := do
   let json ← match Json.parse (← IO.FS.readFile path) with
     | .ok json => pure json
     | .error err => throwError "failed to parse {path}: {err}"
   match FromJson.fromJson? (α := SubVerso.Module.Module) json with
   | .ok mod => return mod
   | .error err => throwError "failed to decode {path}: {err}"
+
+def loadModuleSource (module : String) : TermElabM SubVerso.Module.Module :=
+  loadModuleFile (Arena.siteSourcesDir / (module ++ ".json"))
+
+def loadTestExport? (test : String) : TermElabM (Option SubVerso.Module.Module) := do
+  let path := Arena.siteExportsDir / (test ++ ".json")
+  if ← path.pathExists then loadModuleFile path else return none
 
 abbrev ResultIndex := Arena.PairIndex ResultInfo
 

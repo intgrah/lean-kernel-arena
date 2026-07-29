@@ -1,4 +1,5 @@
 import Arena.Run
+import Arena.Export
 
 open Lean (Json toJson)
 
@@ -19,14 +20,15 @@ structure CheckerStats where
   declined : Nat := 0
   benchmark : Option Metrics := none
 
-def CheckerStats.record (stats : CheckerStats) (result : RunResult)
+def CheckerStats.record (stats : CheckerStats) (entry : ResultEntry)
     (expectation : Option Expectation) : CheckerStats :=
   let stats :=
-    if result.test == benchmarkTest && result.status == .accepted then
-      { stats with benchmark := some result.toMetrics }
+    if entry.test == benchmarkTest && entry.status == .accepted then
+      { stats with benchmark := some entry.toMetrics }
     else stats
-  match result.status, expectation with
+  match entry.status, expectation with
   | .declined, _ | .error, _ => { stats with declined := stats.declined + 1 }
+  | _, some .either => stats
   | status, some .accept =>
     { stats with
       acceptTotal := stats.acceptTotal + 1
@@ -37,15 +39,12 @@ def CheckerStats.record (stats : CheckerStats) (result : RunResult)
       rejectCorrect := stats.rejectCorrect + if status == .rejected then 1 else 0 }
   | _, none => stats
 
-def computeCheckerStats (tests : Array TestStats) (results : Array RunResult) :
-    Std.HashMap String CheckerStats :=
+def statsOfLog (tests : Array TestStats) (log : ResultLog) : CheckerStats :=
   let expectations := expectationsOf tests
-  results.foldl (init := {}) fun stats result =>
-    match Std.HashMap.get? expectations result.test with
+  log.entries.foldl (init := {}) fun stats entry =>
+    match Std.HashMap.get? expectations entry.test with
     | none => stats
-    | some expectation =>
-      let current := (Std.HashMap.get? stats result.checker).getD {}
-      stats.insert result.checker (current.record result expectation)
+    | some expectation => stats.record entry expectation
 
 private def rankKey (stats : CheckerStats) : List Nat :=
   let instructions := (stats.benchmark.map (·.instructions)).getD 0
@@ -72,9 +71,11 @@ def createTarball (tests : Array TestStats) : IO TarballInfo := do
   for test in tests do
     if test.size > tarballSizeLimit then continue
     unless ← test.ndjsonPath.pathExists do continue
-    let accepted := test.expectation == some .accept
-    if accepted then goodCount := goodCount + 1 else badCount := badCount + 1
-    let subdir := if accepted then "good" else "bad"
+    let some subdir := (match test.expectation with
+      | some .accept => some "good"
+      | some .reject => some "bad"
+      | some .either | none => none) | continue
+    if subdir == "good" then goodCount := goodCount + 1 else badCount := badCount + 1
     linkFile test.ndjsonPath (staging / subdir / (test.name ++ ".ndjson"))
   removeIfExists tarballPath
   let archive := (← absolute buildDir) / tarballName
@@ -93,12 +94,11 @@ private def metricsFields (metrics : Metrics) : List (String × Json) :=
    ("max_rss", toJson metrics.maxRss),
    ("instructions", toJson metrics.instructions)]
 
-private def checkerJson (config : CheckerConfig) (stats : CheckerStats)
+private def checkerJson (config : CheckerConfig) (pin : Pin) (stats : CheckerStats)
     (links : SourceLinks) : Json :=
   Json.mkObj [
     ("name", toJson config.name),
-    ("version", toJson config.displayVersion),
-    ("serious", toJson config.serious),
+    ("version", toJson pin.id),
     ("declaration_url", toJson links.declarationUrl),
     ("source_url", toJson links.sourceUrl),
     ("stats", Json.mkObj [
@@ -111,14 +111,12 @@ private def checkerJson (config : CheckerConfig) (stats : CheckerStats)
     ])
   ]
 
-private def resultJson (result : RunResult) : Json :=
+private def resultJson (checker : String) (entry : ResultEntry) : Json :=
   Json.mkObj <| [
-    ("checker", toJson result.checker),
-    ("test", toJson result.test),
-    ("exit_code", toJson result.exitCode),
-    ("stdout", toJson result.stdout),
-    ("stderr", toJson result.stderr)
-  ] ++ metricsFields result.toMetrics
+    ("checker", toJson checker),
+    ("test", toJson entry.test),
+    ("attempt", toJson entry.attempt)
+  ] ++ metricsFields entry.toMetrics
 
 private def buildJson (info : BuildInfo) : Json :=
   Json.mkObj [
@@ -129,10 +127,10 @@ private def buildJson (info : BuildInfo) : Json :=
     ("action_run_id", toJson info.actionRunId)
   ]
 
-private def observedRate (results : Array RunResult) : Option Float :=
-  let (instructions, seconds) := results.foldl (init := (0.0, 0.0)) fun (i, s) result =>
-    if result.cpuTime > 0 && result.instructions > 0 then
-      (i + result.instructions.toFloat, s + result.cpuTime)
+private def observedRate (entries : Array ResultEntry) : Option Float :=
+  let (instructions, seconds) := entries.foldl (init := (0.0, 0.0)) fun (i, s) entry =>
+    if entry.cpuTime > 0 && entry.instructions > 0 then
+      (i + entry.instructions.toFloat, s + entry.cpuTime)
     else (i, s)
   if seconds > 0 then some (instructions / seconds) else none
 
@@ -156,19 +154,53 @@ def extractSources (tests : Array TestStats) : IO Unit := do
       throw <| .userError s!"highlighting {module} failed: {outcome.stderr}"
   IO.println s!"Extracted highlighted source for {modules.size} modules"
 
+def renderedExportLimit : Nat := 128 * 1024
+
+def renderExports (tests : Array TestStats) : IO Unit := do
+  removeIfExists siteExportsDir
+  let small := tests.filter fun test => test.size ≤ renderedExportLimit
+  if small.isEmpty then return
+  let env ← Export.coreEnvironment
+  for test in small do
+    unless ← test.ndjsonPath.pathExists do continue
+    if ← verbose then IO.println s!"  Rendering {test.name}..."
+    match ← (Export.renderExport env test.ndjsonPath).toBaseIO with
+    | .ok rendered => writeJsonFile (siteExportsDir / (test.name ++ ".json")) (toJson rendered)
+    | .error err => IO.println s!"  Could not render the export of {test.name}: {err}"
+  IO.println s!"Rendered the exported declarations of {small.size} tests \
+({tests.size - small.size} over {formatMemory renderedExportLimit.toFloat})"
+
+structure CheckerColumn where
+  config : CheckerConfig
+  log : ResultLog
+  stats : CheckerStats
+
+def rankColumns (columns : Array CheckerColumn) : Array CheckerColumn :=
+  columns.qsort fun a b => compare (rankKey a.stats) (rankKey b.stats) |>.isLT
+
+def currentColumns (configs : Array CheckerConfig) (tests : Array TestStats) :
+    IO (Array CheckerColumn) := do
+  configs.mapM fun config => do
+    let recipeHash := digestString (config.recipe config.pin)
+    let stored ← loadResultLog config.name config.pin.id recipeHash
+    let log := stored.log?.getD
+      { checker := config.name, revision := config.pin.id, recipeHash
+        runner := "", entries := #[] }
+    return { config, log, stats := statsOfLog tests log }
+
 def generateSiteData : IO Unit := do
   let info ← buildInfo
   let configs ← loadCheckerConfigs
   let tests ← loadTestStats
-  let results ← loadRunResults
-  match observedRate results with
+  let columns ← currentColumns configs tests
+  let entries := columns.flatMap (·.log.entries)
+  match observedRate entries with
   | some rate => IO.println s!"Observed conversion rate: {formatUnitless rate}inst/s"
   | none => IO.println "No instruction counts available; using the fixed conversion rate"
-  let stats := computeCheckerStats tests results
-  let ranked := rankCheckers <| configs.map fun config =>
-    (config, (Std.HashMap.get? stats config.name).getD {})
+  let ranked := rankColumns columns
   let tarball ← createTarball tests
   extractSources tests
+  renderExports tests
   let payload := Json.mkObj [
     ("schema_version", toJson 1),
     ("instructions_per_second", toJson instructionsPerSecond),
@@ -181,13 +213,15 @@ def generateSiteData : IO Unit := do
       ("good_count", toJson tarball.goodCount),
       ("bad_count", toJson tarball.badCount)
     ]),
-    ("checkers", Json.arr <| ranked.map fun (config, stats) =>
-      checkerJson config stats (config.sourceLinks info.gitRevision)),
+    ("checkers", Json.arr <| ranked.map fun column =>
+      checkerJson column.config column.config.pin column.stats
+        (column.config.sourceLinks info.gitRevision)),
     ("tests", Json.arr <| tests.map toJson),
-    ("results", Json.arr <| results.map resultJson)
+    ("results", Json.arr <| ranked.flatMap fun column =>
+      column.log.entries.map (resultJson column.config.name))
   ]
   writeJsonFile siteDataPath payload
-  IO.println s!"Wrote {siteDataPath} ({ranked.size} checkers, {tests.size} tests, \
-{results.size} results)"
+  IO.println s!"Wrote {siteDataPath} ({ranked.size} checker revisions, {tests.size} tests, \
+{entries.size} results)"
 
 end Arena

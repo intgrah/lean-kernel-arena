@@ -1,149 +1,49 @@
 name: Build and Deploy Site
 
 on:
-  workflow_dispatch: # Manual trigger
-  pull_request: # Run on pull requests
+  workflow_dispatch:
+    inputs:
+      checker:
+        description: Checker to run; all of them when blank
+        type: string
+      pin:
+        description: Pin to run instead of the configured one, e.g. leanprover/lean4:v4.29.0
+        type: string
+      force:
+        description: Rerun pairs that already have a result
+        type: boolean
+        default: false
+      publish:
+        description: Deploy the site to GitHub Pages
+        type: boolean
+        default: true
+  pull_request:
+
+concurrency:
+  group: arena-results
+  cancel-in-progress: false
 
 jobs:
-  create-runner:
-    name: Create Hetzner Cloud runner
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'  # Only create runner for manual dispatch
-    outputs:
-      label: ${{ steps.create-hcloud-runner.outputs.label }}
-      server_id: ${{ steps.create-hcloud-runner.outputs.server_id }}
-    steps:
-      - name: Create runner
-        id: create-hcloud-runner
-        uses: Cyclenerd/hcloud-github-runner@v1.3.0
-        with:
-          mode: create
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
-          server_type: ccx23
-          location: nbg1  # Nuremberg, Germany
-          image: ubuntu-24.04
-          ssh_key: ${{ secrets.HCLOUD_SSH_KEY_ID }}
-
-  build-and-deploy:
-    needs: create-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.create-runner.outputs.label || 'ubuntu-latest' }} # run on custom runner if available, otherwise default
-    if: always() # Run even if create-runner was skipped
-    timeout-minutes: 1440
-    
+  check:
+    name: Check the pending changes
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/arena.yml
     permissions:
       contents: read
+    with:
+      skip-ci: true
+
+  measure:
+    name: Measure and publish
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/arena.yml
+    permissions:
+      contents: write
       pages: write
       id-token: write
-    
-    steps:
-      # Workaround for: https://github.com/actions/runner/issues/1864
-      - name: Ensure HOME is defined
-        run: |
-          set -exuo pipefail
-          if [ -z "${HOME:-}" ]; then
-            HOME="$(getent passwd "$(id -u)" | cut -d: -f6)"
-            export HOME
-          fi
-          echo "HOME=$HOME" >> "$GITHUB_ENV"
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Pages
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/configure-pages@v4
-
-      - name: Setup nix shell
-        run: "true"
-        shell: 'nix develop -c bash -euxo pipefail {0}'
-      
-      - name: Check perf support
-        run: |
-          echo "=== System info ==="
-          uname -a || true
-          echo "=== perf binary ==="
-          if command -v perf >/dev/null 2>&1; then
-            perf --version || true
-          else
-            echo "perf not installed"
-          fi
-          echo "=== kernel perf settings ==="
-          for f in /proc/sys/kernel/perf_event_paranoid /proc/sys/kernel/kptr_restrict; do
-            if [ -f "$f" ]; then
-              printf "%s: %s\n" "$f" "$(cat $f)"
-            else
-              printf "%s: (missing)\n" "$f"
-            fi
-          done
-          echo "=== try perf stat (may require privileges) ==="
-          perf stat -e cycles -a -- true 2>&1 || echo "perf stat failed or not permitted"
-        shell: 'nix develop -c bash -euxo pipefail {0}'
-        continue-on-error: true
-      
-      - name: Build checkers
-        run: lake exe lka build-checker
-        shell: 'nix develop -c bash -euxo pipefail {0}'
-
-      - name: Generate tests
-        run: lake exe lka build-test ${{ github.event_name != 'workflow_dispatch' && '--skip-ci' || '' }}
-        shell: 'nix develop -c bash -euxo pipefail {0}'
-      
-      - name: Run checkers on tests
-        run: lake exe lka run
-        shell: 'nix develop -c bash -euxo pipefail {0}'
-      
-      - name: Build tutorial test viewer
-        run: |
-          cd test-printer
-          lake build
-          lake exe test-printer ../_build/tests/tutorial/ ../_out/tutorial/index.html
-        shell: 'nix develop -c bash -euxo pipefail {0}'
-
-      - name: Generate website
-        run: lake exe lka build-site
-        shell: 'nix develop -c bash -euxo pipefail {0}'
-      
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '_out'
-
-      - name: Generate self-contained report
-        run: monolith _out/index.html -o /tmp/report.html -i -F -e -M -q
-        shell: 'nix develop -c bash -euxo pipefail {0}'
-
-      - name: Upload report
-        uses: actions/upload-artifact@v7
-        with:
-          name: report.html
-          path: '/tmp/report.html'
-          archive: false
-
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'workflow_dispatch'
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-
-  delete-runner:
-    name: Delete Hetzner Cloud runner
-    needs:
-      - create-runner
-      - build-and-deploy
-    runs-on: ubuntu-latest
-    if: ${{ always() && github.event_name == 'workflow_dispatch' && needs.create-runner.result != 'skipped' }} # Only delete if runner was created
-    steps:
-      - name: Delete runner
-        uses: Cyclenerd/hcloud-github-runner@v1
-        with:
-          mode: delete
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
-          name: ${{ needs.create-runner.outputs.label }}
-          server_id: ${{ needs.create-runner.outputs.server_id }}
+    with:
+      record: true
+      publish: ${{ inputs.publish }}
+      checker: ${{ inputs.checker }}
+      pin: ${{ inputs.pin }}
+      force: ${{ inputs.force }}

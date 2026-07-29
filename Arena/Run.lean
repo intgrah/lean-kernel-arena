@@ -3,68 +3,115 @@ import Arena.Build
 namespace Arena
 
 def Status.consoleGlyph : Status → String
-  | .accepted => "👍"
-  | .rejected => "👎"
-  | .declined => "⊘"
-  | .error => "⚠️"
+  | .accepted => "accepted"
+  | .rejected => "rejected"
+  | .declined => "declined"
+  | .error => "errored"
 
 def Correctness.consoleGlyph : Correctness → String
-  | .correct => "✅"
-  | .incorrect => "❌"
-  | .declined => "⊘"
-  | .error => "⚠️"
+  | .correct => "ok"
+  | .incorrect => "WRONG"
+  | .either => "either"
+  | .declined => "declined"
+  | .error => "error"
 
-private def missingTestResult (checker : String) (test : TestStats) : RunResult :=
-  { checker
-    test := test.name
-    exitCode := -1
-    message := some s!"test file not found: {test.ndjsonPath}" }
+structure Job where
+  checker : CheckerConfig
+  pin : Pin
+  test : TestStats
 
-def runCheckerOnTest (checker : CheckerConfig) (test : TestStats) : IO RunResult := do
-  let ndjson := test.ndjsonPath
-  let result ←
-    if !(← ndjson.pathExists) then
-      pure (missingTestResult checker.name test)
-    else do
-      let work := checkerWorkDir checker
-      IO.FS.createDirAll work
-      let outcome ← runShell checker.runCommand (cwd := work)
-        (env := #[("IN", (← IO.FS.realPath ndjson).toString)]) (measurePerf := true)
-      pure {
-        toMetrics := outcome.toMetrics
-        checker := checker.name
-        test := test.name
-        exitCode := outcome.exitCode.toNat
-        stdout := outcome.stdout
-        stderr := outcome.stderr
-      }
-  writeRunResult result test.expectation
-  return result
+def Job.label (job : Job) : String :=
+  s!"{job.checker.name}@{job.pin.id} on {job.test.name}"
 
-def runCheckers (checkers : Array CheckerConfig) (tests : Array TestStats) :
-    IO (Array RunResult) := do
-  let mut results := #[]
-  for checker in checkers do
-    for test in tests do
-      let separator := if ← verbose then "\n" else " "
-      IO.print s!"Running {checker.name} on {test.name}...{separator}"
-      let result ← runCheckerOnTest checker test
-      results := results.push result
-      IO.println s!"[{result.status.consoleGlyph} \
-{(result.correctness test.expectation).consoleGlyph} {formatDuration result.wallTime}]"
-  return results
+def runnerName : IO String := do
+  match ← IO.getEnv "ARENA_RUNNER" with
+  | some name => return name
+  | none => return (← capture "uname" #["-n"]).getD "unknown"
+
+def declinedInAdvance : String :=
+  "Declined by the checker's `declines` field; the checker was not run."
+
+def runJob (job : Job) : IO ResultEntry := do
+  let stamp ← timestamp
+  let entry (attempt : Attempt) : ResultEntry :=
+    { test := job.test.name, testHash := job.test.hash, attempt, runAt := stamp }
+  if job.checker.declines? job.test.name then
+    return entry (.declined declinedInAdvance)
+  let ndjson := job.test.ndjsonPath
+  if !(← ndjson.pathExists) then
+    return entry (.skipped s!"no export at {ndjson}")
+  let work := checkerWorkDir job.checker job.pin
+  IO.FS.createDirAll work
+  let outcome ← runShell job.checker.runCommand (cwd := work)
+    (env := #[("IN", some (← IO.FS.realPath ndjson).toString)])
+    (measurePerf := true)
+  return {
+    toMetrics := outcome.toMetrics
+    test := job.test.name
+    testHash := job.test.hash
+    attempt := .ran outcome.exitCode.toNat outcome.stdout outcome.stderr
+    runAt := stamp
+  }
+
+def emptyLog (checker : CheckerConfig) (pin : Pin) (runner : String) : ResultLog :=
+  { checker := checker.name
+    revision := pin.id
+    recipeHash := digestString (checker.recipe pin)
+    runner
+    entries := #[] }
+
+def isPending (log : ResultLog) (test : TestStats) : Bool :=
+  match log.find? test.name with
+  | some entry => entry.testHash != test.hash
+  | none => true
+
+def pendingJobs (checker : CheckerConfig) (pin : Pin) (tests : Array TestStats)
+    (log : ResultLog) : Array Job :=
+  (tests.filter (isPending log ·)).map fun test => { checker, pin, test }
+
+def runRevision (checker : CheckerConfig) (pin : Pin) (tests : Array TestStats)
+    (force : Bool) : IO (Array ResultEntry) := do
+  let runner ← runnerName
+  let fresh := emptyLog checker pin runner
+  let stored ← loadResultLog checker.name pin.id fresh.recipeHash
+  let everything := tests.map fun test => ({ checker, pin, test } : Job)
+  let (log, jobs) :=
+    match stored with
+    | .none => (fresh, everything)
+    | .otherRecipe _ => (fresh, everything)
+    | .matching log =>
+      if force then (log, everything) else (log, pendingJobs checker pin tests log)
+  if jobs.isEmpty then return #[]
+  if jobs.any (fun job => !job.checker.declines? job.test.name) then
+    unless ← isBuilt checker pin do
+      buildChecker checker pin
+  let mut log := { log with runner }
+  let mut produced := #[]
+  for job in jobs do
+    let separator := if ← verbose then "\n" else " "
+    IO.print s!"Running {job.label}...{separator}"
+    let entry ← runJob job
+    log := log.record entry
+    produced := produced.push entry
+    writeResultLog log
+    IO.println s!"[{entry.status.consoleGlyph} \
+{(entry.correctness job.test.expectation).consoleGlyph} {formatDuration entry.wallTime}]"
+  return produced
 
 def expectationsOf (tests : Array TestStats) : Std.HashMap String (Option Expectation) :=
   tests.foldl (init := {}) fun map test => map.insert test.name test.expectation
 
-def reportTally (tests : Array TestStats) (results : Array RunResult) : IO Unit := do
+def reportTally (tests : Array TestStats) (entries : Array ResultEntry) : IO Unit := do
+  if entries.isEmpty then
+    IO.println "\nNothing to run; every selected pair already has a result."
+    return
   let expectations := expectationsOf tests
   let rule := "".pushn '=' 60
   IO.println s!"\n{rule}\nSummary:\n{rule}"
   for correctness in Correctness.all do
-    let count := results.countP fun result =>
-      result.correctness (Std.HashMap.get? expectations result.test |>.getD none) == correctness
+    let count := entries.countP fun entry =>
+      entry.correctness (Std.HashMap.get? expectations entry.test |>.getD none) == correctness
     if count > 0 then
-      IO.println s!"  {correctness}: {count} {correctness.consoleGlyph}"
+      IO.println s!"  {correctness}: {count}"
 
 end Arena

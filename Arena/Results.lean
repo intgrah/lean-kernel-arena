@@ -19,6 +19,8 @@ structure TestStats extends ExportMeta where
   declarationUrl : Option String := none
   sourceUrl : Option String := none
   sourceModule : Option String := none
+  hash : String := ""
+  recipeHash : String := ""
   ndjsonPath : System.FilePath := ""
 
 
@@ -31,7 +33,9 @@ instance : ToJson TestStats where
     [("name", toJson s.name),
      ("size", toJson s.size),
      ("lines", toJson s.lines),
-     ("compare_perf", toJson s.comparePerf)]
+     ("compare_perf", toJson s.comparePerf),
+     ("hash", toJson s.hash),
+     ("recipe_hash", toJson s.recipeHash)]
     ++ field "outcome" (s.expectation.map ToString.toString)
     ++ field "description" s.generatedDescription
     ++ field "declaration_url" s.declarationUrl
@@ -48,6 +52,8 @@ instance : FromJson TestStats where
       lines := ← json.getObjValAs? Nat "lines"
       expectation := (← json.getObjValAs? (Option String) "outcome").bind Expectation.ofString?
       comparePerf := (← json.getObjValAs? (Option Bool) "compare_perf").getD false
+      hash := (← json.getObjValAs? (Option String) "hash").getD ""
+      recipeHash := (← json.getObjValAs? (Option String) "recipe_hash").getD ""
       generatedDescription := ← json.getObjValAs? (Option String) "description"
       declarationUrl := ← json.getObjValAs? (Option String) "declaration_url"
       sourceUrl := ← json.getObjValAs? (Option String) "source_url"
@@ -56,57 +62,100 @@ instance : FromJson TestStats where
       leanVersion := ← json.getObjValAs? (Option String) "lean_version"
     }
 
-structure RunResult extends Metrics where
-  checker : String
+structure ResultEntry extends Metrics where
   test : String
-  exitCode : Int
-  stdout : String := ""
-  stderr : String := ""
-  message : Option String := none
+  testHash : String
+  attempt : Attempt
+  runAt : String
 
-def RunResult.status (result : RunResult) : Status :=
-  Status.ofExitCode result.exitCode
+def ResultEntry.status (entry : ResultEntry) : Status :=
+  entry.attempt.status
 
-def RunResult.correctness (result : RunResult) (expectation : Option Expectation) :
+def ResultEntry.correctness (entry : ResultEntry) (expectation : Option Expectation) :
     Correctness :=
-  Correctness.of result.status expectation
+  Correctness.of entry.status expectation
 
-def RunResult.toJsonWith (r : RunResult) (expectation : Option Expectation) : Json :=
-  Json.mkObj <| [
-    ("checker", toJson r.checker),
-    ("test", toJson r.test),
-    ("status", toJson (ToString.toString r.status)),
-    ("correctness", toJson (ToString.toString (r.correctness expectation))),
-    ("exit_code", toJson r.exitCode),
-    ("wall_time", toJson r.wallTime),
-    ("cpu_time", toJson r.cpuTime),
-    ("max_rss", toJson r.maxRss),
-    ("instructions", toJson r.instructions),
-    ("stdout", toJson r.stdout),
-    ("stderr", toJson r.stderr)
-  ] ++ field "message" r.message
+instance : ToJson ResultEntry where
+  toJson e := Json.mkObj [
+    ("test", toJson e.test),
+    ("test_hash", toJson e.testHash),
+    ("attempt", toJson e.attempt),
+    ("wall_time", toJson e.wallTime),
+    ("cpu_time", toJson e.cpuTime),
+    ("max_rss", toJson e.maxRss),
+    ("instructions", toJson e.instructions),
+    ("run_at", toJson e.runAt)
+  ]
 
-instance : FromJson RunResult where
+instance : FromJson ResultEntry where
   fromJson? json := do
     return {
-      checker := ← json.getObjValAs? String "checker"
       test := ← json.getObjValAs? String "test"
-      exitCode := ← json.getObjValAs? Int "exit_code"
+      testHash := ← json.getObjValAs? String "test_hash"
+      attempt := ← json.getObjValAs? Attempt "attempt"
       wallTime := (← json.getObjValAs? (Option Float) "wall_time").getD 0
       cpuTime := (← json.getObjValAs? (Option Float) "cpu_time").getD 0
       maxRss := (json.getObjValAs? Nat "max_rss").toOption.getD 0
       instructions := (json.getObjValAs? Nat "instructions").toOption.getD 0
-      stdout := (← json.getObjValAs? (Option String) "stdout").getD ""
-      stderr := (← json.getObjValAs? (Option String) "stderr").getD ""
-      message := ← json.getObjValAs? (Option String) "message"
+      runAt := ← json.getObjValAs? String "run_at"
     }
 
-def resultFileName (checker test : String) : String :=
-  s!"{checker}_{test.replace "/" "_"}.json"
+structure ResultLog where
+  checker : String
+  revision : String
+  recipeHash : String
+  runner : String
+  entries : Array ResultEntry
+deriving Inhabited
 
-def writeRunResult (result : RunResult) (expectation : Option Expectation) : IO Unit :=
-  writeJsonFile (resultsDir / resultFileName result.checker result.test)
-    (result.toJsonWith expectation)
+instance : ToJson ResultLog where
+  toJson log := Json.mkObj [
+    ("checker", toJson log.checker),
+    ("revision", toJson log.revision),
+    ("recipe_hash", toJson log.recipeHash),
+    ("runner", toJson log.runner),
+    ("entries", toJson log.entries)
+  ]
+
+instance : FromJson ResultLog where
+  fromJson? json := do
+    return {
+      checker := ← json.getObjValAs? String "checker"
+      revision := ← json.getObjValAs? String "revision"
+      recipeHash := ← json.getObjValAs? String "recipe_hash"
+      runner := ← json.getObjValAs? String "runner"
+      entries := ← json.getObjValAs? (Array ResultEntry) "entries"
+    }
+
+inductive Stored
+  | none
+  | matching (log : ResultLog)
+  | otherRecipe (log : ResultLog)
+
+def Stored.log? : Stored → Option ResultLog
+  | .none => Option.none
+  | .matching log | .otherRecipe log => some log
+
+def ResultLog.find? (log : ResultLog) (test : String) : Option ResultEntry :=
+  log.entries.find? (·.test == test)
+
+def ResultLog.record (log : ResultLog) (entry : ResultEntry) : ResultLog :=
+  { log with
+    entries := (log.entries.filter (·.test != entry.test)).push entry
+      |>.qsort (·.test < ·.test) }
+
+def resultLogPath (checker revision : String) : System.FilePath :=
+  resultsDir / checker / (revision ++ ".json")
+
+def loadResultLog (checker revision recipeHash : String) : IO Stored := do
+  let path := resultLogPath checker revision
+  unless ← path.pathExists do return .none
+  match fromJson? (α := ResultLog) (← readJsonFile path) with
+  | .ok log => return if log.recipeHash == recipeHash then .matching log else .otherRecipe log
+  | .error err => throw <| .userError s!"{path}: {err}"
+
+def writeResultLog (log : ResultLog) : IO Unit :=
+  writeJsonFile (resultLogPath log.checker log.revision) (toJson log)
 
 private def loadAll (α) [FromJson α] (dir : System.FilePath) (ext : String)
     (names : Array String) : IO (Array α) :=
@@ -122,7 +171,7 @@ def loadTestStats : IO (Array TestStats) := do
     { s with ndjsonPath := builtTestsDir / (path ++ ".ndjson") }) paths
   return located.qsort (·.name < ·.name)
 
-def loadRunResults : IO (Array RunResult) := do
-  loadAll RunResult resultsDir ".json" (← findNamesIn resultsDir ".json")
+def loadResultLogs : IO (Array ResultLog) := do
+  loadAll ResultLog resultsDir ".json" (← findNamesUnder resultsDir ".json" 2)
 
 end Arena

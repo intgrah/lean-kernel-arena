@@ -1,4 +1,5 @@
 import Arena.Repo
+import Arena.Digest
 
 namespace Arena
 
@@ -97,6 +98,18 @@ def readExportMeta (path : System.FilePath) : IO ExportMeta := do
     leanVersion := (lean.getObjValAs? String "version").toOption
   }
 
+/--
+Everything that decides what an export will contain: the test's own configuration, the source it
+is produced from, and the toolchain it is produced with.
+-/
+def testRecipe (config : TestConfig) : IO String := do
+  let localFile ← match config.source, config.production with
+    | .leanFile path, _ | _, .staticFile path =>
+      if ← System.FilePath.pathExists path then digestFile path else pure ""
+    | _, _ => pure ""
+  let toolchain ← readToolchain "."
+  return digestString (String.intercalate " " [reprStr config, localFile, toolchain])
+
 private def gatherStats (name : String) (config : TestConfig) (ndjson : System.FilePath)
     (expectation : Option Expectation) (generatedDescription : Option String)
     (links : SourceLinks) : IO TestStats := do
@@ -105,6 +118,8 @@ private def gatherStats (name : String) (config : TestConfig) (ndjson : System.F
     toExportMeta := ← readExportMeta ndjson
     name, size, lines, expectation, generatedDescription
     comparePerf := config.comparePerf
+    hash := ← digestFile ndjson
+    recipeHash := ← testRecipe config
     declarationUrl := links.declarationUrl
     sourceUrl := links.sourceUrl
     sourceModule := match config.source with
@@ -165,6 +180,13 @@ private def buildSingle (config : TestConfig) (produce : System.FilePath → IO 
   IO.println s!"  Created {ndjson} ({formatMemory stats.size.toFloat}, \
 {formatUnitless stats.lines.toFloat} lines)"
 
+def isCurrent (config : TestConfig) : IO Bool := do
+  let stats := builtTestsDir / (config.name ++ ".stats.json")
+  unless ← stats.pathExists do return false
+  match Lean.fromJson? (α := TestStats) (← readJsonFile stats) with
+  | Except.error _ => return false
+  | Except.ok stored => return stored.recipeHash == (← testRecipe config)
+
 def buildTest (config : TestConfig) (revision : Option String) : IO Unit := do
   let links := config.sourceLinks revision
   IO.FS.createDirAll builtTestsDir
@@ -203,22 +225,30 @@ def buildTest (config : TestConfig) (revision : Option String) : IO Unit := do
           (env := #[("OUT", staging.toString)]) (printOnFailure := true)
         unless outcome.ok do throw <| .userError "test script failed") links
 
-def checkerWorkDir (config : CheckerConfig) : System.FilePath :=
+def checkerRoot (config : CheckerConfig) (pin : Pin) : System.FilePath :=
+  builtCheckersDir / config.name / pin.id
+
+def checkerWorkDir (config : CheckerConfig) (pin : Pin) : System.FilePath :=
   match config.source with
-  | .empty => builtCheckersDir / config.name
-  | _ => builtCheckersDir / config.name / "src"
+  | .empty => checkerRoot config pin
+  | _ => checkerRoot config pin / "src"
 
-def CheckerConfig.isBuilt (config : CheckerConfig) : IO Bool :=
-  (builtCheckersDir / config.name).pathExists
+def applyPin (work : System.FilePath) : Pin → IO Unit
+  | .toolchain name => IO.FS.writeFile (work / "lean-toolchain") (name ++ "\n")
+  | .commit _ | .fixed => pure ()
 
-def buildChecker (config : CheckerConfig) : IO Unit := do
-  IO.println s!"Building checker: {config.name} (version: {config.displayVersion})"
-  discard <| setupSource config.source (builtCheckersDir / config.name) checkersDir
-  let work := checkerWorkDir config
+def isBuilt (config : CheckerConfig) (pin : Pin) : IO Bool :=
+  (checkerRoot config pin).pathExists
+
+def buildChecker (config : CheckerConfig) (pin : Pin) : IO Unit := do
+  IO.println s!"Building checker: {config.name}@{pin.id}"
+  discard <| setupSource (config.sourceWith pin) (checkerRoot config pin) checkersDir
+  let work := checkerWorkDir config pin
+  applyPin work pin
   if let some command := config.buildCommand then
     IO.println s!"  Building: {command}"
     let outcome ← runShell command (cwd := work) (printOnFailure := true)
     unless outcome.ok do throw <| .userError "build failed"
-  IO.println s!"  Checker {config.name} built successfully"
+  IO.println s!"  Checker {config.name}@{pin.id} built successfully"
 
 end Arena
