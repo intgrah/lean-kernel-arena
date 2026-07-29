@@ -43,7 +43,6 @@ jobs:
     needs: checkers
     strategy:
       fail-fast: false
-      max-parallel: 6
       matrix:
         checker: ${{ fromJSON(needs.checkers.outputs.list) }}
     uses: ./.github/workflows/measure-one.yml
