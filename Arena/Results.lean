@@ -8,6 +8,7 @@ namespace Arena
 structure ExportMeta where
   exporterVersion : Option String := none
   leanVersion : Option String := none
+deriving Inhabited
 
 structure TestStats extends ExportMeta where
   name : String
@@ -21,52 +22,17 @@ structure TestStats extends ExportMeta where
   sourceModule : Option String := none
   hash : String := ""
   recipeHash : String := ""
-  ndjsonPath : System.FilePath := ""
+deriving Inhabited, ToJson, FromJson
 
-
-private def field [ToJson α] (key : String) : Option α → List (String × Json)
-  | some v => [(key, toJson v)]
-  | none => []
-
-instance : ToJson TestStats where
-  toJson s := Json.mkObj <|
-    [("name", toJson s.name),
-     ("size", toJson s.size),
-     ("lines", toJson s.lines),
-     ("compare_perf", toJson s.comparePerf),
-     ("hash", toJson s.hash),
-     ("recipe_hash", toJson s.recipeHash)]
-    ++ field "outcome" (s.expectation.map ToString.toString)
-    ++ field "description" s.generatedDescription
-    ++ field "declaration_url" s.declarationUrl
-    ++ field "source_url" s.sourceUrl
-    ++ field "source_module" s.sourceModule
-    ++ field "lean4export_version" s.exporterVersion
-    ++ field "lean_version" s.leanVersion
-
-instance : FromJson TestStats where
-  fromJson? json := do
-    return {
-      name := ← json.getObjValAs? String "name"
-      size := ← json.getObjValAs? Nat "size"
-      lines := ← json.getObjValAs? Nat "lines"
-      expectation := (← json.getObjValAs? (Option String) "outcome").bind Expectation.ofString?
-      comparePerf := (← json.getObjValAs? (Option Bool) "compare_perf").getD false
-      hash := (← json.getObjValAs? (Option String) "hash").getD ""
-      recipeHash := (← json.getObjValAs? (Option String) "recipe_hash").getD ""
-      generatedDescription := ← json.getObjValAs? (Option String) "description"
-      declarationUrl := ← json.getObjValAs? (Option String) "declaration_url"
-      sourceUrl := ← json.getObjValAs? (Option String) "source_url"
-      sourceModule := ← json.getObjValAs? (Option String) "source_module"
-      exporterVersion := ← json.getObjValAs? (Option String) "lean4export_version"
-      leanVersion := ← json.getObjValAs? (Option String) "lean_version"
-    }
+structure LocatedTest extends TestStats where
+  ndjsonPath : System.FilePath
 
 structure ResultEntry extends Metrics where
   test : String
   testHash : String
   attempt : Attempt
   runAt : String
+deriving Inhabited, ToJson, FromJson
 
 def ResultEntry.status (entry : ResultEntry) : Status :=
   entry.attempt.status
@@ -75,57 +41,13 @@ def ResultEntry.correctness (entry : ResultEntry) (expectation : Option Expectat
     Correctness :=
   Correctness.of entry.status expectation
 
-instance : ToJson ResultEntry where
-  toJson e := Json.mkObj [
-    ("test", toJson e.test),
-    ("test_hash", toJson e.testHash),
-    ("attempt", toJson e.attempt),
-    ("wall_time", toJson e.wallTime),
-    ("cpu_time", toJson e.cpuTime),
-    ("max_rss", toJson e.maxRss),
-    ("instructions", toJson e.instructions),
-    ("run_at", toJson e.runAt)
-  ]
-
-instance : FromJson ResultEntry where
-  fromJson? json := do
-    return {
-      test := ← json.getObjValAs? String "test"
-      testHash := ← json.getObjValAs? String "test_hash"
-      attempt := ← json.getObjValAs? Attempt "attempt"
-      wallTime := (← json.getObjValAs? (Option Float) "wall_time").getD 0
-      cpuTime := (← json.getObjValAs? (Option Float) "cpu_time").getD 0
-      maxRss := (json.getObjValAs? Nat "max_rss").toOption.getD 0
-      instructions := (json.getObjValAs? Nat "instructions").toOption.getD 0
-      runAt := ← json.getObjValAs? String "run_at"
-    }
-
 structure ResultLog where
   checker : String
   revision : String
   recipeHash : String
   runner : String
   entries : Array ResultEntry
-deriving Inhabited
-
-instance : ToJson ResultLog where
-  toJson log := Json.mkObj [
-    ("checker", toJson log.checker),
-    ("revision", toJson log.revision),
-    ("recipe_hash", toJson log.recipeHash),
-    ("runner", toJson log.runner),
-    ("entries", toJson log.entries)
-  ]
-
-instance : FromJson ResultLog where
-  fromJson? json := do
-    return {
-      checker := ← json.getObjValAs? String "checker"
-      revision := ← json.getObjValAs? String "revision"
-      recipeHash := ← json.getObjValAs? String "recipe_hash"
-      runner := ← json.getObjValAs? String "runner"
-      entries := ← json.getObjValAs? (Array ResultEntry) "entries"
-    }
+deriving Inhabited, ToJson, FromJson
 
 inductive Stored
   | none
@@ -164,11 +86,11 @@ private def loadAll (α) [FromJson α] (dir : System.FilePath) (ext : String)
     | .ok value => return value
     | .error err => throw <| .userError s!"{name}{ext}: {err}"
 
-def loadTestStats : IO (Array TestStats) := do
+def loadTestStats : IO (Array LocatedTest) := do
   let paths ← findNamesUnder builtTestsDir ".stats.json" 2
   let stats ← loadAll TestStats builtTestsDir ".stats.json" paths
   let located := stats.zipWith (fun s path =>
-    { s with ndjsonPath := builtTestsDir / (path ++ ".ndjson") }) paths
+    ({ toTestStats := s, ndjsonPath := builtTestsDir / (path ++ ".ndjson") } : LocatedTest)) paths
   return located.qsort (·.name < ·.name)
 
 def loadResultLogs : IO (Array ResultLog) := do

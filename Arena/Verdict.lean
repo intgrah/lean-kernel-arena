@@ -8,7 +8,7 @@ inductive Expectation
   | accept
   | reject
   | either
-deriving DecidableEq, Repr, Inhabited
+deriving DecidableEq, Repr, Inhabited, ToJson, FromJson
 
 def Expectation.toString : Expectation → String
   | .accept => "accept"
@@ -59,7 +59,7 @@ inductive Attempt
   | ran (exitCode : Int) (stdout stderr : String)
   | declined (reason : String)
   | skipped (reason : String)
-deriving DecidableEq, Repr, Inhabited
+deriving DecidableEq, Repr, Inhabited, ToJson, FromJson
 
 def Attempt.status : Attempt → Status
   | .ran exitCode _ _ => Status.ofExitCode exitCode
@@ -69,25 +69,6 @@ def Attempt.status : Attempt → Status
 def Attempt.withoutProcessOutput : Attempt → Attempt
   | .ran exitCode _ _ => .ran exitCode "" ""
   | attempt => attempt
-
-instance : ToJson Attempt where
-  toJson
-    | .ran exitCode stdout stderr => Json.mkObj [
-        ("exit_code", toJson exitCode),
-        ("stdout", toJson stdout),
-        ("stderr", toJson stderr)
-      ]
-    | .declined reason => Json.mkObj [("declined", toJson reason)]
-    | .skipped reason => Json.mkObj [("skipped", toJson reason)]
-
-instance : FromJson Attempt where
-  fromJson? json := do
-    match json.getObjValAs? String "skipped", json.getObjValAs? String "declined" with
-    | .ok reason, _ => return .skipped reason
-    | _, .ok reason => return .declined reason
-    | _, _ =>
-      return .ran (← json.getObjValAs? Int "exit_code")
-        (← json.getObjValAs? String "stdout") (← json.getObjValAs? String "stderr")
 
 inductive Correctness
   | correct

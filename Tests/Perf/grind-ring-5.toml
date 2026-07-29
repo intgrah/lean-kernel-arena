@@ -1,3 +1,3 @@
-leanfile = "Tests/Perf/GrindRing5.lean"
-export_decls = ["thm", "String.ofList", "Char.ofNat"]
+leanFile = "Tests/Perf/GrindRing5.lean"
+exportDecls = ["thm", "String.ofList", "Char.ofNat"]
 outcome = "accept"

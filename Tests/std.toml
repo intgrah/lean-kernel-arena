@@ -1,4 +1,4 @@
-leanfile = "Tests/StdModule.lean"
+leanFile = "Tests/StdModule.lean"
 outcome = "accept"
-compare_perf = true
-skip_on_ci = true
+comparePerf = true
+skipOnCi = true

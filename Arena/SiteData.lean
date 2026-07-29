@@ -1,7 +1,7 @@
 import Arena.Run
 import Arena.Export
 
-open Lean (Json toJson)
+open Lean (Json ToJson FromJson toJson)
 
 namespace Arena
 
@@ -19,6 +19,7 @@ structure CheckerStats where
   rejectTotal : Nat := 0
   declined : Nat := 0
   benchmark : Option Metrics := none
+deriving Inhabited, ToJson, FromJson
 
 def CheckerStats.record (stats : CheckerStats) (entry : ResultEntry)
     (expectation : Option Expectation) : CheckerStats :=
@@ -39,7 +40,7 @@ def CheckerStats.record (stats : CheckerStats) (entry : ResultEntry)
       rejectCorrect := stats.rejectCorrect + if status == .rejected then 1 else 0 }
   | _, none => stats
 
-def statsOfLog (tests : Array TestStats) (log : ResultLog) : CheckerStats :=
+def statsOfLog (tests : Array LocatedTest) (log : ResultLog) : CheckerStats :=
   let expectations := expectationsOf tests
   log.entries.foldl (init := {}) fun stats entry =>
     match Std.HashMap.get? expectations entry.test with
@@ -62,8 +63,9 @@ structure TarballInfo where
   size : Nat
   goodCount : Nat
   badCount : Nat
+deriving Inhabited, ToJson, FromJson
 
-def createTarball (tests : Array TestStats) : IO TarballInfo := do
+def createTarball (tests : Array LocatedTest) : IO TarballInfo := do
   let staging := buildDir / "tarball"
   removeIfExists staging
   let mut goodCount := 0
@@ -85,47 +87,44 @@ def createTarball (tests : Array TestStats) : IO TarballInfo := do
   removeIfExists staging
   return { size := (← tarballPath.metadata).byteSize.toNat, goodCount, badCount }
 
-private def nanos (seconds : Float) : Nat :=
-  if seconds > 0 then (seconds * 1e9).toUInt64.toNat else 0
+structure CheckerInfo where
+  name : String
+  version : String
+  declarationUrl : Option String
+  sourceUrl : Option String
+  stats : CheckerStats
+deriving Inhabited, ToJson, FromJson
 
-private def metricsFields (metrics : Metrics) : List (String × Json) :=
-  [("wall_nanos", toJson (nanos metrics.wallTime)),
-   ("cpu_nanos", toJson (nanos metrics.cpuTime)),
-   ("max_rss", toJson metrics.maxRss),
-   ("instructions", toJson metrics.instructions)]
+structure ResultInfo extends Metrics where
+  checker : String
+  test : String
+  attempt : Attempt
+deriving Inhabited, ToJson, FromJson
 
-private def checkerJson (config : CheckerConfig) (pin : Pin) (stats : CheckerStats)
-    (links : SourceLinks) : Json :=
-  Json.mkObj [
-    ("name", toJson config.name),
-    ("version", toJson pin.id),
-    ("declaration_url", toJson links.declarationUrl),
-    ("source_url", toJson links.sourceUrl),
-    ("stats", Json.mkObj [
-      ("accept_correct", toJson stats.acceptCorrect),
-      ("accept_total", toJson stats.acceptTotal),
-      ("reject_correct", toJson stats.rejectCorrect),
-      ("reject_total", toJson stats.rejectTotal),
-      ("declined", toJson stats.declined),
-      ("benchmark", toJson (stats.benchmark.map (Json.mkObj <| metricsFields ·)))
-    ])
-  ]
+structure TarballData extends TarballInfo where
+  name : String
+deriving Inhabited, ToJson, FromJson
 
-private def resultJson (checker : String) (entry : ResultEntry) : Json :=
-  Json.mkObj <| [
-    ("checker", toJson checker),
-    ("test", toJson entry.test),
-    ("attempt", toJson entry.attempt)
-  ] ++ metricsFields entry.toMetrics
+def ResultInfo.status (result : ResultInfo) : Status :=
+  result.attempt.status
 
-private def buildJson (info : BuildInfo) : Json :=
-  Json.mkObj [
-    ("timestamp", toJson info.timestamp),
-    ("short_revision", toJson info.shortRevision),
-    ("commit_url", toJson info.commitUrl),
-    ("action_url", toJson info.actionUrl),
-    ("action_run_id", toJson info.actionRunId)
-  ]
+def ResultInfo.withoutProcessOutput (result : ResultInfo) : ResultInfo :=
+  { result with attempt := result.attempt.withoutProcessOutput }
+
+structure Payload where
+  schemaVersion : Nat
+  instructionsPerSecond : Nat
+  benchmarkTest : String
+  baselineChecker : String
+  build : BuildInfo
+  tarball : TarballData
+  checkers : Array CheckerInfo
+  tests : Array TestStats
+  results : Array ResultInfo
+deriving Inhabited, ToJson, FromJson
+
+def Payload.withoutProcessOutput (payload : Payload) : Payload :=
+  { payload with results := payload.results.map ResultInfo.withoutProcessOutput }
 
 private def observedRate (entries : Array ResultEntry) : Option Float :=
   let (instructions, seconds) := entries.foldl (init := (0.0, 0.0)) fun (i, s) entry =>
@@ -134,7 +133,7 @@ private def observedRate (entries : Array ResultEntry) : Option Float :=
     else (i, s)
   if seconds > 0 then some (instructions / seconds) else none
 
-def extractSources (tests : Array TestStats) : IO Unit := do
+def extractSources (tests : Array LocatedTest) : IO Unit := do
   let modules := tests.foldl (init := #[]) fun found test =>
     match test.sourceModule with
     | some module => if found.contains module then found else found.push module
@@ -156,17 +155,17 @@ def extractSources (tests : Array TestStats) : IO Unit := do
 
 def renderedExportLimit : Nat := 128 * 1024
 
-def renderExports (tests : Array TestStats) : IO Unit := do
+def renderExports (tests : Array LocatedTest) : IO Unit := do
   removeIfExists siteExportsDir
   let small := tests.filter fun test => test.size ≤ renderedExportLimit
   if small.isEmpty then return
   let env ← Export.coreEnvironment
   for test in small do
     unless ← test.ndjsonPath.pathExists do continue
-    if ← verbose then IO.println s!"  Rendering {test.name}..."
+    trace 1 s!"Rendering {test.name}..."
     match ← (Export.renderExport env test.ndjsonPath).toBaseIO with
     | .ok rendered => writeJsonFile (siteExportsDir / (test.name ++ ".json")) (toJson rendered)
-    | .error err => IO.println s!"  Could not render the export of {test.name}: {err}"
+    | .error err => note 1 s!"Could not render the export of {test.name}: {err}"
   IO.println s!"Rendered the exported declarations of {small.size} tests \
 ({tests.size - small.size} over {formatMemory renderedExportLimit.toFloat})"
 
@@ -178,7 +177,7 @@ structure CheckerColumn where
 def rankColumns (columns : Array CheckerColumn) : Array CheckerColumn :=
   columns.qsort fun a b => compare (rankKey a.stats) (rankKey b.stats) |>.isLT
 
-def currentColumns (configs : Array CheckerConfig) (tests : Array TestStats) :
+def currentColumns (configs : Array CheckerConfig) (tests : Array LocatedTest) :
     IO (Array CheckerColumn) := do
   configs.mapM fun config => do
     let recipeHash := digestString (config.recipe config.pin)
@@ -201,26 +200,29 @@ def generateSiteData : IO Unit := do
   let tarball ← createTarball tests
   extractSources tests
   renderExports tests
-  let payload := Json.mkObj [
-    ("schema_version", toJson 1),
-    ("instructions_per_second", toJson instructionsPerSecond),
-    ("benchmark_test", toJson benchmarkTest),
-    ("baseline_checker", toJson baselineChecker),
-    ("build", buildJson info),
-    ("tarball", Json.mkObj [
-      ("name", toJson tarballName),
-      ("size", toJson tarball.size),
-      ("good_count", toJson tarball.goodCount),
-      ("bad_count", toJson tarball.badCount)
-    ]),
-    ("checkers", Json.arr <| ranked.map fun column =>
-      checkerJson column.config column.config.pin column.stats
-        (column.config.sourceLinks info.gitRevision)),
-    ("tests", Json.arr <| tests.map toJson),
-    ("results", Json.arr <| ranked.flatMap fun column =>
-      column.log.entries.map (resultJson column.config.name))
-  ]
-  writeJsonFile siteDataPath payload
+  let payload : Payload := {
+    schemaVersion := 1
+    instructionsPerSecond
+    benchmarkTest
+    baselineChecker
+    build := info
+    tarball := { toTarballInfo := tarball, name := tarballName }
+    checkers := ranked.map fun column =>
+      let links := column.config.sourceLinks info.gitRevision
+      { name := column.config.name
+        version := column.config.pin.id
+        declarationUrl := links.declarationUrl
+        sourceUrl := links.sourceUrl
+        stats := column.stats }
+    tests := tests.map (·.toTestStats)
+    results := ranked.flatMap fun column =>
+      column.log.entries.map fun entry =>
+        { toMetrics := entry.toMetrics
+          checker := column.config.name
+          test := entry.test
+          attempt := entry.attempt }
+  }
+  writeJsonFile siteDataPath (toJson payload)
   IO.println s!"Wrote {siteDataPath} ({ranked.size} checker revisions, {tests.size} tests, \
 {entries.size} results)"
 

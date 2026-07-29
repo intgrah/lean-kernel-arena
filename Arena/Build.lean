@@ -1,5 +1,4 @@
 import Arena.Repo
-import Arena.Digest
 
 namespace Arena
 
@@ -15,7 +14,7 @@ def setupSource (source : Source) (work : System.FilePath) (dirBase : System.Fil
   let src := work / "src"
   match source with
   | .git url ref rev =>
-    IO.println s!"  Cloning {url}..."
+    note 1 s!"Cloning {url}..."
     let branch := match ref with | some ref => #["--branch", ref] | none => #[]
     let clone ← run { cmd := "git", args := #["clone"] ++ branch ++ #[url, src.toString] }
     unless clone.ok do throw <| .userError s!"failed to clone {url}: {clone.stderr}"
@@ -26,7 +25,7 @@ def setupSource (source : Source) (work : System.FilePath) (dirBase : System.Fil
     let source := dirBase / path
     unless ← source.pathExists do throw <| .userError s!"source directory not found: {source}"
     copyTree source src
-    IO.println s!"  Copied {source} to {src}"
+    note 1 s!"Copied {source} to {src}"
   | .leanFile path =>
     throw <| .userError s!"leanFile sources build in place, not via setupSource: {path}"
   | .empty =>
@@ -44,7 +43,7 @@ private def toolchainSlug (toolchain : String) : String :=
 def setupLean4Export (toolchain : String) : IO System.FilePath := do
   let dir ← absolute (lean4exportRoot / toolchainSlug toolchain)
   if ← dir.pathExists then return dir
-  IO.println s!"  Cloning lean4export for toolchain {toolchain}..."
+  note 1 s!"Cloning lean4export for toolchain {toolchain}..."
   let staging := lean4exportRoot / (toolchainSlug toolchain ++ ".tmp")
   removeIfExists staging
   IO.FS.createDirAll staging
@@ -54,7 +53,7 @@ def setupLean4Export (toolchain : String) : IO System.FilePath := do
   }
   unless clone.ok do throw <| .userError s!"failed to clone lean4export: {clone.stderr}"
   IO.FS.writeFile (staging / "lean-toolchain") (toolchain ++ "\n")
-  IO.println s!"  Building lean4export with toolchain {toolchain}..."
+  note 1 s!"Building lean4export with toolchain {toolchain}..."
   let build ← runShell "lake build" (cwd := staging) (printOnFailure := true)
   unless build.ok do throw <| .userError "failed to build lean4export"
   IO.FS.rename staging dir
@@ -129,7 +128,7 @@ private def gatherStats (name : String) (config : TestConfig) (ndjson : System.F
 
 private def runPreBuild (config : TestConfig) (cwd : System.FilePath) : IO Unit := do
   let some command := config.preBuild | return
-  IO.println s!"  Running pre-build: {command}"
+  note 1 s!"Running pre-build: {command}"
   let outcome ← runShell command (cwd := cwd) (printOnFailure := true)
   unless outcome.ok do throw <| .userError "pre-build failed"
 
@@ -148,7 +147,7 @@ private def buildMultiple (config : TestConfig) (command : String) (src : System
     (links : SourceLinks) : IO Nat := do
   let staging ← absolute (builtTestsDir / (config.name ++ ".tmp"))
   freshDir staging
-  IO.println s!"  Running: {command}"
+  note 1 s!"Running: {command}"
   let outcome ← runShell command (cwd := src)
     (env := #[("OUT", staging.toString)]) (printOnFailure := true)
   unless outcome.ok do throw <| .userError "test script failed"
@@ -177,7 +176,7 @@ private def buildSingle (config : TestConfig) (produce : System.FilePath → IO 
   IO.FS.rename staging ndjson
   let stats ← gatherStats config.name config ndjson config.expectation none links
   writeJsonFile (builtTestsDir / (config.name ++ ".stats.json")) (Lean.toJson stats)
-  IO.println s!"  Created {ndjson} ({formatMemory stats.size.toFloat}, \
+  note 1 s!"Created {ndjson} ({formatMemory stats.size.toFloat}, \
 {formatUnitless stats.lines.toFloat} lines)"
 
 def isCurrent (config : TestConfig) : IO Bool := do
@@ -203,13 +202,13 @@ def buildTest (config : TestConfig) (revision : Option String) : IO Unit := do
     IO.println s!"Creating test: {config.name} (export of {module})"
     let lean4export ← setupLean4Export (← readToolchain src)
     runPreBuild config src
-    IO.println s!"  Building module {module}..."
+    note 1 s!"Building module {module}..."
     let build ← runShell s!"lake build {module}" (cwd := src) (printOnFailure := true)
     unless build.ok do throw <| .userError s!"build of {module} failed"
     let declList :=
       if config.exportDecls.isEmpty then ""
       else s!" ({", ".intercalate config.exportDecls.toList})"
-    IO.println s!"  Exporting module {module}{declList}..."
+    note 1 s!"Exporting module {module}{declList}..."
     buildSingle config
       (fun staging => runLean4Export lean4export module config.exportDecls src staging) links
   | .script command multiple =>
@@ -217,10 +216,10 @@ def buildTest (config : TestConfig) (revision : Option String) : IO Unit := do
     runPreBuild config src
     if multiple then
       let count ← buildMultiple config command src links
-      IO.println s!"  Created {count} subtests in {builtTestsDir / config.name}"
+      note 1 s!"Created {count} subtests in {builtTestsDir / config.name}"
     else
       buildSingle config (fun staging => do
-        IO.println s!"  Running: {command}"
+        note 1 s!"Running: {command}"
         let outcome ← runShell command (cwd := src)
           (env := #[("OUT", staging.toString)]) (printOnFailure := true)
         unless outcome.ok do throw <| .userError "test script failed") links
@@ -246,9 +245,9 @@ def buildChecker (config : CheckerConfig) (pin : Pin) : IO Unit := do
   let work := checkerWorkDir config pin
   applyPin work pin
   if let some command := config.buildCommand then
-    IO.println s!"  Building: {command}"
+    note 1 s!"Building: {command}"
     let outcome ← runShell command (cwd := work) (printOnFailure := true)
     unless outcome.ok do throw <| .userError "build failed"
-  IO.println s!"  Checker {config.name}@{pin.id} built successfully"
+  note 1 s!"Checker {config.name}@{pin.id} built successfully"
 
 end Arena

@@ -68,7 +68,7 @@ private def matrixCell (index : ResultIndex) (baseline : Option Float) (isBaseli
       let reference ← baseline
       if isBaseline then
         return textHtml (Arena.formatDuration reference)
-      let seconds ← virtualSeconds result.metrics rate
+      let seconds ← virtualSeconds result.toMetrics rate
       return textHtml (formatPercent (percentChange reference seconds))
     statusCell (toneOf result.status test.expectation) (resultHref checker.name test.name)
       (comparison.getD (textHtml (statusGlyph result.status)))

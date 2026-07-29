@@ -85,7 +85,7 @@ private def flag (t : Table) (key : Lean.Name) : EDecodeM Bool :=
 private def decodeSource (t : Table) : EDecodeM Source := do
   let url? ← t.decode? (α := String) `url
   let dir? ← t.decode? (α := String) `dir
-  let leanfile? ← t.decode? (α := String) `leanfile
+  let leanfile? ← t.decode? (α := String) `leanFile
   let ref? ← t.decode? (α := String) `ref
   let rev? ← t.decode? (α := String) `rev
   match url?, dir?, leanfile? with
@@ -94,7 +94,7 @@ private def decodeSource (t : Table) : EDecodeM Source := do
   | none, none, some leanfile => return .leanFile leanfile
   | none, none, none => return .empty
   | _, _, _ =>
-    throwDecodeErrorAt .missing "at most one of `url`, `dir`, `leanfile` may be given"
+    throwDecodeErrorAt .missing "at most one of `url`, `dir`, `leanFile` may be given"
 
 def moduleOfLeanFile (path : String) : String :=
   let rel := if path.startsWith "Tests/" then (path.drop 6).toString else path
@@ -113,28 +113,28 @@ private def decodeProduction (t : Table) (source : Source) : EDecodeM Production
   | none, none, some _, _ =>
     throwDecodeErrorAt .missing "`file` cannot be combined with a source"
   | none, none, none, _ =>
-    throwDecodeErrorAt .missing "one of `module`, `run`, `file`, `leanfile` is required"
+    throwDecodeErrorAt .missing "one of `module`, `run`, `file`, `leanFile` is required"
   | _, _, _, _ =>
     throwDecodeErrorAt .missing "at most one of `module`, `run`, `file` may be given"
 
 private def decodeTest (name : String) (t : Table) : EDecodeM TestConfig := do
   let source ← decodeSource t
   let production ← decodeProduction t source
-  let exportDecls := (← t.decode? (α := Array String) `export_decls).getD #[]
+  let exportDecls := (← t.decode? (α := Array String) `exportDecls).getD #[]
   if !exportDecls.isEmpty then
     if let .script .. := production then
-      throwDecodeErrorAt .missing "`export_decls` requires `module` or `leanfile`"
+      throwDecodeErrorAt .missing "`exportDecls` requires `module` or `leanFile`"
     if let .staticFile _ := production then
-      throwDecodeErrorAt .missing "`export_decls` requires `module` or `leanfile`"
+      throwDecodeErrorAt .missing "`exportDecls` requires `module` or `leanFile`"
   if let .script _ true := production then
     if (← t.decode? (α := Expectation) `outcome).isSome then
       throwDecodeErrorAt .missing "`multiple` tests take their outcome from good/ and bad/"
   return {
     name, source, production, exportDecls
-    preBuild := ← t.decode? (α := String) `pre_build
+    preBuild := ← t.decode? (α := String) `preBuild
     expectation := ← t.decode? (α := Expectation) `outcome
-    comparePerf := ← flag t `compare_perf
-    skipOnCi := ← flag t `skip_on_ci
+    comparePerf := ← flag t `comparePerf
+    skipOnCi := ← flag t `skipOnCi
   }
 
 private def decodePin (t : Table) (source : Source) : EDecodeM Pin := do
@@ -149,7 +149,7 @@ private def decodePin (t : Table) (source : Source) : EDecodeM Pin := do
 private def decodeChecker (name : String) (t : Table) : EDecodeM CheckerConfig := do
   let source ← decodeSource t
   if let .leanFile _ := source then
-    throwDecodeErrorAt .missing "checkers have no `leanfile` source"
+    throwDecodeErrorAt .missing "checkers have no `leanFile` source"
   return {
     name, source
     pin := ← decodePin t source
@@ -195,9 +195,9 @@ def loadCheckerConfigs : IO (Array CheckerConfig) := do
   let all ← (← findNamesIn checkersDir ".toml").mapM loadCheckerConfig
   return all.filter (!·.disabled)
 
-def selectByPatterns (name : α → String) (patterns : Array String) (items : Array α) :
+def selectByPatterns (name : α → String) (selectors : Array String) (items : Array α) :
     Array α :=
-  if patterns.isEmpty then items
-  else items.filter fun item => patterns.any (globMatch · (name item))
+  if selectors.isEmpty then items
+  else items.filter fun item => selectors.any (selects · (name item))
 
 end Arena

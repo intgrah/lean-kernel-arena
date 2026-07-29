@@ -1,3 +1,3 @@
-leanfile = "Tests/ProjNoConstructors.lean"
-export_decls = ["d"]
+leanFile = "Tests/ProjNoConstructors.lean"
+exportDecls = ["d"]
 outcome = "reject"

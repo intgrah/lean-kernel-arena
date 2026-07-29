@@ -55,11 +55,11 @@ private def attemptFact : Attempt → String
   | .declined reason | .skipped reason => reason
 
 private def resultLine (test : TestInfo) (result : ResultInfo) : Html :=
-  let metrics := result.metrics
+  let metrics := result.toMetrics
   let facts := #[
     some (attemptFact result.attempt),
-    if metrics.wallNanos > 0 then
-      some s!"{wallTimeLabel}: {Arena.formatDuration metrics.wallSeconds}"
+    if metrics.wallTime > 0 then
+      some s!"{wallTimeLabel}: {Arena.formatDuration metrics.wallTime}"
     else none,
     if metrics.instructions > 0 then
       some s!"{instructionsLabel}: {Arena.formatUnitless metrics.instructions.toFloat}"

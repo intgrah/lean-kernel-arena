@@ -31,21 +31,8 @@ def formatUnitless (count : Float) : String :=
   if count < 1e3 then fixed 0 count
   else scaled count [(1e12, "T"), (1e9, "G"), (1e6, "M"), (1e3, "k")] ""
 
-partial def globMatch (pattern name : String) : Bool :=
-  go pattern.toList name.toList
-where
-  go : List Char → List Char → Bool
-    | [], cs => cs.isEmpty
-    | '*' :: p, cs => go p cs || (!cs.isEmpty && go ('*' :: p) cs.tail)
-    | '?' :: p, _ :: cs => go p cs
-    | '[' :: p, c :: cs =>
-      let (negated, p) := match p with
-        | '!' :: rest | '^' :: rest => (true, rest)
-        | rest => (false, rest)
-      let (set, rest) := p.span (· != ']')
-      go rest.tail! cs && (set.contains c != negated)
-    | q :: p, c :: cs => q == c && go p cs
-    | _ :: _, [] => false
+def selects (pattern name : String) : Bool :=
+  pattern == name || (pattern.endsWith "/" && name.startsWith pattern)
 
 def dropSuffix (suffix s : String) : String :=
   (s.toSlice.dropSuffix suffix).toString

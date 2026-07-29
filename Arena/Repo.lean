@@ -1,7 +1,13 @@
 import Std.Time
 import Arena.Results
 
+open Lean (ToJson FromJson)
+
 namespace Arena
+
+def timestamp : IO String := do
+  let now := Std.Time.DateTime.ofTimestampWithZone (← Std.Time.Timestamp.now) .UTC
+  return now.format "yyyy-MM-dd'T'HH:mm:ss'Z'"
 
 def repoUrl : String := "https://github.com/leanprover/lean-kernel-arena"
 
@@ -11,6 +17,7 @@ structure BuildInfo where
   commitUrl : Option String
   actionUrl : Option String
   actionRunId : Option String
+deriving Inhabited, ToJson, FromJson
 
 def BuildInfo.shortRevision (info : BuildInfo) : Option String :=
   info.gitRevision.map (·.take 8 |>.toString)

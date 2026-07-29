@@ -6,16 +6,16 @@ open Arena Cli
 def applyVerbosity (p : Parsed) : IO Unit :=
   verboseRef.set (p.hasFlag "verbose")
 
-def globsOf (p : Parsed) (flag : String) : Array String :=
+def selectorsOf (p : Parsed) (flag : String) : Array String :=
   match p.flag? flag with
   | some value => value.as! (Array String)
   | none => #[]
 
-def select (name : α → String) (kind : String) (patterns : Array String)
+def select (name : α → String) (kind : String) (selectors : Array String)
     (items : Array α) : IO (Array α) := do
-  let chosen := selectByPatterns name patterns items
-  if chosen.isEmpty && !patterns.isEmpty then
-    throw <| .userError s!"no {kind} match {" ".intercalate patterns.toList}"
+  let chosen := selectByPatterns name selectors items
+  if chosen.isEmpty && !selectors.isEmpty then
+    throw <| .userError s!"no {kind} match {" ".intercalate selectors.toList}"
   return chosen
 
 def forEachReporting (items : Array α) (act : α → IO Unit) : IO UInt32 := do
@@ -36,7 +36,7 @@ def runBuildTest (p : Parsed) : IO UInt32 := do
   let configs :=
     if p.hasFlag "skip-ci" then configs.filter (!·.skipOnCi) else configs
   let stale ←
-    if p.hasFlag "force" then pure configs else configs.filterM (fun c => return !(← isCurrent c))
+    if p.hasFlag "rebuild" then pure configs else configs.filterM (fun c => return !(← isCurrent c))
   let current := configs.size - stale.size
   if current > 0 then
     IO.println s!"{current} test(s) already match their inputs; rebuilding {stale.size}"
@@ -50,7 +50,7 @@ def Target.name (target : Target) : String :=
   s!"{target.checker.name}@{target.pin.id}"
 
 def selectTargets (p : Parsed) : IO (Array Target) := do
-  let configs ← select CheckerConfig.name "checkers" (globsOf p "checker") (← loadCheckerConfigs)
+  let configs ← select CheckerConfig.name "checkers" (selectorsOf p "checker") (← loadCheckerConfigs)
   match p.flag? "pin" with
   | none => return configs.map fun checker => { checker, pin := checker.pin }
   | some value =>
@@ -70,7 +70,7 @@ def runBuildChecker (p : Parsed) : IO UInt32 := do
 def runRun (p : Parsed) : IO UInt32 := do
   applyVerbosity p
   let targets ← selectTargets p
-  let tests ← select TestStats.name "tests" (globsOf p "test") (← loadTestStats)
+  let tests ← select (·.name) "tests" (selectorsOf p "test") (← loadTestStats)
   if targets.isEmpty then
     IO.println "No checkers selected."
     return 0
@@ -80,7 +80,7 @@ def runRun (p : Parsed) : IO UInt32 := do
   let mut produced := #[]
   for target in targets do
     produced := produced ++
-      (← runRevision target.checker target.pin tests (p.hasFlag "force"))
+      (← runRevision target.checker target.pin tests (p.hasFlag "rerun"))
   reportTally tests produced
   return 0
 
@@ -111,11 +111,11 @@ def buildTestCmd := `[Cli|
 
   FLAGS:
     v, verbose;  "Print each command as it runs, with its timing and memory."
-    force;       "Rebuild even when the export already matches its inputs."
+    rebuild;     "Rebuild even when the export already matches its inputs."
     "skip-ci";   "Skip tests marked skip_on_ci."
 
   ARGS:
-    ...names : String; "Test names or globs; all tests when omitted."
+    ...names : String; "Test names, or a directory as `Perf/`; all tests when omitted."
 ]
 
 def buildCheckerCmd := `[Cli|
@@ -124,7 +124,7 @@ def buildCheckerCmd := `[Cli|
 
   FLAGS:
     v, verbose;                 "Print each command as it runs, with its timing and memory."
-    checker : Array String;     "Checker names or globs; all checkers when omitted."
+    checker : Array String;     "Checker names; all checkers when omitted."
     pin : String;               "Build this pin instead of the configured one."
 ]
 
@@ -134,10 +134,10 @@ def runCmd := `[Cli|
 
   FLAGS:
     v, verbose;              "Print each command as it runs, with its timing and memory."
-    force;                   "Rerun pairs that already have a result."
-    checker : Array String;  "Checker names or globs; all checkers when omitted."
+    rerun;                   "Rerun pairs that already have a result."
+    checker : Array String;  "Checker names; all checkers when omitted."
     pin : String;            "Run this pin instead of the configured one."
-    test : Array String;     "Test names or globs; all built tests when omitted."
+    test : Array String;     "Test names, or a directory as `Perf/`; all built tests when omitted."
 ]
 
 def siteDataCmd := `[Cli|

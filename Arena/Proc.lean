@@ -1,6 +1,7 @@
+import Lake.Build.Trace
 import Arena.Util
 
-open Lean (Json)
+open Lean (Json ToJson FromJson)
 
 namespace Arena
 
@@ -13,7 +14,7 @@ structure Metrics where
   cpuTime : Float := 0
   maxRss : Nat := 0
   instructions : Nat := 0
-deriving Inhabited
+deriving Inhabited, ToJson, FromJson
 
 structure Outcome extends Metrics where
   exitCode : UInt32
@@ -38,8 +39,17 @@ def Invocation.display (inv : Invocation) : String :=
   | "sh", ["-c", script] => script
   | cmd, args => " ".intercalate (cmd :: args)
 
-private def indentAfterNewlines (pad : String) (text : String) : String :=
-  ("\n" ++ pad).intercalate (text.splitOn "\n")
+def indent : String := "  "
+
+private def indented (depth : Nat) (text : String) : String :=
+  let pad := String.join (List.replicate depth indent)
+  pad ++ ("\n" ++ pad).intercalate (text.splitOn "\n")
+
+def note (depth : Nat) (message : String) : IO Unit :=
+  IO.println (indented depth message)
+
+def trace (depth : Nat) (message : String) : IO Unit := do
+  if ← verbose then note depth message
 
 private def spawnCapturing (inv : Invocation) : IO (UInt32 × String × String) := do
   if inv.captureOutput then
@@ -120,26 +130,25 @@ private def measured (inv : Invocation) : IO Outcome := do
     return { outcome with
       cpuTime := perf.cpuTime, instructions := perf.instructions, wallTime, maxRss }
 
+private def Outcome.summary (outcome : Outcome) : String :=
+  let status := if outcome.ok then "ok" else s!"exit {outcome.exitCode}"
+  let measurements := #[
+    (true, s!"wall {formatDuration outcome.wallTime}"),
+    (outcome.cpuTime > 0, s!"cpu {formatDuration outcome.cpuTime}"),
+    (outcome.maxRss > 0, s!"rss {formatMemory outcome.maxRss.toFloat}"),
+    (outcome.instructions > 0, s!"inst {formatUnitless outcome.instructions.toFloat}")
+  ]
+  let shown := measurements.filterMap fun (keep, text) => if keep then some text else none
+  s!"{status}, {", ".intercalate shown.toList}"
+
 def run (inv : Invocation) (measurePerf := false) (printOnFailure := false) : IO Outcome := do
-  let loud ← verbose
-  if loud then
-    let inDir := match inv.cwd with | some d => s!" (in {d})" | none => ""
-    IO.println s!"    $ {inv.display}{inDir}"
+  let where? := match inv.cwd with | some dir => s!" (in {dir})" | none => ""
+  trace 2 s!"$ {inv.display}{where?}"
   let outcome ← if measurePerf then measured inv else timed inv
-  if loud then
-    let status := if outcome.ok then "ok" else s!"FAILED (exit {outcome.exitCode})"
-    let mut detail := s!"wall: {formatDuration outcome.wallTime}"
-    if outcome.cpuTime > 0 then detail := detail ++ s!", cpu: {formatDuration outcome.cpuTime}"
-    if outcome.maxRss > 0 then detail := detail ++ s!", rss: {formatMemory outcome.maxRss.toFloat}"
-    if outcome.instructions > 0 then
-      detail := detail ++ s!", inst: {formatUnitless outcome.instructions.toFloat}"
-    IO.println s!"      -> {status} ({detail})"
-  if loud || (printOnFailure && !outcome.ok) then
-    let pad := if loud then "               " else "          "
-    unless outcome.stdout.isEmpty do
-      IO.println s!"  stdout: {indentAfterNewlines pad outcome.stdout}"
-    unless outcome.stderr.isEmpty do
-      IO.println s!"  stderr: {indentAfterNewlines pad outcome.stderr}"
+  trace 3 outcome.summary
+  if (← verbose) || (printOnFailure && !outcome.ok) then
+    for (stream, text) in [("stdout", outcome.stdout), ("stderr", outcome.stderr)] do
+      unless text.isEmpty do IO.println (indented 3 s!"{stream}: {text}")
   return outcome
 
 def runShell (script : String) (cwd : Option System.FilePath := none)
@@ -151,6 +160,16 @@ def capture (cmd : String) (args : Array String) (cwd : Option System.FilePath :
     IO (Option String) := do
   let outcome ← run { cmd, args, cwd }
   return if outcome.ok then some outcome.stdout.trimAscii.toString else none
+
+def digestFile (path : System.FilePath) : IO String := do
+  let outcome ← run { cmd := "sha256sum", args := #["--", path.toString] }
+  unless outcome.ok do throw <| .userError s!"sha256sum failed for {path}: {outcome.stderr}"
+  match outcome.stdout.trimAscii.toString.splitOn " " with
+  | digest :: _ => return digest
+  | [] => throw <| .userError s!"sha256sum produced no output for {path}"
+
+def digestString (text : String) : String :=
+  (Lake.Hash.ofString text).toString
 
 def copyFile (src dst : System.FilePath) : IO Unit := do
   if let some parent := dst.parent then IO.FS.createDirAll parent

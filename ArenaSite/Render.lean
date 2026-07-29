@@ -60,7 +60,7 @@ def expectationGlyph : Expectation → String
 def virtualSeconds (metrics : Metrics) (rate : Nat) : Option Float :=
   if metrics.instructions > 0 && rate > 0 then
     some (metrics.instructions.toFloat / rate.toFloat)
-  else if metrics.cpuNanos > 0 then some metrics.cpuSeconds
+  else if metrics.cpuTime > 0 then some metrics.cpuTime
   else none
 
 def percentChange (baseline current : Float) : Int :=
@@ -79,7 +79,7 @@ def perfComparable (test : TestInfo) (status : Status) : Bool :=
 def baselineSeconds (baseline : Option ResultInfo) (rate : Nat) : Option Float := do
   let baseline ← baseline
   guard (baseline.status == .accepted)
-  let seconds ← virtualSeconds baseline.metrics rate
+  let seconds ← virtualSeconds baseline.toMetrics rate
   guard (seconds ≥ timeComparisonFloor)
   return seconds
 
@@ -87,7 +87,7 @@ def timeDelta (test : TestInfo) (result : ResultInfo) (baseline : Option ResultI
     (rate : Nat) : Option Int := do
   guard (perfComparable test result.status)
   let reference ← baselineSeconds baseline rate
-  let seconds ← virtualSeconds result.metrics rate
+  let seconds ← virtualSeconds result.toMetrics rate
   return percentChange reference seconds
 
 def memoryDelta (test : TestInfo) (result : ResultInfo) (baseline : Option ResultInfo) :
@@ -95,9 +95,9 @@ def memoryDelta (test : TestInfo) (result : ResultInfo) (baseline : Option Resul
   guard (perfComparable test result.status)
   let baseline ← baseline
   guard (baseline.status == .accepted)
-  guard (baseline.metrics.maxRss ≥ memoryComparisonFloor)
-  guard (result.metrics.maxRss > 0)
-  return percentChange baseline.metrics.maxRss.toFloat result.metrics.maxRss.toFloat
+  guard (baseline.toMetrics.maxRss ≥ memoryComparisonFloor)
+  guard (result.toMetrics.maxRss > 0)
+  return percentChange baseline.toMetrics.maxRss.toFloat result.toMetrics.maxRss.toFloat
 
 def anchorId (test : String) : String := "test-" ++ test
 
@@ -301,11 +301,11 @@ def renderTable (t : Table α) (items : Array α) : Block Page :=
 def perfColumns (test : α → TestInfo) (result : α → ResultInfo)
     (baseline : α → Option ResultInfo) (rate : Nat) : Array (Column α) :=
   #[column timeColumn (align := .numeric) fun row =>
-      durationCell (some (result row).metrics) rate "",
+      durationCell (some (result row).toMetrics) rate "",
     column "" (align := .delta) (sortable := false) fun row =>
       deltaCell (timeDelta (test row) (result row) (baseline row) rate),
     column memoryColumn (align := .numeric) fun row =>
-      memoryCell (some (result row).metrics) "",
+      memoryCell (some (result row).toMetrics) "",
     column "" (align := .delta) (sortable := false) fun row =>
       deltaCell (memoryDelta (test row) (result row) (baseline row))]
 

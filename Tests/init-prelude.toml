@@ -1,2 +1,2 @@
-leanfile = "Tests/InitPreludeModule.lean"
+leanFile = "Tests/InitPreludeModule.lean"
 outcome = "accept"

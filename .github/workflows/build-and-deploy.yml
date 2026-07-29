@@ -4,17 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       checker:
-        description: Checker to run; all of them when blank
         type: string
       pin:
-        description: Pin to run instead of the configured one, e.g. leanprover/lean4:v4.29.0
+        description: Toolchain or commit
         type: string
-      force:
-        description: Rerun pairs that already have a result
+      rerun:
         type: boolean
         default: false
       publish:
-        description: Deploy the site to GitHub Pages
         type: boolean
         default: true
   pull_request:
@@ -25,16 +22,12 @@ concurrency:
 
 jobs:
   check:
-    name: Check the pending changes
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/arena.yml
     permissions:
       contents: read
-    with:
-      skip-ci: true
 
   measure:
-    name: Measure and publish
     if: github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/arena.yml
     permissions:
@@ -46,4 +39,4 @@ jobs:
       publish: ${{ inputs.publish }}
       checker: ${{ inputs.checker }}
       pin: ${{ inputs.pin }}
-      force: ${{ inputs.force }}
+      rerun: ${{ inputs.rerun }}

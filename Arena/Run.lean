@@ -18,7 +18,7 @@ def Correctness.consoleGlyph : Correctness → String
 structure Job where
   checker : CheckerConfig
   pin : Pin
-  test : TestStats
+  test : LocatedTest
 
 def Job.label (job : Job) : String :=
   s!"{job.checker.name}@{job.pin.id} on {job.test.name}"
@@ -60,17 +60,17 @@ def emptyLog (checker : CheckerConfig) (pin : Pin) (runner : String) : ResultLog
     runner
     entries := #[] }
 
-def isPending (log : ResultLog) (test : TestStats) : Bool :=
+def isPending (log : ResultLog) (test : LocatedTest) : Bool :=
   match log.find? test.name with
   | some entry => entry.testHash != test.hash
   | none => true
 
-def pendingJobs (checker : CheckerConfig) (pin : Pin) (tests : Array TestStats)
+def pendingJobs (checker : CheckerConfig) (pin : Pin) (tests : Array LocatedTest)
     (log : ResultLog) : Array Job :=
   (tests.filter (isPending log ·)).map fun test => { checker, pin, test }
 
-def runRevision (checker : CheckerConfig) (pin : Pin) (tests : Array TestStats)
-    (force : Bool) : IO (Array ResultEntry) := do
+def runRevision (checker : CheckerConfig) (pin : Pin) (tests : Array LocatedTest)
+    (rerun : Bool) : IO (Array ResultEntry) := do
   let runner ← runnerName
   let fresh := emptyLog checker pin runner
   let stored ← loadResultLog checker.name pin.id fresh.recipeHash
@@ -80,7 +80,7 @@ def runRevision (checker : CheckerConfig) (pin : Pin) (tests : Array TestStats)
     | .none => (fresh, everything)
     | .otherRecipe _ => (fresh, everything)
     | .matching log =>
-      if force then (log, everything) else (log, pendingJobs checker pin tests log)
+      if rerun then (log, everything) else (log, pendingJobs checker pin tests log)
   if jobs.isEmpty then return #[]
   if jobs.any (fun job => !job.checker.declines? job.test.name) then
     unless ← isBuilt checker pin do
@@ -98,10 +98,10 @@ def runRevision (checker : CheckerConfig) (pin : Pin) (tests : Array TestStats)
 {(entry.correctness job.test.expectation).consoleGlyph} {formatDuration entry.wallTime}]"
   return produced
 
-def expectationsOf (tests : Array TestStats) : Std.HashMap String (Option Expectation) :=
+def expectationsOf (tests : Array LocatedTest) : Std.HashMap String (Option Expectation) :=
   tests.foldl (init := {}) fun map test => map.insert test.name test.expectation
 
-def reportTally (tests : Array TestStats) (entries : Array ResultEntry) : IO Unit := do
+def reportTally (tests : Array LocatedTest) (entries : Array ResultEntry) : IO Unit := do
   if entries.isEmpty then
     IO.println "\nNothing to run; every selected pair already has a result."
     return
@@ -112,6 +112,6 @@ def reportTally (tests : Array TestStats) (entries : Array ResultEntry) : IO Uni
     let count := entries.countP fun entry =>
       entry.correctness (Std.HashMap.get? expectations entry.test |>.getD none) == correctness
     if count > 0 then
-      IO.println s!"  {correctness}: {count}"
+      note 1 s!"{correctness}: {count}"
 
 end Arena
