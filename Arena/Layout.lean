@@ -17,5 +17,6 @@ def siteExportsDir : System.FilePath := siteDataDir / "exports"
 
 def tarballName : String := "lean-arena-tests.tar.gz"
 def tarballPath : System.FilePath := buildDir / tarballName
+def tarballInfoPath : System.FilePath := buildDir / "tarball.json"
 
 end Arena

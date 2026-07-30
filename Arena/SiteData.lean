@@ -191,6 +191,20 @@ def storeColumns (tests : Array LocatedTest) : IO (Array CheckerColumn) := do
       current := Std.HashMap.get? newest log.checker == some log.runAt
       stats := statsOfLog tests log }
 
+def prepareCorpus : IO Unit := do
+  let tests ← loadTestStats
+  let tarball ← createTarball tests
+  writeJsonFile tarballInfoPath (toJson tarball)
+  extractSources tests
+  renderExports tests
+
+def readTarballInfo : IO TarballInfo := do
+  unless ← tarballInfoPath.pathExists do
+    return { size := 0, goodCount := 0, badCount := 0 }
+  match Lean.fromJson? (α := TarballInfo) (← readJsonFile tarballInfoPath) with
+  | .ok info => return info
+  | .error err => throw <| .userError s!"{tarballInfoPath}: {err}"
+
 def generateSiteData : IO Unit := do
   let info ← buildInfo
   let tests ← loadTestStats
@@ -200,9 +214,7 @@ def generateSiteData : IO Unit := do
   | some rate => IO.println s!"Observed conversion rate: {formatUnitless rate}inst/s"
   | none => IO.println "No instruction counts available; using the fixed conversion rate"
   let ranked := rankColumns columns
-  let tarball ← createTarball tests
-  extractSources tests
-  renderExports tests
+  let tarball ← readTarballInfo
   let payload : Payload := {
     schemaVersion := 1
     instructionsPerSecond

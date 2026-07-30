@@ -42,6 +42,11 @@ def runBuildTest (p : Parsed) : IO UInt32 := do
     IO.println s!"{current} test(s) already match their inputs; rebuilding {stale.size}"
   forEachReporting stale fun config => buildTest config revision
 
+def runPrepare (p : Parsed) : IO UInt32 := do
+  applyVerbosity p
+  prepareCorpus
+  return 0
+
 def runSiteData (p : Parsed) : IO UInt32 := do
   applyVerbosity p
   generateSiteData
@@ -50,6 +55,7 @@ def runSiteData (p : Parsed) : IO UInt32 := do
 def runBuildSite (p : Parsed) : IO UInt32 := do
   applyVerbosity p
   let outdir : System.FilePath := p.flag! "outdir" |>.as! String
+  prepareCorpus
   generateSiteData
   IO.FS.createDirAll outdir
   let site ← run {
@@ -74,6 +80,14 @@ def buildTestCmd := `[Cli|
 
   ARGS:
     ...names : String; "Test names, or a directory as `Perf/`; all tests when omitted."
+]
+
+def prepareCmd := `[Cli|
+  prepare VIA runPrepare;
+  "Pack the test tarball and render the sources and exports the site needs."
+
+  FLAGS:
+    v, verbose; "Print each command as it runs, with its timing and memory."
 ]
 
 def siteDataCmd := `[Cli|
@@ -102,6 +116,7 @@ def lkaCmd : Cmd := `[Cli|
 
   SUBCOMMANDS:
     buildTestCmd;
+    prepareCmd;
     siteDataCmd;
     buildSiteCmd
 ]

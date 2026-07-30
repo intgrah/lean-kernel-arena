@@ -37,19 +37,26 @@ jobs:
           ref: results
           path: _results
 
-      - name: Restore exports
-        uses: actions/cache@v4
+      - name: Restore the corpus
+        uses: actions/cache/restore@v4
         with:
-          path: _build/tests
-          key: exports-site-${{ github.sha }}
-          restore-keys: exports-site-
+          path: |
+            _build/tests
+            _build/tarball.json
+            _build/lean-arena-tests.tar.gz
+            site-data/sources
+            site-data/exports
+          key: corpus-${{ hashFiles('Tests/**', 'lean-toolchain', 'lakefile.lean') }}
+          fail-on-cache-miss: true
 
-      - name: Build tests
-        run: lake exe lka build-test
+      - name: Assemble the payload
+        run: lake exe lka site-data
         shell: "nix develop -c bash -euxo pipefail {0}"
 
-      - name: Build site
-        run: lake exe lka build-site
+      - name: Render the site
+        run: |
+          lake exe arena-site --output _out
+          cp _build/lean-arena-tests.tar.gz _out/
         shell: "nix develop -c bash -euxo pipefail {0}"
 
       - uses: actions/upload-pages-artifact@v3

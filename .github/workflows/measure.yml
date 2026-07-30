@@ -23,11 +23,27 @@ jobs:
       - uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            _build/tests
+            _build/tarball.json
+            _build/lean-arena-tests.tar.gz
+            site-data/sources
+            site-data/exports
+          key: corpus-${{ hashFiles('Tests/**', 'lean-toolchain', 'lakefile.lean') }}
+
       - name: Build tests
         env:
           TESTS: ${{ inputs.tests }}
         run: lake exe lka build-test ${TESTS:---skip-ci} ${TESTS:+"$TESTS"}
         shell: "nix develop -c bash -euxo pipefail {0}"
+
+      - name: Prepare the corpus products the site needs
+        run: lake exe lka prepare
+        shell: "nix develop -c bash -euxo pipefail {0}"
+
       - name: Smoke-test the runner
         run: |
           sudo apt-get update -qq

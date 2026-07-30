@@ -24,9 +24,7 @@ jobs:
           ref: a748f56ffd8fee099ad3a6a3e682156d42d51781
           path: checker
 
-      - uses: ocaml/setup-ocaml@v3
-        with:
-          ocaml-compiler: '5'
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ocaml opam
 
       - name: Build
         working-directory: checker
