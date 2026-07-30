@@ -36,7 +36,7 @@ jobs:
 
   evmlean:
     needs: exports
-    uses: ./.github/workflows/checkers/evmlean.yaml
+    uses: ./.github/workflows/checker-evmlean.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -44,7 +44,7 @@ jobs:
       }
   lean4lean:
     needs: exports
-    uses: ./.github/workflows/checkers/lean4lean.yaml
+    uses: ./.github/workflows/checker-lean4lean.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -52,7 +52,7 @@ jobs:
       }
   mini:
     needs: exports
-    uses: ./.github/workflows/checkers/mini.yaml
+    uses: ./.github/workflows/checker-mini.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -60,7 +60,7 @@ jobs:
       }
   nanobruijn:
     needs: exports
-    uses: ./.github/workflows/checkers/nanobruijn.yaml
+    uses: ./.github/workflows/checker-nanobruijn.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -68,7 +68,7 @@ jobs:
       }
   nanoda:
     needs: exports
-    uses: ./.github/workflows/checkers/nanoda.yaml
+    uses: ./.github/workflows/checker-nanoda.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -76,7 +76,7 @@ jobs:
       }
   nyaya:
     needs: exports
-    uses: ./.github/workflows/checkers/nyaya.yaml
+    uses: ./.github/workflows/checker-nyaya.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -84,7 +84,7 @@ jobs:
       }
   official:
     needs: exports
-    uses: ./.github/workflows/checkers/official.yaml
+    uses: ./.github/workflows/checker-official.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -92,7 +92,7 @@ jobs:
       }
   parse-only:
     needs: exports
-    uses: ./.github/workflows/checkers/parse-only.yaml
+    uses: ./.github/workflows/checker-parse-only.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -100,7 +100,7 @@ jobs:
       }
   rpylean:
     needs: exports
-    uses: ./.github/workflows/checkers/rpylean.yaml
+    uses: ./.github/workflows/checker-rpylean.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -108,7 +108,7 @@ jobs:
       }
   sokonanoda:
     needs: exports
-    uses: ./.github/workflows/checkers/sokonanoda.yaml
+    uses: ./.github/workflows/checker-sokonanoda.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -116,7 +116,7 @@ jobs:
       }
   still-nanoda:
     needs: exports
-    uses: ./.github/workflows/checkers/still-nanoda.yaml
+    uses: ./.github/workflows/checker-still-nanoda.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -124,7 +124,7 @@ jobs:
       }
   vow-lean-kernel:
     needs: exports
-    uses: ./.github/workflows/checkers/vow-lean-kernel.yaml
+    uses: ./.github/workflows/checker-vow-lean-kernel.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
@@ -132,7 +132,7 @@ jobs:
       }
   zignodamus:
     needs: exports
-    uses: ./.github/workflows/checkers/zignodamus.yaml
+    uses: ./.github/workflows/checker-zignodamus.yaml
     with:
       {
         tests: "${{ inputs.tests }}",
