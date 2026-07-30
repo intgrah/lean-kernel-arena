@@ -1,6 +1,6 @@
 # Lean Kernel Arena
 
-![Lean Kernel Arena Banner](https://raw.githubusercontent.com/leanprover/lean-kernel-arena/refs/heads/master/static/kernel-arena-banner.jpg)
+![Lean Kernel Arena Banner](static/kernel-arena-banner.jpg)
 
 A benchmarking framework for Lean kernel implementations that tests proof checkers against standardized test cases and generates comparative reports.
 

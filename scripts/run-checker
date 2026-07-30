@@ -66,9 +66,9 @@ for stats in $(find _build/tests -name '*.stats.json' | sort); do
         | (."counter-value" | tonumber? // 0) ] | add // 0;
     {test:$t, testHash:$h,
      attempt: {ran: {exitCode:$code, stdout:$stdout, stderr:$stderr}},
-     wallTime: counter("duration_time") / 1e9,
-     cpuTime: counter("task-clock") / 1e3,
-     maxRss: ($rssKb | tonumber? // 0) * 1024,
+     wallTime: (counter("duration_time") / 1e9),
+     cpuTime: (counter("task-clock") / 1e3),
+     maxRss: (($rssKb | tonumber? // 0) * 1024),
      instructions: counter("instructions"),
      runAt: $at}' >>"$entries"
   echo "$CHECKER@$REVISION $name exit $code"
