@@ -1,0 +1,50 @@
+name: rpylean
+
+on:
+  workflow_call:
+    inputs:
+      tests: {type: string, default: ''}
+      record: {type: boolean, default: false}
+  workflow_dispatch:
+    inputs:
+      tests: {type: string}
+
+jobs:
+  rpylean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: Julian/rpylean
+          ref: 1f6d2205d3958484b7de351d314a5e02896b9fab
+          path: checker
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build
+        working-directory: checker
+        run: |
+          git clone --filter=blob:none https://github.com/pypy/pypy
+          cat > .env <<__END__
+           PYPY_CHECKOUT=pypy/
+          __END__
+          just translate
+
+      - uses: ./.github/actions/measure
+        with:
+          checker: rpylean
+          revision: 1f6d220
+          work: checker
+          run: |
+            ./rpylean-c check "$IN" || exit 1
+          source-url: https://github.com/Julian/rpylean
+          declines: mathlib
+          tests: ${{ inputs.tests }}
+          record: ${{ inputs.record || false }}

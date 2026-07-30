@@ -1,0 +1,43 @@
+name: zignodamus
+
+on:
+  workflow_call:
+    inputs:
+      tests: {type: string, default: ''}
+      record: {type: boolean, default: false}
+  workflow_dispatch:
+    inputs:
+      tests: {type: string}
+
+jobs:
+  zignodamus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: intgrah/zignodamus
+          ref: 68e25dcb983947da4cdd98b0ae546d23f6238e71
+          path: checker
+
+      - uses: mlugg/setup-zig@v2
+
+      - name: Build
+        working-directory: checker
+        run: |
+          zig build -Drelease
+
+      - uses: ./.github/actions/measure
+        with:
+          checker: zignodamus
+          revision: 68e25dc
+          work: checker
+          run: |
+            ./zig-out/bin/zignodamus --use-stdin --nat-extension --string-extension --unsafe-permit-all-axioms --no-unpermitted-axiom-hard-error -j4 < "$IN" || exit 1
+          source-url: https://github.com/intgrah/zignodamus
+          tests: ${{ inputs.tests }}
+          record: ${{ inputs.record || false }}

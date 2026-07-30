@@ -1,0 +1,46 @@
+name: mini
+
+on:
+  workflow_call:
+    inputs:
+      tests: {type: string, default: ''}
+      record: {type: boolean, default: false}
+  workflow_dispatch:
+    inputs:
+      tests: {type: string}
+
+jobs:
+  mini:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: nomeata/lean-mini-kernel
+          ref: ad8ebe0e061a76b520061800b47bb60c3ce7d81e
+          path: checker
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: 'false'
+          use-github-cache: 'false'
+
+      - name: Build
+        working-directory: checker
+        run: |
+          lake build
+
+      - uses: ./.github/actions/measure
+        with:
+          checker: mini
+          revision: ad8ebe0
+          work: checker
+          run: |
+            timeout 30s .lake/build/bin/mini-kernel "$IN"
+          source-url: https://github.com/nomeata/lean-mini-kernel
+          tests: ${{ inputs.tests }}
+          record: ${{ inputs.record || false }}

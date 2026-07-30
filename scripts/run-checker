@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# Runs one checker over the built exports and writes one store fragment.
+# Required:
+#   CHECKER        name, used for the store path
+#   REVISION       identifies what was built, used for the store path
+#   WORK           directory the checker was built in
+#   RUN            shell command, run with $IN set to the export to check
+# Optional:
+#   TESTS          one test name, or a directory with a trailing slash; empty for all
+#   DECLINES       space-separated test names to record as declined without running
+#   RECIPE         invalidates stored results when it changes; sha256 of RUN|REVISION
+#   SOURCE_URL     recorded in the fragment for the site to link to
+#   ARENA_RUNNER   recorded in the fragment; `uname -n`
+#   ARENA_RUN_ID   distinguishes fragments of the same revision; the shell's pid
+set -euo pipefail
+
+: "${CHECKER:?}" "${REVISION:?}" "${WORK:?}" "${RUN:?}"
+declines=" ${DECLINES:-} "
+recipe=${RECIPE:-$(printf '%s|%s' "$RUN" "$REVISION" | sha256sum | cut -d' ' -f1)}
+store=_results/$CHECKER/$REVISION
+mkdir -p "$store"
+
+recorded=$(find "$store" -name '*.json' -exec cat {} + |
+  jq -sc --arg r "$recipe" '[.[] | select(.recipeHash == $r) | .entries[]]
+                            | map({(.test): .testHash}) | add // {}')
+
+now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+entries=$(mktemp)
+trap 'rm -f "$entries"' EXIT
+
+for stats in $(find _build/tests -name '*.stats.json' | sort); do
+  name=$(jq -r .name "$stats")
+  case "${TESTS:-}" in
+    "") ;;
+    */) [ "${name#"$TESTS"}" != "$name" ] || continue ;;
+    *)  [ "$name" = "$TESTS" ] || continue ;;
+  esac
+  hash=$(jq -r .hash "$stats")
+  [ "$(jq -r --arg n "$name" '.[$n] // ""' <<<"$recorded")" = "$hash" ] && continue
+
+  if [ "$declines" != "${declines/ $name / }" ]; then
+    jq -nc --arg t "$name" --arg h "$hash" --arg at "$(now)" \
+      '{test:$t, testHash:$h, attempt:{declined:"listed in the checker'\''s declines"},
+        wallTime:0, cpuTime:0, maxRss:0, instructions:0, runAt:$at}' >>"$entries"
+    echo "$CHECKER@$REVISION $name declined"
+    continue
+  fi
+
+  export IN
+  IN=$(realpath "${stats%.stats.json}.ndjson")
+  counters=$(mktemp) timing=$(mktemp) out=$(mktemp) err=$(mktemp)
+  code=0
+  perf stat -j -o "$counters" -e duration_time -e task-clock -e instructions -- \
+    env LC_ALL=C time -f 'maxRssKb=%M' -o "$timing" -- \
+      sh -c "cd '$WORK' && $RUN" >"$out" 2>"$err" || code=$?
+
+  jq -nc --slurpfile counters <(jq -sc . <"$counters") \
+     --arg t "$name" --arg h "$hash" --arg at "$(now)" --argjson code "$code" \
+     --rawfile stdout "$out" --rawfile stderr "$err" \
+     --arg rssKb "$(sed -n 's/^maxRssKb=//p' "$timing")" '
+    def counter($event):
+      [ $counters[0][]
+        | select((.event // "" | sub("^[^/:]+/"; "") | sub("[/:].*$"; "")) == $event)
+        | (."counter-value" | tonumber? // 0) ] | add // 0;
+    {test:$t, testHash:$h,
+     attempt: {ran: {exitCode:$code, stdout:$stdout, stderr:$stderr}},
+     wallTime: counter("duration_time") / 1e9,
+     cpuTime: counter("task-clock") / 1e3,
+     maxRss: ($rssKb | tonumber? // 0) * 1024,
+     instructions: counter("instructions"),
+     runAt: $at}' >>"$entries"
+  echo "$CHECKER@$REVISION $name exit $code"
+  rm -f "$counters" "$timing" "$out" "$err"
+done
+
+if [ ! -s "$entries" ]; then echo "$CHECKER@$REVISION nothing to run"; exit 0; fi
+fragment=$store/${ARENA_RUN_ID:-$(date -u +%s)}.json
+jq -sc --arg c "$CHECKER" --arg v "$REVISION" --arg r "$recipe" \
+   --arg runner "${ARENA_RUNNER:-$(uname -n)}" --arg at "$(now)" \
+   --arg source "${SOURCE_URL:-}" \
+   '{checker:$c, revision:$v, recipeHash:$r, runner:$runner, runAt:$at,
+     sourceUrl:$source, entries:.}' <"$entries" >"$fragment"
+echo "wrote $fragment"

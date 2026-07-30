@@ -42,48 +42,6 @@ def runBuildTest (p : Parsed) : IO UInt32 := do
     IO.println s!"{current} test(s) already match their inputs; rebuilding {stale.size}"
   forEachReporting stale fun config => buildTest config revision
 
-structure Target where
-  checker : CheckerConfig
-  pin : Pin
-
-def Target.name (target : Target) : String :=
-  s!"{target.checker.name}@{target.pin.id}"
-
-def selectTargets (p : Parsed) : IO (Array Target) := do
-  let configs ← select CheckerConfig.name "checkers" (selectorsOf p "checker") (← loadCheckerConfigs)
-  match p.flag? "pin" with
-  | none => return configs.map fun checker => { checker, pin := checker.pin }
-  | some value =>
-    let some checker := configs[0]? | throw <| .userError "`--pin` needs a checker"
-    if configs.size != 1 then
-      throw <| .userError "`--pin` applies to one checker; name it with `--checker`"
-    let pin := value.as! String
-    return #[{ checker, pin := match checker.source with
-      | .git .. => .commit pin
-      | _ => .toolchain pin }]
-
-def runBuildChecker (p : Parsed) : IO UInt32 := do
-  applyVerbosity p
-  let targets ← selectTargets p
-  forEachReporting targets fun target => buildChecker target.checker target.pin
-
-def runRun (p : Parsed) : IO UInt32 := do
-  applyVerbosity p
-  let targets ← selectTargets p
-  let tests ← select (·.name) "tests" (selectorsOf p "test") (← loadTestStats)
-  if targets.isEmpty then
-    IO.println "No checkers selected."
-    return 0
-  if tests.isEmpty then
-    IO.println "No built tests found."
-    return 0
-  let mut produced := #[]
-  for target in targets do
-    produced := produced ++
-      (← runRevision target.checker target.pin tests (p.hasFlag "rerun"))
-  reportTally tests produced
-  return 0
-
 def runSiteData (p : Parsed) : IO UInt32 := do
   applyVerbosity p
   generateSiteData
@@ -118,28 +76,6 @@ def buildTestCmd := `[Cli|
     ...names : String; "Test names, or a directory as `Perf/`; all tests when omitted."
 ]
 
-def buildCheckerCmd := `[Cli|
-  "build-checker" VIA runBuildChecker;
-  "Check out and build the current revision of each checker in checkers/."
-
-  FLAGS:
-    v, verbose;                 "Print each command as it runs, with its timing and memory."
-    checker : Array String;     "Checker names; all checkers when omitted."
-    pin : String;               "Build this pin instead of the configured one."
-]
-
-def runCmd := `[Cli|
-  run VIA runRun;
-  "Run the checker revisions that have no result yet for a test, and record them."
-
-  FLAGS:
-    v, verbose;              "Print each command as it runs, with its timing and memory."
-    rerun;                   "Rerun pairs that already have a result."
-    checker : Array String;  "Checker names; all checkers when omitted."
-    pin : String;            "Run this pin instead of the configured one."
-    test : Array String;     "Test names, or a directory as `Perf/`; all built tests when omitted."
-]
-
 def siteDataCmd := `[Cli|
   "site-data" VIA runSiteData;
   "Regenerate site-data/arena.json from _build/ and _results/."
@@ -166,8 +102,6 @@ def lkaCmd : Cmd := `[Cli|
 
   SUBCOMMANDS:
     buildTestCmd;
-    buildCheckerCmd;
-    runCmd;
     siteDataCmd;
     buildSiteCmd
 ]

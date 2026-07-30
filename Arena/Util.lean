@@ -73,6 +73,13 @@ where
         out := out ++ (← go entry.path (remaining - 1))
     return out
 
+def subdirectories (dir : System.FilePath) : IO (Array String) := do
+  unless ← dir.pathExists do return #[]
+  let mut names := #[]
+  for entry in ← dir.readDir do
+    if (← entry.path.isDir) then names := names.push entry.fileName
+  return names.qsort (· < ·)
+
 def absolute (path : System.FilePath) : IO System.FilePath := do
   if path.isAbsolute then return path else return (← IO.currentDir) / path
 

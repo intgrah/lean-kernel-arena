@@ -1,0 +1,45 @@
+name: evmlean
+
+on:
+  workflow_call:
+    inputs:
+      tests: {type: string, default: ''}
+      record: {type: boolean, default: false}
+  workflow_dispatch:
+    inputs:
+      tests: {type: string}
+
+jobs:
+  evmlean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: FawadHa1der/evm_proof_checker
+          ref: 055a6b9cad082f13838a50ba92a937d347690d13
+          path: checker
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build
+        working-directory: checker
+        run: |
+          npm install --no-audit --no-fund && node tools/build.js
+
+      - uses: ./.github/actions/measure
+        with:
+          checker: evmlean
+          revision: 055a6b9
+          work: checker
+          run: |
+            node bin/evmlean.js $IN
+          source-url: https://github.com/FawadHa1der/evm_proof_checker
+          tests: ${{ inputs.tests }}
+          record: ${{ inputs.record || false }}

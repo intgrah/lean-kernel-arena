@@ -224,30 +224,4 @@ def buildTest (config : TestConfig) (revision : Option String) : IO Unit := do
           (env := #[("OUT", staging.toString)]) (printOnFailure := true)
         unless outcome.ok do throw <| .userError "test script failed") links
 
-def checkerRoot (config : CheckerConfig) (pin : Pin) : System.FilePath :=
-  builtCheckersDir / config.name / pin.id
-
-def checkerWorkDir (config : CheckerConfig) (pin : Pin) : System.FilePath :=
-  match config.source with
-  | .empty => checkerRoot config pin
-  | _ => checkerRoot config pin / "src"
-
-def applyPin (work : System.FilePath) : Pin → IO Unit
-  | .toolchain name => IO.FS.writeFile (work / "lean-toolchain") (name ++ "\n")
-  | .commit _ | .fixed => pure ()
-
-def isBuilt (config : CheckerConfig) (pin : Pin) : IO Bool :=
-  (checkerRoot config pin).pathExists
-
-def buildChecker (config : CheckerConfig) (pin : Pin) : IO Unit := do
-  IO.println s!"Building checker: {config.name}@{pin.id}"
-  discard <| setupSource (config.sourceWith pin) (checkerRoot config pin) checkersDir
-  let work := checkerWorkDir config pin
-  applyPin work pin
-  if let some command := config.buildCommand then
-    note 1 s!"Building: {command}"
-    let outcome ← runShell command (cwd := work) (printOnFailure := true)
-    unless outcome.ok do throw <| .userError "build failed"
-  note 1 s!"Checker {config.name}@{pin.id} built successfully"
-
 end Arena

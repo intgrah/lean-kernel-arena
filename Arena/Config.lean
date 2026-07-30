@@ -30,45 +30,6 @@ structure TestConfig where
   skipOnCi : Bool
 deriving Repr
 
-inductive Pin
-  | commit (sha : String)
-  | toolchain (name : String)
-  | fixed
-deriving Repr, Inhabited
-
-def Pin.id : Pin → String
-  | .commit sha => (sha.take 7).toString
-  | .toolchain name => match name.splitOn ":" with
-    | [_, version] => version
-    | _ => name
-  | .fixed => "fixed"
-
-structure CheckerConfig where
-  name : String
-  source : Source
-  buildCommand : Option String
-  runCommand : String
-  disabled : Bool
-  declines : Array String
-  pin : Pin
-deriving Repr
-
-def CheckerConfig.sourceWith (c : CheckerConfig) (pin : Pin) : Source :=
-  match c.source, pin with
-  | .git url ref _, .commit sha => .git url ref (some sha)
-  | source, _ => source
-
-def CheckerConfig.recipe (c : CheckerConfig) (pin : Pin) : String :=
-  String.intercalate " " [
-    reprStr (c.sourceWith pin),
-    c.buildCommand.getD "",
-    c.runCommand,
-    reprStr pin
-  ]
-
-def CheckerConfig.declines? (c : CheckerConfig) (test : String) : Bool :=
-  c.declines.contains test
-
 namespace Decode
 
 private def decodeExpectation (v : Value) : EDecodeM Expectation := do
@@ -137,28 +98,6 @@ private def decodeTest (name : String) (t : Table) : EDecodeM TestConfig := do
     skipOnCi := ← flag t `skipOnCi
   }
 
-private def decodePin (t : Table) (source : Source) : EDecodeM Pin := do
-  match source, ← t.decode? (α := String) `toolchain with
-  | .git _ _ (some sha), none => return .commit sha
-  | .git _ _ (some _), some _ =>
-    throwDecodeErrorAt .missing "a checker pins `rev` or `toolchain`, not both"
-  | .git .., none => throwDecodeErrorAt .missing "a git-sourced checker must pin `rev`"
-  | _, some name => return .toolchain name
-  | _, none => return .fixed
-
-private def decodeChecker (name : String) (t : Table) : EDecodeM CheckerConfig := do
-  let source ← decodeSource t
-  if let .leanFile _ := source then
-    throwDecodeErrorAt .missing "checkers have no `leanFile` source"
-  return {
-    name, source
-    pin := ← decodePin t source
-    buildCommand := ← t.decode? (α := String) `build
-    runCommand := ← t.decode (α := String) `run
-    disabled := ← flag t `disable
-    declines := (← t.decode? (α := Array String) `declines).getD #[]
-  }
-
 private def loadTable (path : System.FilePath) : IO Table := do
   let text ← IO.FS.readFile path
   let ictx := Lean.Parser.mkInputContext text path.toString
@@ -181,19 +120,12 @@ end Decode
 def loadTestConfig (name : String) : IO TestConfig :=
   Decode.decodeFile _ (testsDir / (name ++ ".toml")) name Decode.decodeTest
 
-def loadCheckerConfig (name : String) : IO CheckerConfig :=
-  Decode.decodeFile _ (checkersDir / (name ++ ".toml")) name Decode.decodeChecker
-
 def isLakeBookkeeping (name : String) : Bool :=
   name == "lakefile" || name.endsWith "/lakefile"
 
 def loadTestConfigs : IO (Array TestConfig) := do
   let names := (← findNamesUnder testsDir ".toml" 2).filter (!isLakeBookkeeping ·)
   names.mapM loadTestConfig
-
-def loadCheckerConfigs : IO (Array CheckerConfig) := do
-  let all ← (← findNamesIn checkersDir ".toml").mapM loadCheckerConfig
-  return all.filter (!·.disabled)
 
 def selectByPatterns (name : α → String) (selectors : Array String) (items : Array α) :
     Array α :=

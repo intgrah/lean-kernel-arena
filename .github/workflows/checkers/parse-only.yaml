@@ -1,0 +1,44 @@
+name: parse-only
+
+on:
+  workflow_call:
+    inputs:
+      tests: {type: string, default: ''}
+      record: {type: boolean, default: false}
+  workflow_dispatch:
+    inputs:
+      tests: {type: string}
+
+jobs:
+  parse-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy the in-tree source
+        run: cp -a checkers/official checker
+
+      - run: echo leanprover/lean4:v4.32.2 > checker/lean-toolchain
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: 'false'
+          use-github-cache: 'false'
+
+      - name: Build
+        working-directory: checker
+        run: |
+          lake build
+
+      - uses: ./.github/actions/measure
+        with:
+          checker: parse-only
+          revision: v4.32.2
+          work: checker
+          run: |
+            .lake/build/bin/kernel --parse-only "$IN"
+          tests: ${{ inputs.tests }}
+          record: ${{ inputs.record || false }}

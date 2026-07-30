@@ -1,4 +1,4 @@
-import Arena.Run
+import Arena.Build
 import Arena.Export
 
 open Lean (Json ToJson FromJson toJson)
@@ -40,6 +40,9 @@ def CheckerStats.record (stats : CheckerStats) (entry : ResultEntry)
       rejectCorrect := stats.rejectCorrect + if status == .rejected then 1 else 0 }
   | _, none => stats
 
+def expectationsOf (tests : Array LocatedTest) : Std.HashMap String (Option Expectation) :=
+  tests.foldl (init := {}) fun map test => map.insert test.name test.expectation
+
 def statsOfLog (tests : Array LocatedTest) (log : ResultLog) : CheckerStats :=
   let expectations := expectationsOf tests
   log.entries.foldl (init := {}) fun stats entry =>
@@ -54,10 +57,6 @@ private def rankKey (stats : CheckerStats) : List Nat :=
    if instructions == 0 then 1 else 0,
    instructions,
    stats.declined]
-
-def rankCheckers (checkers : Array (CheckerConfig × CheckerStats)) :
-    Array (CheckerConfig × CheckerStats) :=
-  checkers.qsort fun a b => compare (rankKey a.2) (rankKey b.2) |>.isLT
 
 structure TarballInfo where
   size : Nat
@@ -170,28 +169,19 @@ def renderExports (tests : Array LocatedTest) : IO Unit := do
 ({tests.size - small.size} over {formatMemory renderedExportLimit.toFloat})"
 
 structure CheckerColumn where
-  config : CheckerConfig
   log : ResultLog
   stats : CheckerStats
 
 def rankColumns (columns : Array CheckerColumn) : Array CheckerColumn :=
   columns.qsort fun a b => compare (rankKey a.stats) (rankKey b.stats) |>.isLT
 
-def currentColumns (configs : Array CheckerConfig) (tests : Array LocatedTest) :
-    IO (Array CheckerColumn) := do
-  configs.mapM fun config => do
-    let recipeHash := digestString (config.recipe config.pin)
-    let stored ← loadResultLog config.name config.pin.id recipeHash
-    let log := stored.log?.getD
-      { checker := config.name, revision := config.pin.id, recipeHash
-        runner := "", entries := #[] }
-    return { config, log, stats := statsOfLog tests log }
+def currentColumns (tests : Array LocatedTest) : IO (Array CheckerColumn) := do
+  return (← loadStore).map fun log => { log, stats := statsOfLog tests log }
 
 def generateSiteData : IO Unit := do
   let info ← buildInfo
-  let configs ← loadCheckerConfigs
   let tests ← loadTestStats
-  let columns ← currentColumns configs tests
+  let columns ← currentColumns tests
   let entries := columns.flatMap (·.log.entries)
   match observedRate entries with
   | some rate => IO.println s!"Observed conversion rate: {formatUnitless rate}inst/s"
@@ -208,17 +198,16 @@ def generateSiteData : IO Unit := do
     build := info
     tarball := { toTarballInfo := tarball, name := tarballName }
     checkers := ranked.map fun column =>
-      let links := column.config.sourceLinks info.gitRevision
-      { name := column.config.name
-        version := column.config.pin.id
-        declarationUrl := links.declarationUrl
-        sourceUrl := links.sourceUrl
+      { name := column.log.checker
+        version := column.log.revision
+        declarationUrl := none
+        sourceUrl := if column.log.sourceUrl.isEmpty then none else some column.log.sourceUrl
         stats := column.stats }
     tests := tests.map (·.toTestStats)
     results := ranked.flatMap fun column =>
       column.log.entries.map fun entry =>
         { toMetrics := entry.toMetrics
-          checker := column.config.name
+          checker := column.log.checker
           test := entry.test
           attempt := entry.attempt }
   }

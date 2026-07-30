@@ -1,0 +1,49 @@
+name: nyaya
+
+on:
+  workflow_call:
+    inputs:
+      tests: {type: string, default: ''}
+      record: {type: boolean, default: false}
+  workflow_dispatch:
+    inputs:
+      tests: {type: string}
+
+jobs:
+  nyaya:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: kodyvajjha/nyaya
+          ref: a748f56ffd8fee099ad3a6a3e682156d42d51781
+          path: checker
+
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: '5'
+
+      - name: Build
+        working-directory: checker
+        run: |
+          export OPAMROOT="$PWD/.opam-root"
+          opam init --bare --disable-sandboxing -n
+          opam option --global depext=false
+          opam switch create . ocaml-system -y
+
+      - uses: ./.github/actions/measure
+        with:
+          checker: nyaya
+          revision: a748f56
+          work: checker
+          run: |
+            ulimit -v 1000000 -c 0
+            NYAYA_ARENA=1 timeout 30s ./_opam/bin/nyaya "$IN"
+          source-url: https://github.com/kodyvajjha/nyaya
+          tests: ${{ inputs.tests }}
+          record: ${{ inputs.record || false }}

@@ -46,38 +46,37 @@ structure ResultLog where
   revision : String
   recipeHash : String
   runner : String
+  runAt : String
+  sourceUrl : String := ""
   entries : Array ResultEntry
 deriving Inhabited, ToJson, FromJson
 
-inductive Stored
-  | none
-  | matching (log : ResultLog)
-  | otherRecipe (log : ResultLog)
+def loadRevisionLogs (checker revision : String) : IO (Array ResultLog) := do
+  let dir := resultsDir / checker / revision
+  unless ← dir.pathExists do return #[]
+  let mut logs := #[]
+  for name in ← findNamesIn dir ".json" do
+    match fromJson? (α := ResultLog) (← readJsonFile (dir / (name ++ ".json"))) with
+    | .ok log => logs := logs.push log
+    | .error err => throw <| .userError s!"{dir / name}.json: {err}"
+  return logs.qsort fun a b => a.runAt < b.runAt
 
-def Stored.log? : Stored → Option ResultLog
-  | .none => Option.none
-  | .matching log | .otherRecipe log => some log
+/-- The entries every run of this revision has produced, with a later run superseding an earlier. -/
+def foldLogs (logs : Array ResultLog) : Array ResultEntry :=
+  logs.foldl (init := #[]) fun entries log =>
+    log.entries.foldl (init := entries) fun entries entry =>
+      (entries.filter (·.test != entry.test)).push entry
 
-def ResultLog.find? (log : ResultLog) (test : String) : Option ResultEntry :=
-  log.entries.find? (·.test == test)
-
-def ResultLog.record (log : ResultLog) (entry : ResultEntry) : ResultLog :=
-  { log with
-    entries := (log.entries.filter (·.test != entry.test)).push entry
-      |>.qsort (·.test < ·.test) }
-
-def resultLogPath (checker revision : String) : System.FilePath :=
-  resultsDir / checker / (revision ++ ".json")
-
-def loadResultLog (checker revision recipeHash : String) : IO Stored := do
-  let path := resultLogPath checker revision
-  unless ← path.pathExists do return .none
-  match fromJson? (α := ResultLog) (← readJsonFile path) with
-  | .ok log => return if log.recipeHash == recipeHash then .matching log else .otherRecipe log
-  | .error err => throw <| .userError s!"{path}: {err}"
-
-def writeResultLog (log : ResultLog) : IO Unit :=
-  writeJsonFile (resultLogPath log.checker log.revision) (toJson log)
+/-- Every checker revision the store holds results for, folded into one log each. -/
+def loadStore : IO (Array ResultLog) := do
+  unless ← resultsDir.pathExists do return #[]
+  let mut columns := #[]
+  for checker in ← subdirectories resultsDir do
+    for revision in ← subdirectories (resultsDir / checker) do
+      let logs ← loadRevisionLogs checker revision
+      let some newest := logs.back? | continue
+      columns := columns.push { newest with entries := foldLogs logs }
+  return columns
 
 private def loadAll (α) [FromJson α] (dir : System.FilePath) (ext : String)
     (names : Array String) : IO (Array α) :=
@@ -92,8 +91,5 @@ def loadTestStats : IO (Array LocatedTest) := do
   let located := stats.zipWith (fun s path =>
     ({ toTestStats := s, ndjsonPath := builtTestsDir / (path ++ ".ndjson") } : LocatedTest)) paths
   return located.qsort (·.name < ·.name)
-
-def loadResultLogs : IO (Array ResultLog) := do
-  loadAll ResultLog resultsDir ".json" (← findNamesUnder resultsDir ".json" 2)
 
 end Arena

@@ -1,0 +1,53 @@
+name: nanobruijn
+
+on:
+  workflow_call:
+    inputs:
+      tests: {type: string, default: ''}
+      record: {type: boolean, default: false}
+  workflow_dispatch:
+    inputs:
+      tests: {type: string}
+
+jobs:
+  nanobruijn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: nomeata/nanobruijn
+          ref: 8cd5f61efa3269eac3f111ef17408ca8876ca059
+          path: checker
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        working-directory: checker
+        run: |
+          cargo build --release
+          cat > config.json <<__END__
+           {
+             "use_stdin": true,
+             "nat_extension": true,
+             "string_extension": true,
+             "unpermitted_axiom_hard_error": false,
+             "unsafe_permit_all_axioms": true,
+             "num_threads": 4
+           }
+          __END__
+
+      - uses: ./.github/actions/measure
+        with:
+          checker: nanobruijn
+          revision: 8cd5f61
+          work: checker
+          run: |
+            timeout 3600 target/release/nanobruijn config.json < "$IN" || exit 1
+          source-url: https://github.com/nomeata/nanobruijn
+          tests: ${{ inputs.tests }}
+          record: ${{ inputs.record || false }}

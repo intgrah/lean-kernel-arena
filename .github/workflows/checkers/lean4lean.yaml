@@ -1,0 +1,46 @@
+name: lean4lean
+
+on:
+  workflow_call:
+    inputs:
+      tests: {type: string, default: ''}
+      record: {type: boolean, default: false}
+  workflow_dispatch:
+    inputs:
+      tests: {type: string}
+
+jobs:
+  lean4lean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy the in-tree source
+        run: cp -a checkers/lean4lean checker
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: 'false'
+          use-github-cache: 'false'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build
+        working-directory: checker
+        run: |
+          ./lean4lean-wrapper.py build
+
+      - uses: ./.github/actions/measure
+        with:
+          checker: lean4lean
+          revision: fixed
+          work: checker
+          run: |
+            ./lean4lean-wrapper.py run "$IN"
+          tests: ${{ inputs.tests }}
+          record: ${{ inputs.record || false }}
