@@ -24,10 +24,16 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
+      - uses: leanprover/lean-action@v1
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          build: false
+          use-github-cache: false
+
+      - uses: actions/cache@v4
+        with:
+          path: .lake
+          key: lake-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: lake-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-
 
       - uses: actions/configure-pages@v4
 
@@ -51,13 +57,11 @@ jobs:
 
       - name: Assemble the payload
         run: lake exe lka site-data
-        shell: "nix develop -c bash -euxo pipefail {0}"
 
       - name: Render the site
         run: |
           lake exe arena-site --output _out
           cp _build/lean-arena-tests.tar.gz _out/
-        shell: "nix develop -c bash -euxo pipefail {0}"
 
       - uses: actions/upload-pages-artifact@v3
         with:

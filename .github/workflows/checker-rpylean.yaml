@@ -26,18 +26,21 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: pypy-2.7
 
-      - run: sudo apt-get update -qq && sudo apt-get install -y -qq pypy3 libffi-dev pkg-config
-      - run: curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
+      - uses: actions/checkout@v4
+        with:
+          repository: pypy/pypy
+          path: checker/pypy
+
+      - uses: extractions/setup-just@v4
+
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq libffi-dev pkg-config
 
       - name: Build
         working-directory: checker
         run: |
-          git clone --filter=blob:none https://github.com/pypy/pypy
-          cat > .env <<__END__
-           PYPY_CHECKOUT=pypy/
-          __END__
+          printf 'PYPY_CHECKOUT=./pypy\n' > .env
           just translate
 
       - uses: ./.github/actions/measure

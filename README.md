@@ -37,8 +37,6 @@ Building the arena needs:
 - GNU `time` and `perf`, to measure checker runs
 - `git` and `tar`
 
-Using Nix, `nix develop` gives you a shell with all of them.
-
 ### Running locally
 
 ```bash
