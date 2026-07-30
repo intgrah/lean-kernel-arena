@@ -1,0 +1,2 @@
+file = "Tests/Constlevels.ndjson"
+outcome = "reject"

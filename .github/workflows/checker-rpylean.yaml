@@ -28,6 +28,8 @@ jobs:
         with:
           python-version: '3.11'
 
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq just pypy3 libffi-dev pkg-config
+
       - name: Build
         working-directory: checker
         run: |
@@ -45,6 +47,6 @@ jobs:
           run: |
             ./rpylean-c check "$IN" || exit 1
           source-url: https://github.com/Julian/rpylean
-          declines: mathlib
+          declines: Mathlib
           tests: ${{ inputs.tests }}
           record: ${{ inputs.record || false }}

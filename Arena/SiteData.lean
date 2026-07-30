@@ -9,7 +9,7 @@ def instructionsPerSecond : Nat := 6000000000
 
 def tarballSizeLimit : Nat := 10 * 1024 * 1024
 
-def benchmarkTest : String := "mathlib"
+def benchmarkTest : String := "Mathlib"
 def baselineChecker : String := "official"
 
 structure CheckerStats where

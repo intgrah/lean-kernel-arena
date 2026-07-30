@@ -26,6 +26,8 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq libgmp-dev
+
       - name: Build
         working-directory: checker
         run: |

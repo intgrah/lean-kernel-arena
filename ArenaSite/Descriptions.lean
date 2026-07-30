@@ -5,14 +5,14 @@ open Verso Doc Verso.Doc.Concrete Verso.Genre.Blog
 
 namespace ArenaSite.Descriptions.Tests
 
-def «bogus1» : VersoDoc Page :=
-  verso (Page) "bogus1"
+def «Bogus1» : VersoDoc Page :=
+  verso (Page) "Bogus1"
   :::
   A clearly bogus proof. Also serves as an example for how to write simple cases.
   :::
 
-def «cedar» : VersoDoc Page :=
-  verso (Page) "cedar"
+def «Cedar» : VersoDoc Page :=
+  verso (Page) "Cedar"
   :::
   Lean formalization of, and proofs about, [Cedar](https://www.cedarpolicy.com/).
 
@@ -22,8 +22,8 @@ def «cedar» : VersoDoc Page :=
   `Batteries.`
   :::
 
-def «constlevels» : VersoDoc Page :=
-  verso (Page) "constlevels"
+def «Constlevels» : VersoDoc Page :=
+  verso (Page) "Constlevels"
   :::
   Regression test for undefined behavior in `lazy_delta_reduction_step` in the official kernel
 
@@ -37,14 +37,14 @@ def «constlevels» : VersoDoc Page :=
   The issue in the official kernel was originally reported as [https://github.com/leanprover/lean4/issues/10577](https://github.com/leanprover/lean4/issues/10577).
   :::
 
-def «cslib» : VersoDoc Page :=
-  verso (Page) "cslib"
+def «Cslib» : VersoDoc Page :=
+  verso (Page) "Cslib"
   :::
   The Lean Computer Science Library (CSLib). 
   :::
 
-def «ctor-num-fields» : VersoDoc Page :=
-  verso (Page) "ctor-num-fields"
+def «CtorNumFields» : VersoDoc Page :=
+  verso (Page) "CtorNumFields"
   :::
   Proof of False via trusted `numFields` on a constructor.
 
@@ -54,8 +54,8 @@ def «ctor-num-fields» : VersoDoc Page :=
   Derive a contradiction from `S.mk false = S.mk true`.
   :::
 
-def «init» : VersoDoc Page :=
-  verso (Page) "init"
+def «Init» : VersoDoc Page :=
+  verso (Page) "Init"
   :::
   The `Init` module export from Lean 4 core.
 
@@ -70,14 +70,14 @@ def «init» : VersoDoc Page :=
   initial checker validation and debugging.
   :::
 
-def «init-prelude» : VersoDoc Page :=
-  verso (Page) "init-prelude"
+def «InitPrelude» : VersoDoc Page :=
+  verso (Page) "InitPrelude"
   :::
   The `Init.Prelude` module export.
   :::
 
-def «k-rec-conv» : VersoDoc Page :=
-  verso (Page) "k-rec-conv"
+def «KRecConv» : VersoDoc Page :=
+  verso (Page) "KRecConv"
   :::
   Bogus proof that tests for incorrectly implemented K-like reduction.
 
@@ -87,8 +87,8 @@ def «k-rec-conv» : VersoDoc Page :=
   Regression test for sokonanoda.
   :::
 
-def «large-elim-param» : VersoDoc Page :=
-  verso (Page) "large-elim-param"
+def «LargeElimParam» : VersoDoc Page :=
+  verso (Page) "LargeElimParam"
   :::
   Proof of False via incorrect large elimination restriction.
 
@@ -105,8 +105,8 @@ def «large-elim-param» : VersoDoc Page :=
   Found by Anthony Wang using Aristotle.
   :::
 
-def «level-imax-leq» : VersoDoc Page :=
-  verso (Page) "level-imax-leq"
+def «LevelImaxLeq» : VersoDoc Page :=
+  verso (Page) "LevelImaxLeq"
   :::
   Proof of False via incorrect universe level comparison for `imax`.
 
@@ -121,8 +121,8 @@ def «level-imax-leq» : VersoDoc Page :=
   Nanoda incorrectly accepted this proof until it was [fixed](https://github.com/ammkrn/nanoda_lib/commit/12838995ca232ced05cd5218e4975d03c5c44316).
   :::
 
-def «level-imax-normalization» : VersoDoc Page :=
-  verso (Page) "level-imax-normalization"
+def «LevelImaxNormalization» : VersoDoc Page :=
+  verso (Page) "LevelImaxNormalization"
   :::
   Proof of False via incorrect universe level normalization for `imax`.
 
@@ -137,8 +137,8 @@ def «level-imax-normalization» : VersoDoc Page :=
   `myProp` equates `Bool.true` and `Bool.false`, and `Bool.rec` maps this into `False`.
   :::
 
-def «level-index-out-of-order» : VersoDoc Page :=
-  verso (Page) "level-index-out-of-order"
+def «LevelIndexOutOfOrder» : VersoDoc Page :=
+  verso (Page) "LevelIndexOutOfOrder"
   :::
   Lean4export will create internalization-table references contiguously in
   order: `in` references for names, `il` references for levels, and `ie`
@@ -155,8 +155,8 @@ def «level-index-out-of-order» : VersoDoc Page :=
   This encoding should be equivalent.
   :::
 
-def «mathlib» : VersoDoc Page :=
-  verso (Page) "mathlib"
+def «Mathlib» : VersoDoc Page :=
+  verso (Page) "Mathlib"
   :::
   The complete [Mathlib](https://github.com/leanprover-community/mathlib4) library export.
 
@@ -165,8 +165,8 @@ def «mathlib» : VersoDoc Page :=
   in the Lean kernel arena.
   :::
 
-def «nat-rec-k-lie» : VersoDoc Page :=
-  verso (Page) "nat-rec-k-lie"
+def «NatRecKLie» : VersoDoc Page :=
+  verso (Page) "NatRecKLie"
   :::
   Proof of False via trusted `k` on `Nat.rec`.
 
@@ -176,8 +176,8 @@ def «nat-rec-k-lie» : VersoDoc Page :=
   `∀ n, g n` holds by the first, and `g 1` is `False` by the second.
   :::
 
-def «nat-rec-rules» : VersoDoc Page :=
-  verso (Page) "nat-rec-rules"
+def «NatRecRules» : VersoDoc Page :=
+  verso (Page) "NatRecRules"
   :::
   Proof of False via incorrect recursor rule validation.
 
@@ -194,8 +194,8 @@ def «nat-rec-rules» : VersoDoc Page :=
   Nanoda incorrectly accepted this proof until it was [fixed](https://github.com/ammkrn/nanoda_lib/commit/12838995ca232ced05cd5218e4975d03c5c44316).
   :::
 
-def «perf/app-lam» : VersoDoc Page :=
-  verso (Page) "perf/app-lam"
+def «Perf/AppLam» : VersoDoc Page :=
+  verso (Page) "Perf/AppLam"
   :::
   A synthetically generated term with **n levels of alternating applications
   and lambdas**, with **DAG sharing**.
@@ -216,16 +216,16 @@ def «perf/app-lam» : VersoDoc Page :=
   representation.
   :::
 
-def «perf/grind-ring-5» : VersoDoc Page :=
-  verso (Page) "perf/grind-ring-5"
+def «Perf/GrindRing5» : VersoDoc Page :=
+  verso (Page) "Perf/GrindRing5"
   :::
   A **grind tactic test** from the Lean 4 test suite.
 
   This produces a theorem with a rather large proof term that needs fast reduction.
   :::
 
-def «perf/shift-cascade» : VersoDoc Page :=
-  verso (Page) "perf/shift-cascade"
+def «Perf/ShiftCascade» : VersoDoc Page :=
+  verso (Page) "Perf/ShiftCascade"
   :::
   Stress test for cascading substitution overhead in kernel `let` processing.
 
@@ -251,16 +251,16 @@ def «perf/shift-cascade» : VersoDoc Page :=
   N=1000 in the Lean source. Increase to stress further.
   :::
 
-def «proj-non-structure» : VersoDoc Page :=
-  verso (Page) "proj-non-structure"
+def «ProjNonStructure» : VersoDoc Page :=
+  verso (Page) "ProjNonStructure"
   :::
   `Bad` has two constructors, so projections should not be allowed.
   Prove false by using the second constructor, then projecting, hoping that the
   first constructor is used when inferring the type of the projection.
   :::
 
-def «proj-of-prop» : VersoDoc Page :=
-  verso (Page) "proj-of-prop"
+def «ProjOfProp» : VersoDoc Page :=
+  verso (Page) "ProjOfProp"
   :::
   A proof of `False` via a projection from a `Prop`-typed structure whose
   constructor was applied to an ill-typed argument. The exported term is
@@ -279,8 +279,8 @@ def «proj-of-prop» : VersoDoc Page :=
   the declared field type `False`.
   :::
 
-def «proof-irrel» : VersoDoc Page :=
-  verso (Page) "proof-irrel"
+def «ProofIrrel» : VersoDoc Page :=
+  verso (Page) "ProofIrrel"
   :::
   Incompleteness test for proof irrelevance under a binder.
 
@@ -294,8 +294,8 @@ def «proof-irrel» : VersoDoc Page :=
   rejects a valid proof.
   :::
 
-def «rec-k-lie» : VersoDoc Page :=
-  verso (Page) "rec-k-lie"
+def «RecKLie» : VersoDoc Page :=
+  verso (Page) "RecKLie"
   :::
   False theorem via trusted `k` on a recursor.
 
@@ -308,8 +308,8 @@ def «rec-k-lie» : VersoDoc Page :=
   cannot be re-imported by the exporter.
   :::
 
-def «sparse-name-index» : VersoDoc Page :=
-  verso (Page) "sparse-name-index"
+def «SparseNameIndex» : VersoDoc Page :=
+  verso (Page) "SparseNameIndex"
   :::
   Lean4export will create internalization-table references contiguously in
   order: `in` references for names, `il` references for levels, and `ie`
@@ -326,8 +326,8 @@ def «sparse-name-index» : VersoDoc Page :=
   encoding of `axiom foo : Prop`. This encoding should be equivalent.
   :::
 
-def «std» : VersoDoc Page :=
-  verso (Page) "std"
+def «Std» : VersoDoc Page :=
+  verso (Page) "Std"
   :::
   The complete `Std` library export from Lean 4.
 
@@ -343,14 +343,14 @@ def «std» : VersoDoc Page :=
   but smaller than Mathlib, making it useful for performance testing.
   :::
 
-def «tutorial» : VersoDoc Page :=
-  verso (Page) "tutorial"
+def «Tutorial» : VersoDoc Page :=
+  verso (Page) "Tutorial"
   :::
   Multiple tutorial tests generated from a Lean project in the tutorial directory.
   :::
 
-def «Undecidability/alg-conv-trans-acc-left» : VersoDoc Page :=
-  verso (Page) "Undecidability/alg-conv-trans-acc-left"
+def «Undecidability/AlgConvTransAccLeft» : VersoDoc Page :=
+  verso (Page) "Undecidability/AlgConvTransAccLeft"
   :::
   The creative half of `undecidability/alg-conv-trans-acc`. `Acc.rec` is stuck
   on the variable `a`, and proof irrelevance admits any other proof of
@@ -359,16 +359,16 @@ def «Undecidability/alg-conv-trans-acc-left» : VersoDoc Page :=
   right-hand side unprompted is the step no algorithm takes.
   :::
 
-def «Undecidability/alg-conv-trans-acc-right» : VersoDoc Page :=
-  verso (Page) "Undecidability/alg-conv-trans-acc-right"
+def «Undecidability/AlgConvTransAccRight» : VersoDoc Page :=
+  verso (Page) "Undecidability/AlgConvTransAccRight"
   :::
   The mechanical half of `undecidability/alg-conv-trans-acc`. With a
   constructor in the major premise, `Acc.rec` fires and `step` descends to the
   predecessor `0`.
   :::
 
-def «Undecidability/alg-conv-trans-acc» : VersoDoc Page :=
-  verso (Page) "Undecidability/alg-conv-trans-acc"
+def «Undecidability/AlgConvTransAcc» : VersoDoc Page :=
+  verso (Page) "Undecidability/AlgConvTransAcc"
   :::
   As Lean's type theory has undecidable conversion (a.k.a. definitional equality),
   there are bound to be gaps between so called "algorithmic" conversion (that which is
@@ -392,29 +392,29 @@ def «Undecidability/alg-conv-trans-acc» : VersoDoc Page :=
   - Mario Carneiro, *The Type Theory of Lean*, MSc thesis
   :::
 
-def «Undecidability/alg-conv-trans-quot-left-def» : VersoDoc Page :=
-  verso (Page) "Undecidability/alg-conv-trans-quot-left-def"
+def «Undecidability/AlgConvTransQuotLeftDef» : VersoDoc Page :=
+  verso (Page) "Undecidability/AlgConvTransQuotLeftDef"
   :::
   `left` with `Quot.lift` behind a definition. WHNF does not unfold `lift`, so
   the arguments are compared and proof irrelevance applies.
   :::
 
-def «Undecidability/alg-conv-trans-quot-left» : VersoDoc Page :=
-  verso (Page) "Undecidability/alg-conv-trans-quot-left"
+def «Undecidability/AlgConvTransQuotLeft» : VersoDoc Page :=
+  verso (Page) "Undecidability/AlgConvTransQuotLeft"
   :::
   `Quot r` is a `Prop`, so proof irrelevance relates `q` and `Quot.mk r z`.
   However the official kernel does WHNF first, reducing the right side to `f z`,
   so congruence never compares the arguments.
   :::
 
-def «Undecidability/alg-conv-trans-quot-right» : VersoDoc Page :=
-  verso (Page) "Undecidability/alg-conv-trans-quot-right"
+def «Undecidability/AlgConvTransQuotRight» : VersoDoc Page :=
+  verso (Page) "Undecidability/AlgConvTransQuotRight"
   :::
   Quotient computation rule.
   :::
 
-def «Undecidability/alg-conv-trans-quot» : VersoDoc Page :=
-  verso (Page) "Undecidability/alg-conv-trans-quot"
+def «Undecidability/AlgConvTransQuot» : VersoDoc Page :=
+  verso (Page) "Undecidability/AlgConvTransQuot"
   :::
   `left` composed with `right`. Quotients of propositions cause
   algorithmic conversion transitivity to fail because the typechecker must
@@ -426,8 +426,8 @@ def «Undecidability/alg-conv-trans-quot» : VersoDoc Page :=
   - Mario Carneiro, *The Type Theory of Lean*, MSc thesis
   :::
 
-def «Undecidability/subject-reduction-redex» : VersoDoc Page :=
-  verso (Page) "Undecidability/subject-reduction-redex"
+def «Undecidability/SubjectReductionRedex» : VersoDoc Page :=
+  verso (Page) "Undecidability/SubjectReductionRedex"
   :::
   Test for subject reduction, as in Carneiro's thesis.
 
@@ -441,8 +441,8 @@ def «Undecidability/subject-reduction-redex» : VersoDoc Page :=
   - Mario Carneiro, *The Type Theory of Lean*, MSc thesis
   :::
 
-def «Undecidability/subject-reduction-reduct» : VersoDoc Page :=
-  verso (Page) "Undecidability/subject-reduction-reduct"
+def «Undecidability/SubjectReductionReduct» : VersoDoc Page :=
+  verso (Page) "Undecidability/SubjectReductionReduct"
   :::
   Beta erases the annotation of `undecidability/subject-reduction-redex`, and
   with it the middle term, leaving the two endpoints to compare: the conversion
@@ -454,8 +454,8 @@ def «Undecidability/subject-reduction-reduct» : VersoDoc Page :=
   - Mario Carneiro, *The Type Theory of Lean*, MSc thesis
   :::
 
-def «nested-nonuniform-param» : VersoDoc Page :=
-  verso (Page) "nested-nonuniform-param"
+def «NestedNonuniformParam» : VersoDoc Page :=
+  verso (Page) "NestedNonuniformParam"
   :::
   Checks that a parameter supplied to a nested inductive occurrence really acts
   as the datatype's parameter, i.e. that it is the parameter itself and does not
@@ -484,8 +484,8 @@ def «nested-nonuniform-param» : VersoDoc Page :=
   case not covered by that PR's fix; related to leanprover/lean4#14576.
   :::
 
-def «nested-unused-param» : VersoDoc Page :=
-  verso (Page) "nested-unused-param"
+def «NestedUnusedParam» : VersoDoc Page :=
+  verso (Page) "NestedUnusedParam"
   :::
   Checks that the parameters of a nested inductive application are type-checked
   even when they do not appear in the auxiliary type generated during
@@ -737,42 +737,42 @@ end ArenaSite.Descriptions.Checkers
 namespace ArenaSite.Descriptions
 
 def testDescription? : String → Option (Array (Block Page))
-  | "Undecidability/alg-conv-trans-acc-left" => some Tests.«Undecidability/alg-conv-trans-acc-left».toPart.content
-  | "Undecidability/alg-conv-trans-acc-right" => some Tests.«Undecidability/alg-conv-trans-acc-right».toPart.content
-  | "Undecidability/alg-conv-trans-acc" => some Tests.«Undecidability/alg-conv-trans-acc».toPart.content
-  | "Undecidability/alg-conv-trans-quot-left-def" => some Tests.«Undecidability/alg-conv-trans-quot-left-def».toPart.content
-  | "Undecidability/alg-conv-trans-quot-left" => some Tests.«Undecidability/alg-conv-trans-quot-left».toPart.content
-  | "Undecidability/alg-conv-trans-quot-right" => some Tests.«Undecidability/alg-conv-trans-quot-right».toPart.content
-  | "Undecidability/alg-conv-trans-quot" => some Tests.«Undecidability/alg-conv-trans-quot».toPart.content
-  | "Undecidability/subject-reduction-redex" => some Tests.«Undecidability/subject-reduction-redex».toPart.content
-  | "Undecidability/subject-reduction-reduct" => some Tests.«Undecidability/subject-reduction-reduct».toPart.content
-  | "nested-nonuniform-param" => some Tests.«nested-nonuniform-param».toPart.content
-  | "nested-unused-param" => some Tests.«nested-unused-param».toPart.content
-  | "bogus1" => some Tests.«bogus1».toPart.content
-  | "cedar" => some Tests.«cedar».toPart.content
-  | "constlevels" => some Tests.«constlevels».toPart.content
-  | "cslib" => some Tests.«cslib».toPart.content
-  | "ctor-num-fields" => some Tests.«ctor-num-fields».toPart.content
-  | "init" => some Tests.«init».toPart.content
-  | "init-prelude" => some Tests.«init-prelude».toPart.content
-  | "k-rec-conv" => some Tests.«k-rec-conv».toPart.content
-  | "large-elim-param" => some Tests.«large-elim-param».toPart.content
-  | "level-imax-leq" => some Tests.«level-imax-leq».toPart.content
-  | "level-imax-normalization" => some Tests.«level-imax-normalization».toPart.content
-  | "level-index-out-of-order" => some Tests.«level-index-out-of-order».toPart.content
-  | "mathlib" => some Tests.«mathlib».toPart.content
-  | "nat-rec-k-lie" => some Tests.«nat-rec-k-lie».toPart.content
-  | "nat-rec-rules" => some Tests.«nat-rec-rules».toPart.content
-  | "perf/app-lam" => some Tests.«perf/app-lam».toPart.content
-  | "perf/grind-ring-5" => some Tests.«perf/grind-ring-5».toPart.content
-  | "perf/shift-cascade" => some Tests.«perf/shift-cascade».toPart.content
-  | "proj-non-structure" => some Tests.«proj-non-structure».toPart.content
-  | "proj-of-prop" => some Tests.«proj-of-prop».toPart.content
-  | "proof-irrel" => some Tests.«proof-irrel».toPart.content
-  | "rec-k-lie" => some Tests.«rec-k-lie».toPart.content
-  | "sparse-name-index" => some Tests.«sparse-name-index».toPart.content
-  | "std" => some Tests.«std».toPart.content
-  | "tutorial" => some Tests.«tutorial».toPart.content
+  | "Undecidability/AlgConvTransAccLeft" => some Tests.«Undecidability/AlgConvTransAccLeft».toPart.content
+  | "Undecidability/AlgConvTransAccRight" => some Tests.«Undecidability/AlgConvTransAccRight».toPart.content
+  | "Undecidability/AlgConvTransAcc" => some Tests.«Undecidability/AlgConvTransAcc».toPart.content
+  | "Undecidability/AlgConvTransQuotLeftDef" => some Tests.«Undecidability/AlgConvTransQuotLeftDef».toPart.content
+  | "Undecidability/AlgConvTransQuotLeft" => some Tests.«Undecidability/AlgConvTransQuotLeft».toPart.content
+  | "Undecidability/AlgConvTransQuotRight" => some Tests.«Undecidability/AlgConvTransQuotRight».toPart.content
+  | "Undecidability/AlgConvTransQuot" => some Tests.«Undecidability/AlgConvTransQuot».toPart.content
+  | "Undecidability/SubjectReductionRedex" => some Tests.«Undecidability/SubjectReductionRedex».toPart.content
+  | "Undecidability/SubjectReductionReduct" => some Tests.«Undecidability/SubjectReductionReduct».toPart.content
+  | "NestedNonuniformParam" => some Tests.«NestedNonuniformParam».toPart.content
+  | "NestedUnusedParam" => some Tests.«NestedUnusedParam».toPart.content
+  | "Bogus1" => some Tests.«Bogus1».toPart.content
+  | "Cedar" => some Tests.«Cedar».toPart.content
+  | "Constlevels" => some Tests.«Constlevels».toPart.content
+  | "Cslib" => some Tests.«Cslib».toPart.content
+  | "CtorNumFields" => some Tests.«CtorNumFields».toPart.content
+  | "Init" => some Tests.«Init».toPart.content
+  | "InitPrelude" => some Tests.«InitPrelude».toPart.content
+  | "KRecConv" => some Tests.«KRecConv».toPart.content
+  | "LargeElimParam" => some Tests.«LargeElimParam».toPart.content
+  | "LevelImaxLeq" => some Tests.«LevelImaxLeq».toPart.content
+  | "LevelImaxNormalization" => some Tests.«LevelImaxNormalization».toPart.content
+  | "LevelIndexOutOfOrder" => some Tests.«LevelIndexOutOfOrder».toPart.content
+  | "Mathlib" => some Tests.«Mathlib».toPart.content
+  | "NatRecKLie" => some Tests.«NatRecKLie».toPart.content
+  | "NatRecRules" => some Tests.«NatRecRules».toPart.content
+  | "Perf/AppLam" => some Tests.«Perf/AppLam».toPart.content
+  | "Perf/GrindRing5" => some Tests.«Perf/GrindRing5».toPart.content
+  | "Perf/ShiftCascade" => some Tests.«Perf/ShiftCascade».toPart.content
+  | "ProjNonStructure" => some Tests.«ProjNonStructure».toPart.content
+  | "ProjOfProp" => some Tests.«ProjOfProp».toPart.content
+  | "ProofIrrel" => some Tests.«ProofIrrel».toPart.content
+  | "RecKLie" => some Tests.«RecKLie».toPart.content
+  | "SparseNameIndex" => some Tests.«SparseNameIndex».toPart.content
+  | "Std" => some Tests.«Std».toPart.content
+  | "Tutorial" => some Tests.«Tutorial».toPart.content
   | _ => none
 
 def checkerDescription? : String → Option (Array (Block Page))
