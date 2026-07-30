@@ -260,7 +260,8 @@ structure Table (α : Type) where
   columns : Array (Column α)
 
 private def nameCell (href label : String) : Html :=
-  {{ <td class="name"><a href={{href}}>{{textHtml label}}</a></td> }}
+  if href.isEmpty then {{ <td class="name">{{textHtml label}}</td> }}
+  else {{ <td class="name"><a href={{href}}>{{textHtml label}}</a></td> }}
 
 private def groupNameCell (href group : String) (count : Nat) : Html :=
   {{

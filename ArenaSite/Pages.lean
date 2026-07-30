@@ -104,7 +104,7 @@ private def checkerRows (sources : PageSources) (checker : String) :
     return { test, result, baseline := sources.baseline test.name }
 
 private def testRows (sources : PageSources) (test : TestInfo) : Array Details.TestRow :=
-  sources.payload.checkers.filterMap fun checker => do
+  (currentCheckers sources.payload).filterMap fun checker => do
     let result ← findResult sources.index checker.name test.name
     return { checker := checker.name, result := result.withoutProcessOutput }
 
@@ -164,8 +164,9 @@ elab_rules : command
     let sources ← liftTermElabM pageSources
     declareSources sources
     let rate := sources.payload.instructionsPerSecond
-    for checker in sources.payload.checkers do
+    for checker in currentCheckers sources.payload do
       let value ← liftTermElabM `(Details.checkerPart $(quote checker)
+        $(quote (revisionsOf sources.payload checker.name))
         $(quote (checkerRows sources checker.name)) $(quote rate))
       declarePart (checkerPartName checker.name) value
     for node in sources.nodes do
@@ -184,7 +185,7 @@ private def elabDirArray (terms : Array (TSyntax `term)) : TermElabM Expr := do
 elab_rules : term
   | `(checker_pages%) => do
     let payload ← loadPayload
-    let dirs ← payload.checkers.mapM fun checker =>
+    let dirs ← (currentCheckers payload).mapM fun checker =>
       `(Dir.page $(quote checker.name) $(quote (checkerPageName checker.name))
         $(qualified (checkerPartName checker.name)) #[])
     elabDirArray dirs

@@ -97,6 +97,10 @@ def missing : String := "—"
 def breadcrumbRoot : String := siteTitle
 def breadcrumbSeparator : String := " / "
 
+def revisionsHeading : String := "Revisions"
+def columnRevision : String := "Revision"
+def columnMeasured : String := "Measured"
+
 def sourceHeading : String := "Source"
 def exportHeading : String := "Exported declarations"
 

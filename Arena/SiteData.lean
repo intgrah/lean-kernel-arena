@@ -89,6 +89,8 @@ def createTarball (tests : Array LocatedTest) : IO TarballInfo := do
 structure CheckerInfo where
   name : String
   version : String
+  current : Bool
+  runAt : String
   declarationUrl : Option String
   sourceUrl : Option String
   stats : CheckerStats
@@ -96,8 +98,10 @@ deriving Inhabited, ToJson, FromJson
 
 structure ResultInfo extends Metrics where
   checker : String
+  revision : String
   test : String
   attempt : Attempt
+  runAt : String
 deriving Inhabited, ToJson, FromJson
 
 structure TarballData extends TarballInfo where
@@ -170,18 +174,27 @@ def renderExports (tests : Array LocatedTest) : IO Unit := do
 
 structure CheckerColumn where
   log : ResultLog
+  current : Bool
   stats : CheckerStats
 
 def rankColumns (columns : Array CheckerColumn) : Array CheckerColumn :=
   columns.qsort fun a b => compare (rankKey a.stats) (rankKey b.stats) |>.isLT
 
-def currentColumns (tests : Array LocatedTest) : IO (Array CheckerColumn) := do
-  return (← loadStore).map fun log => { log, stats := statsOfLog tests log }
+def storeColumns (tests : Array LocatedTest) : IO (Array CheckerColumn) := do
+  let logs ← loadStore
+  let newest := logs.foldl (init := ({} : Std.HashMap String String)) fun newest log =>
+    match Std.HashMap.get? newest log.checker with
+    | some at' => if log.runAt > at' then newest.insert log.checker log.runAt else newest
+    | none => newest.insert log.checker log.runAt
+  return logs.map fun log =>
+    { log
+      current := Std.HashMap.get? newest log.checker == some log.runAt
+      stats := statsOfLog tests log }
 
 def generateSiteData : IO Unit := do
   let info ← buildInfo
   let tests ← loadTestStats
-  let columns ← currentColumns tests
+  let columns ← storeColumns tests
   let entries := columns.flatMap (·.log.entries)
   match observedRate entries with
   | some rate => IO.println s!"Observed conversion rate: {formatUnitless rate}inst/s"
@@ -200,6 +213,8 @@ def generateSiteData : IO Unit := do
     checkers := ranked.map fun column =>
       { name := column.log.checker
         version := column.log.revision
+        current := column.current
+        runAt := column.log.runAt
         declarationUrl := none
         sourceUrl := if column.log.sourceUrl.isEmpty then none else some column.log.sourceUrl
         stats := column.stats }
@@ -208,8 +223,10 @@ def generateSiteData : IO Unit := do
       column.log.entries.map fun entry =>
         { toMetrics := entry.toMetrics
           checker := column.log.checker
+          revision := column.log.revision
           test := entry.test
-          attempt := entry.attempt }
+          attempt := entry.attempt
+          runAt := entry.runAt }
   }
   writeJsonFile siteDataPath (toJson payload)
   IO.println s!"Wrote {siteDataPath} ({ranked.size} checker revisions, {tests.size} tests, \

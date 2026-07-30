@@ -65,7 +65,7 @@ def loadRevisionLogs (checker revision : String) : IO (Array ResultLog) := do
 def foldLogs (logs : Array ResultLog) : Array ResultEntry :=
   logs.foldl (init := #[]) fun entries log =>
     log.entries.foldl (init := entries) fun entries entry =>
-      (entries.filter (·.test != entry.test)).push entry
+      (entries.filter (·.testHash != entry.testHash)).push entry
 
 /-- Every checker revision the store holds results for, folded into one log each. -/
 def loadStore : IO (Array ResultLog) := do

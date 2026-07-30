@@ -27,7 +27,7 @@ jobs:
         env:
           TESTS: ${{ inputs.tests }}
         run: lake exe lka build-test ${TESTS:---skip-ci} ${TESTS:+"$TESTS"}
-        shell: 'nix develop -c bash -euxo pipefail {0}'
+        shell: "nix develop -c bash -euxo pipefail {0}"
       - uses: actions/upload-artifact@v4
         with:
           name: exports
@@ -37,52 +37,141 @@ jobs:
   evmlean:
     needs: exports
     uses: ./.github/workflows/checkers/evmlean.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   lean4lean:
     needs: exports
     uses: ./.github/workflows/checkers/lean4lean.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   mini:
     needs: exports
     uses: ./.github/workflows/checkers/mini.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   nanobruijn:
     needs: exports
     uses: ./.github/workflows/checkers/nanobruijn.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   nanoda:
     needs: exports
     uses: ./.github/workflows/checkers/nanoda.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   nyaya:
     needs: exports
     uses: ./.github/workflows/checkers/nyaya.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   official:
     needs: exports
     uses: ./.github/workflows/checkers/official.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   parse-only:
     needs: exports
     uses: ./.github/workflows/checkers/parse-only.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   rpylean:
     needs: exports
     uses: ./.github/workflows/checkers/rpylean.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   sokonanoda:
     needs: exports
     uses: ./.github/workflows/checkers/sokonanoda.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   still-nanoda:
     needs: exports
     uses: ./.github/workflows/checkers/still-nanoda.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   vow-lean-kernel:
     needs: exports
     uses: ./.github/workflows/checkers/vow-lean-kernel.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
   zignodamus:
     needs: exports
     uses: ./.github/workflows/checkers/zignodamus.yaml
-    with: {tests: "${{ inputs.tests }}", record: "${{ github.event_name != 'pull_request' }}"}
+    with:
+      {
+        tests: "${{ inputs.tests }}",
+        record: "${{ github.event_name != 'pull_request' }}",
+      }
+
+  collect:
+    needs:
+      [
+        evmlean,
+        lean4lean,
+        mini,
+        nanobruijn,
+        nanoda,
+        nyaya,
+        official,
+        parse-only,
+        rpylean,
+        sokonanoda,
+        still-nanoda,
+        vow-lean-kernel,
+        zignodamus,
+      ]
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: results
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fragment-*
+          merge-multiple: true
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit --quiet -m "Run: ${GITHUB_RUN_ID}"
+          git push origin HEAD:results

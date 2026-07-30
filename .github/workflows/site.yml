@@ -46,15 +46,15 @@ jobs:
 
       - name: Build tests
         run: lake exe lka build-test
-        shell: 'nix develop -c bash -euxo pipefail {0}'
+        shell: "nix develop -c bash -euxo pipefail {0}"
 
       - name: Build site
         run: lake exe lka build-site
-        shell: 'nix develop -c bash -euxo pipefail {0}'
+        shell: "nix develop -c bash -euxo pipefail {0}"
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: '_out'
+          path: "_out"
 
       - id: deployment
         uses: actions/deploy-pages@v4

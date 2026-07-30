@@ -96,7 +96,29 @@ private def detailBlocks (row : CheckerRow) : Array (Block Page) :=
   ++ #[blockHtml (resultLine row.test row.result),
        blockHtml (Html.fromArray (processOutput row.result.attempt))]
 
-def checkerPart (checker : CheckerInfo) (rows : Array CheckerRow) (rate : Nat) : Part Page :=
+private def revisionsTable (revisions : Array CheckerInfo) (rate : Nat) : Block Page :=
+  renderTable {
+    nameLabel := columnRevision
+    name := (·.version)
+    href := fun _ => ""
+    columns := #[
+      column columnMeasured fun revision =>
+        {{ <td class="version">{{textHtml (revision.runAt.take 10).toString}}</td> }},
+      column completenessColumn (align := .center) fun revision =>
+        fractionCell .incomplete revision.stats.acceptCorrect revision.stats.acceptTotal,
+      column soundnessColumn (align := .center) fun revision =>
+        fractionCell .unsound revision.stats.rejectCorrect revision.stats.rejectTotal,
+      column declinedColumn (align := .center) fun revision =>
+        {{ <td class="cell">{{textHtml (toString revision.stats.declined)}}</td> }},
+      column timeColumn (align := .numeric) fun revision =>
+        durationCell revision.stats.benchmark rate missing,
+      column memoryColumn (align := .numeric) fun revision =>
+        memoryCell revision.stats.benchmark missing
+    ]
+  } revisions
+
+def checkerPart (checker : CheckerInfo) (revisions : Array CheckerInfo)
+    (rows : Array CheckerRow) (rate : Nat) : Part Page :=
   let header := #[
     breadcrumb checker.name,
     heading (checkerHeading checker.name),
@@ -113,7 +135,10 @@ def checkerPart (checker : CheckerInfo) (rows : Array CheckerRow) (rate : Nat) :
   } rows
   let body :=
     if rows.isEmpty then #[para #[text noResults]]
-    else #[scoreCards checker.stats, summary, heading detailedResultsHeading]
+    else #[scoreCards checker.stats]
+      ++ (if revisions.size ≤ 1 then #[]
+          else #[heading revisionsHeading, revisionsTable revisions rate])
+      ++ #[summary, heading detailedResultsHeading]
       ++ rows.flatMap detailBlocks
   pagePart checker.name (header ++ checkerDescriptionBlocks checker.name ++ body)
 

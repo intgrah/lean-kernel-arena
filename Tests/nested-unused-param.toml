@@ -1,3 +1,2 @@
-leanFile = "Tests/NestedUnusedParam.lean"
-exportDecls = ["boom"]
+file = "Tests/nested-unused-param.ndjson"
 outcome = "reject"

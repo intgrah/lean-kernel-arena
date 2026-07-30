@@ -71,8 +71,18 @@ def loadTestExport? (test : String) : TermElabM (Option SubVerso.Module.Module) 
 
 abbrev ResultIndex := Arena.PairIndex ResultInfo
 
+def currentCheckers (payload : Payload) : Array CheckerInfo :=
+  payload.checkers.filter (·.current)
+
+def revisionsOf (payload : Payload) (checker : String) : Array CheckerInfo :=
+  (payload.checkers.filter (·.name == checker)).qsort (·.runAt > ·.runAt)
+
 def indexOf (payload : Payload) : ResultIndex :=
-  Arena.indexPairs (fun result => (result.checker, result.test)) payload.results
+  let current := payload.checkers.filter (·.current) |>.map (·.name)
+  Arena.indexPairs (fun result => (result.checker, result.test))
+    (payload.results.filter fun result => current.contains result.checker
+      && (payload.checkers.any fun c =>
+            c.current && c.name == result.checker && c.version == result.revision))
 
 def findResult (index : ResultIndex) (checker test : String) : Option ResultInfo :=
   Std.HashMap.get? index (checker, test)

@@ -12,11 +12,12 @@ open ArenaSite.Copy
 
 private def baselineFirst (payload : Payload) : Array CheckerInfo :=
   let isBaseline (checker : CheckerInfo) := checker.name == payload.baselineChecker
-  payload.checkers.filter isBaseline ++ payload.checkers.filter (!isBaseline ·)
+  let current := currentCheckers payload
+  current.filter isBaseline ++ current.filter (!isBaseline ·)
 
 private def heroSection (payload : Payload) : Block Page :=
   let tiles := #[
-    statTile (toString payload.checkers.size) statCheckers,
+    statTile (toString (currentCheckers payload).size) statCheckers,
     statTile (toString payload.tests.size) statTests
   ]
   sectionBlock "hero" #[
@@ -32,7 +33,7 @@ private def heroSection (payload : Payload) : Block Page :=
   ]
 
 private def checkersTable (payload : Payload) : Block Page :=
-  if payload.checkers.isEmpty then
+  if (currentCheckers payload).isEmpty then
     para #[text noCheckers]
   else
     let rate := payload.instructionsPerSecond
@@ -56,7 +57,7 @@ private def checkersTable (payload : Payload) : Block Page :=
         column memoryColumn (align := .numeric) (title := memoryColumnTitle)
           fun checker => memoryCell checker.stats.benchmark missing
       ]
-    } payload.checkers
+    } (baselineFirst payload)
 
 private def matrixCell (index : ResultIndex) (baseline : Option Float) (isBaseline : Bool)
     (checker : CheckerInfo) (test : TestInfo) (rate : Nat) : Html :=

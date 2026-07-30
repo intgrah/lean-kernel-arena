@@ -14,7 +14,7 @@ input_dir siteData where
 
 lean_lib Tests where
   srcDir := "Tests"
-  roots := #[`Bogus1, `CtorNumFields, `InitModule, `InitPreludeModule, `KRecConv, `ProjNoConstructors, `ProjNonStructure, `ProjOfProp, `ProofIrrel, `RecKLie, `StdModule, `NestedNonuniformParam, `NestedUnusedParam, `Undecidability.AlgConv, `Undecidability.AlgConvQuot, `Perf.AppLam, `Perf.GrindRing5, `Perf.ShiftCascade, `Tutorial]
+  roots := #[`Bogus1, `CtorNumFields, `InitModule, `InitPreludeModule, `KRecConv, `ProjNoConstructors, `ProjNonStructure, `ProjOfProp, `ProofIrrel, `RecKLie, `StdModule, `NestedNonuniformParam, `Undecidability.AlgConv, `Undecidability.AlgConvQuot, `Perf.AppLam, `Perf.GrindRing5, `Perf.ShiftCascade, `Tutorial]
 
 lean_lib Arena
 

@@ -134,9 +134,13 @@ h1.breadcrumb {
 h1.breadcrumb a { color: inherit; }
 h1.breadcrumb a:hover { color: var(--color-primary); }
 
-h2 { font-size: 1.35rem; margin: 0 0 0.75rem; }
-h3 { font-size: 1.1rem; margin: 2rem 0 0.4rem; font-family: var(--font-mono); }
-h5 { font-size: 0.85rem; margin: 0.75rem 0 0.25rem; color: var(--color-text-light); }
+h2 { font-size: 1.35rem; margin: 0; }
+h3 { font-size: 1.1rem; margin: 0; font-family: var(--font-mono); }
+h5 { font-size: 0.85rem; margin: 0; color: var(--color-text-light); }
+
+article > * + *, .panel > * + * { margin-top: 1.5rem; }
+article > :is(h1, h2, h3, h5) + *, .panel > :is(h1, h2, h3, h5) + * { margin-top: 0.6rem; }
+article > h1.breadcrumb + * { margin-top: 1.5rem; }
 
 .hero {
   display: grid;
@@ -297,7 +301,6 @@ tbody.group.open .disclosure { transform: rotate(90deg); }
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: 1rem;
-  margin: 1.5rem 0;
 }
 
 .score-card {
@@ -315,7 +318,6 @@ tbody.group.open .disclosure { transform: rotate(90deg); }
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem 1rem;
-  margin: 0.35rem 0 0.75rem;
   font-size: 0.9rem;
   color: var(--color-text-light);
 }
@@ -398,7 +400,8 @@ p code {
   background-color: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
 }
 
-pre.hl.lean.block {
+.hl.lean.block {
+  display: block;
   background: var(--color-surface-soft);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
