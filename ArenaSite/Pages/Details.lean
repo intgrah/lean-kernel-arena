@@ -61,9 +61,8 @@ private def resultLine (test : TestInfo) (result : ResultInfo) : Html :=
     if metrics.wallTime > 0 then
       some s!"{wallTimeLabel}: {Arena.formatDuration metrics.wallTime}"
     else none,
-    if metrics.instructions > 0 then
-      some s!"{instructionsLabel}: {Arena.formatUnitless metrics.instructions.toFloat}"
-    else none,
+    metrics.instructions.map fun instructions =>
+      s!"{instructionsLabel}: {Arena.formatUnitless instructions.toFloat}",
     if metrics.maxRss > 0 then
       some s!"{memoryLabel}: {Arena.formatMemory metrics.maxRss.toFloat}"
     else none

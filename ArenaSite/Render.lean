@@ -58,10 +58,9 @@ def expectationGlyph : Expectation → String
   | .either => eitherGlyph
 
 def virtualSeconds (metrics : Metrics) (rate : Nat) : Option Float :=
-  if metrics.instructions > 0 && rate > 0 then
-    some (metrics.instructions.toFloat / rate.toFloat)
-  else if metrics.cpuTime > 0 then some metrics.cpuTime
-  else none
+  let counted := if rate > 0 then metrics.instructions.map (·.toFloat / rate.toFloat) else none
+  let clocked := if metrics.cpuTime > 0 then some metrics.cpuTime else none
+  counted <|> clocked
 
 def percentChange (baseline current : Float) : Int :=
   ((current - baseline) / baseline * 100).round.toInt64.toInt
@@ -122,9 +121,9 @@ def numericCell (sortKey : Float) (rendered : String) (title : Option String := 
 def durationCell (metrics : Option Metrics) (rate : Nat) (placeholder : String) : Html :=
   match metrics.bind (virtualSeconds · rate) with
   | some seconds =>
-    let instructions := (metrics.map (·.instructions)).getD 0
-    let hint := Arena.formatUnitless instructions.toFloat ++ " instructions"
-    numericCell seconds (Arena.formatDuration seconds) (some hint)
+    let hint := (metrics.bind (·.instructions)).map fun instructions =>
+      Arena.formatUnitless instructions.toFloat ++ " instructions"
+    numericCell seconds (Arena.formatDuration seconds) hint
   | none => {{ <td class="numeric">{{textHtml placeholder}}</td> }}
 
 def memoryCell (metrics : Option Metrics) (placeholder : String) : Html :=

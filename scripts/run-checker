@@ -60,16 +60,22 @@ for stats in $(find _build/tests -name '*.stats.json' | sort); do
      --arg t "$name" --arg h "$hash" --arg at "$(now)" --argjson code "$code" \
      --rawfile stdout "$stdout" --rawfile stderr "$stderr" \
      --arg rssKb "$(sed -n 's/^maxRssKb=//p' "$timing")" '
-    def counter($event):
+    def events($event):
       [ $counters[0][]
-        | select((.event // "" | sub("^[^/:]+/"; "") | sub("[/:].*$"; "")) == $event)
-        | (."counter-value" | tonumber? // 0) ] | add // 0;
+        | select((.event // "" | sub("^[^/:]+/"; "") | sub("[/:].*$"; "")) == $event) ];
+    def count($event):
+      [ events($event)[] | ."counter-value" | tonumber? | round ] | add;
+    def seconds($event):
+      [ events($event)[]
+        | (."counter-value" | tonumber?)
+          * (if .unit == "msec" then 1e-3 elif .unit == "usec" then 1e-6 else 1e-9 end)
+      ] | add // error("perf reported no \($event)");
     {test:$t, testHash:$h,
      attempt: {ran: {exitCode:$code, stdout:$stdout, stderr:$stderr}},
-     wallTime: (counter("duration_time") / 1e9),
-     cpuTime: (counter("task-clock") / 1e3),
+     wallTime: seconds("duration_time"),
+     cpuTime: seconds("task-clock"),
      maxRss: (($rssKb | tonumber? // 0) * 1024),
-     instructions: counter("instructions"),
+     instructions: count("instructions"),
      runAt: $at}' >>"$entries"
   echo "$CHECKER@$REVISION $name exit $code"
   rm -f "$counters" "$timing" "$stdout" "$stderr"

@@ -51,11 +51,11 @@ def statsOfLog (tests : Array LocatedTest) (log : ResultLog) : CheckerStats :=
     | some expectation => stats.record entry expectation
 
 private def rankKey (stats : CheckerStats) : List Nat :=
-  let instructions := (stats.benchmark.map (·.instructions)).getD 0
+  let instructions := stats.benchmark.bind (·.instructions)
   [stats.rejectTotal - stats.rejectCorrect,
    stats.acceptTotal - stats.acceptCorrect,
-   if instructions == 0 then 1 else 0,
-   instructions,
+   if instructions.isNone then 1 else 0,
+   instructions.getD 0,
    stats.declined]
 
 structure TarballInfo where
@@ -131,9 +131,9 @@ def Payload.withoutProcessOutput (payload : Payload) : Payload :=
 
 private def observedRate (entries : Array ResultEntry) : Option Float :=
   let (instructions, seconds) := entries.foldl (init := (0.0, 0.0)) fun (i, s) entry =>
-    if entry.cpuTime > 0 && entry.instructions > 0 then
-      (i + entry.instructions.toFloat, s + entry.cpuTime)
-    else (i, s)
+    match entry.instructions with
+    | some counted => if entry.cpuTime > 0 then (i + counted.toFloat, s + entry.cpuTime) else (i, s)
+    | none => (i, s)
   if seconds > 0 then some (instructions / seconds) else none
 
 def extractSources (tests : Array LocatedTest) : IO Unit := do

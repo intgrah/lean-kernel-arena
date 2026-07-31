@@ -13,7 +13,7 @@ structure Metrics where
   wallTime : Float := 0
   cpuTime : Float := 0
   maxRss : Nat := 0
-  instructions : Nat := 0
+  instructions : Option Nat := none
 deriving Inhabited, ToJson, FromJson
 
 structure Outcome extends Metrics where
@@ -99,7 +99,8 @@ private def parsePerfReport (text : String) : Metrics :=
         | "duration_time" => { metrics with wallTime := seconds }
         | "task-clock" => { metrics with cpuTime := seconds }
         | "instructions" =>
-          { metrics with instructions := metrics.instructions + value.toUInt64.toNat }
+          { metrics with
+            instructions := some (metrics.instructions.getD 0 + value.toUInt64.toNat) }
         | _ => metrics
       | _, _ => metrics
 
@@ -136,7 +137,8 @@ private def Outcome.summary (outcome : Outcome) : String :=
     (true, s!"wall {formatDuration outcome.wallTime}"),
     (outcome.cpuTime > 0, s!"cpu {formatDuration outcome.cpuTime}"),
     (outcome.maxRss > 0, s!"rss {formatMemory outcome.maxRss.toFloat}"),
-    (outcome.instructions > 0, s!"inst {formatUnitless outcome.instructions.toFloat}")
+    (outcome.instructions.isSome,
+      s!"inst {formatUnitless (outcome.instructions.getD 0).toFloat}")
   ]
   let shown := measurements.filterMap fun (keep, text) => if keep then some text else none
   s!"{status}, {", ".intercalate shown.toList}"

@@ -11,7 +11,7 @@ on:
 
 jobs:
   lean4lean:
-    runs-on: ubuntu-latest
+    runs-on: nscloud-ubuntu-22.04-amd64-8x16
     timeout-minutes: 180
     permissions:
       contents: read
