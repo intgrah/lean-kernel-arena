@@ -1,0 +1,1979 @@
+{"runner": "github-Linux",
+ "revision": "514ab33",
+ "recipeHash": "13235e94b7c44cde",
+ "entries":
+ [{"wallTime": 30.020503,
+   "testHash":
+   "1e8955573ebf50103a568e511f08105fe113030cfae99443e7eb5b5847a5a2b5",
+   "test": "Perf/app-lam",
+   "runAt": "2026-08-13T23:29:13Z",
+   "maxRss": 20418560,
+   "instructions": 0,
+   "cpuTime": 30.007959,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/35 arena=24430\n",
+     "stderr": "",
+     "exitCode": 124}}},
+  {"wallTime": 30.019343,
+   "testHash":
+   "4289c668fe85a9752b83aad6efd8732dc91936ffdba0844ca5832fe09aaea471",
+   "test": "Perf/grind-ring-5",
+   "runAt": "2026-08-13T23:29:43Z",
+   "maxRss": 164646912,
+   "instructions": 0,
+   "cpuTime": 30.006785,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/2519 arena=181094\nChecking decl 100/2519 arena=181094\nChecking decl 200/2519 arena=181094\nChecking decl 300/2519 arena=181094\nChecking decl 400/2519 arena=181094\nChecking decl 500/2519 arena=181094\nChecking decl 600/2519 arena=181094\nChecking decl 700/2519 arena=181094\nChecking decl 800/2519 arena=181094\nChecking decl 900/2519 arena=181094\nChecking decl 1000/2519 arena=181094\nChecking decl 1100/2519 arena=181094\nChecking decl 1200/2519 arena=181094\nChecking decl 1300/2519 arena=181094\nChecking decl 1400/2519 arena=181094\nChecking decl 1500/2519 arena=181094\nChecking decl 1600/2519 arena=181094\nChecking decl 1700/2519 arena=181094\nChecking decl 1800/2519 arena=181094\nChecking decl 1900/2519 arena=181094\nChecking decl 2000/2519 arena=181094\nChecking decl 2100/2519 arena=181094\nChecking decl 2200/2519 arena=181094\nChecking decl 2300/2519 arena=181094\nChecking decl 2400/2519 arena=181094\nChecking decl 2500/2519 arena=181094\n",
+     "stderr": "",
+     "exitCode": 124}}},
+  {"wallTime": 0.223679,
+   "testHash":
+   "82b18d3d18d80eadb23cdb7bdd36258d8d4612c33f48cd6e31d334022f6800dc",
+   "test": "Perf/shift-cascade",
+   "runAt": "2026-08-13T23:30:13Z",
+   "maxRss": 12611584,
+   "instructions": 0,
+   "cpuTime": 0.222059,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/10 arena=4089\n",
+     "stderr": "",
+     "exitCode": 0}}},
+  {"wallTime": 0.252697,
+   "testHash":
+   "5483cd552ced28c2d47b8a547106c2ac7105a19d5907707d3b122799a3f30124",
+   "test": "Undecidability/alg-conv-trans-acc",
+   "runAt": "2026-08-13T23:30:14Z",
+   "maxRss": 9072640,
+   "instructions": 0,
+   "cpuTime": 0.251189,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/67 arena=920\nFAIL decl 66 name=trans kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.256599,
+   "testHash":
+   "779794c039f547b664649545d89c1edda69d5f30241426d87f43b5b49e12b532",
+   "test": "Undecidability/alg-conv-trans-acc-left",
+   "runAt": "2026-08-13T23:30:14Z",
+   "maxRss": 9072640,
+   "instructions": 0,
+   "cpuTime": 0.254976,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/68 arena=934\nFAIL decl 67 name=left kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.258134,
+   "testHash":
+   "5d288ef357e8f9138a9dc6c2b5c07d13231d1185d69d76b9629f3b1f3f47002a",
+   "test": "Undecidability/alg-conv-trans-acc-right",
+   "runAt": "2026-08-13T23:30:14Z",
+   "maxRss": 9072640,
+   "instructions": 0,
+   "cpuTime": 0.256673,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/68 arena=941\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.070273,
+   "testHash":
+   "8c7230f54c8e24313abfa5099807eb022c370bfe6263eede53cff81e76603ae7",
+   "test": "Undecidability/alg-conv-trans-quot",
+   "runAt": "2026-08-13T23:30:15Z",
+   "maxRss": 8679424,
+   "instructions": 0,
+   "cpuTime": 0.060716,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=127\nFAIL decl 7 name=trans kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.062198,
+   "testHash":
+   "c8387a3afed2e56f02c6fa72842ffae229e746ddd56c43d5f187f326931c63f2",
+   "test": "Undecidability/alg-conv-trans-quot-left",
+   "runAt": "2026-08-13T23:30:15Z",
+   "maxRss": 8679424,
+   "instructions": 0,
+   "cpuTime": 0.060865,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=131\nFAIL decl 7 name=left kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.068402,
+   "testHash":
+   "e6d064a86aaa294f74b6ff1e1f497e2d733a785d7f63b56e62e089ce282bba5c",
+   "test": "Undecidability/alg-conv-trans-quot-left-def",
+   "runAt": "2026-08-13T23:30:15Z",
+   "maxRss": 8679424,
+   "instructions": 0,
+   "cpuTime": 0.067125,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/10 arena=160\nFAIL decl 9 name=left' kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.065937,
+   "testHash":
+   "3a204b87f313c03608cc7d60ac30393e7e9e6cbd12ba06aae42f2095cb63e7e1",
+   "test": "Undecidability/alg-conv-trans-quot-right",
+   "runAt": "2026-08-13T23:30:15Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.064632,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/9 arena=136\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.252758,
+   "testHash":
+   "a4a8857b94ca5408d7f946fd884e37659e4a42b9fa596edb932f179b4b16174d",
+   "test": "Undecidability/subject-reduction-redex",
+   "runAt": "2026-08-13T23:30:15Z",
+   "maxRss": 9072640,
+   "instructions": 0,
+   "cpuTime": 0.251256,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/67 arena=924\nFAIL decl 66 name=redex kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.249358,
+   "testHash":
+   "d90c378b8ebc8f724b1f3a98123f764dba67803fffc0c1fc3725c4485b7b0297",
+   "test": "Undecidability/subject-reduction-reduct",
+   "runAt": "2026-08-13T23:30:15Z",
+   "maxRss": 9072640,
+   "instructions": 0,
+   "cpuTime": 0.247901,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/66 arena=906\nFAIL decl 65 name=reduct kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.082389,
+   "testHash":
+   "3afa5781609d1cb0bb4e5f546b90afdea70746546d64b67c75c14f5327ca303f",
+   "test": "bogus1",
+   "runAt": "2026-08-13T23:30:15Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.080977,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/16 arena=143\nFAIL decl 15 name=thm kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.095716,
+   "testHash":
+   "2fa6a967f15f76cfdcea3ef1992ff31a4cc4aa647b0f8fabf0ff61eedb3afbf1",
+   "test": "constlevels",
+   "runAt": "2026-08-13T23:30:15Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.094272,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/20 arena=204\nFAIL decl 19 name=_test kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.108436,
+   "testHash":
+   "60107ed47bb826ca6589b49ca9b5c4bc53cdf064296c5439f380c6f174606963",
+   "test": "ctor-num-fields",
+   "runAt": "2026-08-13T23:30:16Z",
+   "maxRss": 8679424,
+   "instructions": 0,
+   "cpuTime": 0.10218,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/40 arena=465\nFAIL decl 18 name=_private.CtorNumFields.0.S kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 11.96357,
+   "testHash":
+   "31607aa90bae215efc3ffc8844454aaedd637ea9151e6810a72d917512e225cd",
+   "test": "init-prelude",
+   "runAt": "2026-08-13T23:30:16Z",
+   "maxRss": 35614720,
+   "instructions": 0,
+   "cpuTime": 11.958882,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/2096 arena=54599\nChecking decl 100/2096 arena=54599\nChecking decl 200/2096 arena=54599\nChecking decl 300/2096 arena=54599\nChecking decl 400/2096 arena=54599\nChecking decl 500/2096 arena=54599\nChecking decl 600/2096 arena=54599\nChecking decl 700/2096 arena=54599\nChecking decl 800/2096 arena=54599\nChecking decl 900/2096 arena=54599\nChecking decl 1000/2096 arena=54599\nChecking decl 1100/2096 arena=54599\nChecking decl 1200/2096 arena=54599\nChecking decl 1300/2096 arena=54599\nChecking decl 1400/2096 arena=54599\nChecking decl 1500/2096 arena=54599\nChecking decl 1600/2096 arena=54599\nChecking decl 1700/2096 arena=54599\nChecking decl 1800/2096 arena=54599\nChecking decl 1900/2096 arena=54599\nChecking decl 2000/2096 arena=54599\n",
+     "stderr": "",
+     "exitCode": 0}}},
+  {"wallTime": 0.083919,
+   "testHash":
+   "284cc4699109e9248a7f7a24eb4be57165f2b7a68d779564fff19d79b5dd5b53",
+   "test": "k-rec-conv",
+   "runAt": "2026-08-13T23:30:28Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.0825,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/16 arena=158\nFAIL decl 15 name=bad kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.05176,
+   "testHash":
+   "67e1483b38199e3860ffa19932d963d1b77a8931bbb028e88fa4f8efad8039d6",
+   "test": "large-elim-param",
+   "runAt": "2026-08-13T23:30:28Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.050508,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=34\nFAIL decl 5 name=MyBool kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.063881,
+   "testHash":
+   "497eaa80a214386c679356c33a72c8beab5019c4938494b1608e3772a2756191",
+   "test": "level-imax-leq",
+   "runAt": "2026-08-13T23:30:28Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.062525,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/11 arena=59\nFAIL decl 9 name=down kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.063387,
+   "testHash":
+   "d368d5569321b717b7ec95bd1f4fa5bbd7d6e1f8d6ebdf1a0644dc8bc76bc2ec",
+   "test": "level-imax-normalization",
+   "runAt": "2026-08-13T23:30:28Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.062153,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/12 arena=60\nFAIL decl 9 name=down kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.039061,
+   "testHash":
+   "7db8148079e2e8160a1a4c71258ad11b17ce18edfa84ab1e12eae937ec9538d1",
+   "test": "level-index-out-of-order",
+   "runAt": "2026-08-13T23:30:28Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.037836,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=1\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.066597,
+   "testHash":
+   "5a49d132bb0c7dca091baa481333f5e97e390fde72c8ec18c6124a690ec47d7c",
+   "test": "nat-rec-k-lie",
+   "runAt": "2026-08-13T23:30:28Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.065239,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/12 arena=67\nFAIL decl 10 name=k1 kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.072689,
+   "testHash":
+   "934e59fdc4f2a978605c4a44e90b94b57e9940f3828620c0db337b7125cdd169",
+   "test": "nat-rec-rules",
+   "runAt": "2026-08-13T23:30:28Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.071358,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/15 arena=92\nFAIL decl 12 name=Nat kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.077788,
+   "testHash":
+   "c6d241f55538da39ba94de889adb580fe2ec09e48d84d2cfcce432438c1b57c8",
+   "test": "nested-nonuniform-param",
+   "runAt": "2026-08-13T23:30:28Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.076381,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/14 arena=108\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.228411,
+   "testHash":
+   "459d2ebe68a15cefa7e7954284838f359228aed2e1712fcc5026958e3dd5d5f1",
+   "test": "nested-unused-param",
+   "runAt": "2026-08-13T23:30:28Z",
+   "maxRss": 8941568,
+   "instructions": 0,
+   "cpuTime": 0.226891,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/65 arena=814\nFAIL decl 60 name=E kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.043945,
+   "testHash":
+   "5d6999d3a780379e6401549e6d4f8d930a0768bb789d1a7f827acfea59b2e4b7",
+   "test": "proj-no-constructors",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.042615,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/3 arena=12\nFAIL decl 2 name=d kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.065837,
+   "testHash":
+   "9b5d03924f6130db36eb1c271ed522951d193357e9a911cedc23fda570d8bbe5",
+   "test": "proj-non-structure",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.064546,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/10 arena=48\nDIAG decl 9 name=bad kind=2 r=2 peak=48 delta=0 fuel=5 infer_u=5 deq_full=0 deq_one=0 cong_hit=0 cong_ft=0 ld_iter=0 whnf_nd=0 dfull{app=0,lf=0,prj=0,pi=0,eta=0,lf=0,ee=0,pr=0} tags=[0,0,3,1,0,0,0,0,1,0,0,0,0,0,0,0]\n",
+     "stderr": "",
+     "exitCode": 2}}},
+  {"wallTime": 0.062585,
+   "testHash":
+   "737a4d14b57adf37c7eb59c94018e453300b87c0625ee32e910d49e552d5ec8f",
+   "test": "proj-of-prop",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.061273,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/9 arena=35\nDIAG decl 8 name=badFalse kind=2 r=2 peak=36 delta=1 fuel=8 infer_u=7 deq_full=1 deq_one=1 cong_hit=0 cong_ft=0 ld_iter=1 whnf_nd=2 dfull{app=0,lf=0,prj=0,pi=0,eta=0,lf=1,ee=0,pr=0} tags=[0,1,4,1,0,0,0,0,1,0,0,0,0,0,0,0]\n",
+     "stderr": "",
+     "exitCode": 2}}},
+  {"wallTime": 0.054484,
+   "testHash":
+   "ef67b9f2297fc2e246f7d60cfdb684104c6d5bf81a464c96d97ed2af13e7f618",
+   "test": "proof-irrel",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.053297,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/7 arena=17\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.066033,
+   "testHash":
+   "bcf607c99f228e1e7a7f13e4393640bd514cf1b753ad7f7a8385df481700a44f",
+   "test": "rec-k-lie",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.064675,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/11 arena=49\nFAIL decl 10 name=bad kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.039057,
+   "testHash":
+   "3279c9c8ae24d5b3a8433ddee5d4a421c4e15e3cd84117fb4873d1284112b96d",
+   "test": "sparse-name-index",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.037819,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=5\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039204,
+   "testHash":
+   "9b4720411de75cf2f1984b41b7efa3f61b5dddd2b18117d754595e11045b2dcd",
+   "test": "tutorial/001_basicDef",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.037931,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038097,
+   "testHash":
+   "4fa02b3f6d6d268b83d29d296813706490a067b5a51ecd82b5b97084dd78b3ef",
+   "test": "tutorial/002_badDef",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.036763,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\nFAIL decl 0 name=badDef kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.039661,
+   "testHash":
+   "c65bb7b5b1dd02ccead20d7778eb6a39118af6bf32fb78657aa2f1a1dda19fc0",
+   "test": "tutorial/003_arrowType",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038395,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=3\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040119,
+   "testHash":
+   "a532338b0f77acce5199a2ddf45602e02cb7df55b87c34b58b9f2053708f96ad",
+   "test": "tutorial/004_dependentType",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038753,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=3\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040563,
+   "testHash":
+   "f9302f8a939ab86641aadeabc65daadb70510496539f414ca4092d07721107d4",
+   "test": "tutorial/005_constType",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.039177,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=6\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.042851,
+   "testHash":
+   "917ad6ed04a6d2ec21d8918074cc3733cd4e0fefdf63c91ba38ea9f496b7c7b6",
+   "test": "tutorial/006_betaReduction",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.041565,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/2 arena=13\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.041909,
+   "testHash":
+   "87feff94585d32a342a8c7626a72ffc1de7afb339b390b1daade86473b7f6ff7",
+   "test": "tutorial/007_betaReduction2",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.040706,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/2 arena=14\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.041993,
+   "testHash":
+   "455555a7ca3428357fd4b9497a09ef5f5f788024b2af1ecb78e62a838719fe81",
+   "test": "tutorial/008_forallSortWhnf",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.040796,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/2 arena=13\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.041332,
+   "testHash":
+   "be8a3309d6afe002961bc7ad5e5f709155a8985d79c285dbc5293c3a9c5555d0",
+   "test": "tutorial/009_forallSortBad",
+   "runAt": "2026-08-13T23:30:29Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.039941,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/2 arena=14\nFAIL decl 1 name=forallSortBad kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.041221,
+   "testHash":
+   "cd0246d4e804febefc482d4839132f230fabd2667521078ffdee6a1a78e7c9ae",
+   "test": "tutorial/010_nonTypeType",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.039879,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/2 arena=8\nFAIL decl 1 name=nonTypeType kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.038504,
+   "testHash":
+   "2fa5b4ccebdf32dec5ecfcf123c66bb3ec2388e1143d8fb0cbb736cf7ece4677",
+   "test": "tutorial/011_nonPropThm",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.037082,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/1 arena=3\nFAIL decl 0 name=nonPropThm kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.039186,
+   "testHash":
+   "3e1934fc665dae8fe955e2e61a7b6f5abded0e4cd7978be713a0fadfeb1dfd8d",
+   "test": "tutorial/012_levelComp1",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.037893,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040041,
+   "testHash":
+   "d8c794c6b7ca062141336eca1c03a96915f4fecc7c9d12540029f5ea1b416af3",
+   "test": "tutorial/013_levelComp2",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038695,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039397,
+   "testHash":
+   "3a174f4f56f6386f1f9da2af081be50bba164bbfecec7ea5c3ea55129c8a81ca",
+   "test": "tutorial/014_levelComp3",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038161,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.042541,
+   "testHash":
+   "b19c61df8a139ca0dd34076c8dfc6046cfdce8eae1ffaf95032b0cd932fa046d",
+   "test": "tutorial/015_levelParams",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.04126,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/2 arena=13\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.03811,
+   "testHash":
+   "2d57940c408e7f9fe1fe4698ef416a4529c2bbf35226cdfc382fb1fd72018a81",
+   "test": "tutorial/016_tut06_bad01",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8417280,
+   "instructions": 0,
+   "cpuTime": 0.036841,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/1 arena=2\nFAIL decl 0 name=tut06_bad01 kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.039225,
+   "testHash":
+   "d456a54bed6b47a3610f464ac841464b056a3cfcca00d890abf56238a23f2f49",
+   "test": "tutorial/017_levelComp4",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.037973,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039564,
+   "testHash":
+   "6f18d0eb2f622168f9574b8626df08ab1452a4b37d5261a4179cc91f1d3b9dd6",
+   "test": "tutorial/018_levelComp5",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038316,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039627,
+   "testHash":
+   "dccf830f3f535843d6fc5457798fe2e71567dce08ffea502690bb3caec1f90da",
+   "test": "tutorial/019_imax1",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038373,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=6\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039905,
+   "testHash":
+   "d18695678726f8faea3965cf292e3b22bc55f19253cfad3841e0e41afb5e9811",
+   "test": "tutorial/020_imax2",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038614,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=6\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039403,
+   "testHash":
+   "ef5cf69b0e07509f8c929fd0d36ed56ddd713ae9057db3845c89061bf605735f",
+   "test": "tutorial/021_levelMaxComm",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038164,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039448,
+   "testHash":
+   "1905fce871a1c0c6f3ed06045e9ea8e858ce95219fed7a92c0ce3ebbd8460bb2",
+   "test": "tutorial/022_levelMaxAssoc",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038189,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039375,
+   "testHash":
+   "35d42b0d640b72b675fd58ce303a8d77165d0f9f175f52a0facd3ab6ad5a529b",
+   "test": "tutorial/023_levelMaxIdem",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.03811,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039129,
+   "testHash":
+   "0105973893d99d77a4a75400221fb11f94d8155756f364dad21992c443f3b54e",
+   "test": "tutorial/024_levelMaxAbsorb",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.03791,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=2\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039356,
+   "testHash":
+   "8a50aae9e78654da18f53c22e8e526c0592467c4646206dd86d574685da833ca",
+   "test": "tutorial/025_inferVar",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038171,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=7\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039411,
+   "testHash":
+   "3c9ace5c0707b3f88b3e2eee1c8e7dbf1f3cee3d0f136788af18dc6616946fa6",
+   "test": "tutorial/026_defEqLambda",
+   "runAt": "2026-08-13T23:30:30Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.038195,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=15\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.05606,
+   "testHash":
+   "d1679688a7bc1d17190b7278610cac251f883d3d67b9cc25c28ca90a7d56bb13",
+   "test": "tutorial/027_peano1",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.054796,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/7 arena=41\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.05974,
+   "testHash":
+   "44265e719dd1ac1e2b820bc811a6e8b86b8bb5db9dddc5dff70e1d5ac95d360c",
+   "test": "tutorial/028_peano2",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.058286,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=55\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.064763,
+   "testHash":
+   "ddd2b20690e42090512c4009f0600e9d4bfb2375117424f5ae13368c1bd12095",
+   "test": "tutorial/029_peano3",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.063448,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/10 arena=59\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039136,
+   "testHash":
+   "95af90f61a0cdd1cd11c4fcefdf6dcf8c7f65012f32ff96ddb4ca67586d32d92",
+   "test": "tutorial/030_letType",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.037928,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/1 arena=4\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.044895,
+   "testHash":
+   "935322137edf7df798477f519b431066a78bb4ee9435ab40f77b1a39298bee7f",
+   "test": "tutorial/031_letTypeDep",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.043599,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/3 arena=11\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.042037,
+   "testHash":
+   "72ff543dfca0b565fd33e572eab9dbac712f0781a948a042c483be4a3d22a85d",
+   "test": "tutorial/032_letRed",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.040713,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/2 arena=5\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.045012,
+   "testHash":
+   "aeca21d99fd23ba54e402ff893193a9af5d97e40c10abc91b049cf1db84b182d",
+   "test": "tutorial/033_empty",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.043764,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/3 arena=9\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.050875,
+   "testHash":
+   "4bcb0446f106e02779d705c2aefc5377c482761dd24b18ed91078635e7f7a2a5",
+   "test": "tutorial/034_boolType",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.049575,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=22\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.059367,
+   "testHash":
+   "597db81df0c5fc9543cfee5ffaef92858de74a387554be9f972f6981759ebafd",
+   "test": "tutorial/035_twoBool",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.058065,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=43\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.048921,
+   "testHash":
+   "2352361f19889fabc7b37aa54427b59f195c7326d457d7a3a4b6feb7259ee88b",
+   "test": "tutorial/036_andType",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.047678,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=41\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.049391,
+   "testHash":
+   "cf0f8fbd53e3445e0648abc8ad9bc04890581fd60e556ca4bb6e8f259c141784",
+   "test": "tutorial/037_prodType",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.048109,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=47\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.049194,
+   "testHash":
+   "41b9469ff2506f3eeb1301a4235e709eff9dede604a81cd0a5979113880ca368",
+   "test": "tutorial/038_pprodType",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.047955,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=47\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.047315,
+   "testHash":
+   "f7de9b8ea31b1d13dd88bc99684d7bda7a602a85d2d81864ba12ba1cd2cf5bbe",
+   "test": "tutorial/039_pUnitType",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.046054,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=16\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.048658,
+   "testHash":
+   "5b6a2af4b38f04d7bb6f131fe5da25398bf36736511c9b1ab057df53bd6a2978",
+   "test": "tutorial/040_eqType",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.047432,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=42\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.051042,
+   "testHash":
+   "f5106e58cf3a7f3d9ce09ab6abae929216b27e8eb93759bf0f20be51dca2238f",
+   "test": "tutorial/041_natDef",
+   "runAt": "2026-08-13T23:30:31Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.049791,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=36\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.084162,
+   "testHash":
+   "250db1ea3ca118bd37bcde714d5ef806675f6d92cbeefbbd10c7d70dc84c6175",
+   "test": "tutorial/042_rbTreeDef",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8810496,
+   "instructions": 0,
+   "cpuTime": 0.082847,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/14 arena=248\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040515,
+   "testHash":
+   "5f8045064c59efbea868584ef45a87a6e3cd04082505f81b6fcc53c730084e21",
+   "test": "tutorial/043_inductBadNonSort",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.039206,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/2 arena=7\nFAIL decl 1 name=inductBadNonSort kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.040071,
+   "testHash":
+   "5cd812862732a3497e5c1b243a10da52bd3c54dde659dc955b39181aef94bdd0",
+   "test": "tutorial/044_inductBadNonSort2",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.03883,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/2 arena=2\nFAIL decl 1 name=inductBadNonSort2 kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.037959,
+   "testHash":
+   "2e75a37b9c0660606341f38c2cea53242c3070fe9ec09a5454d07487cbdbb6b3",
+   "test": "tutorial/045_inductLevelParam",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8417280,
+   "instructions": 0,
+   "cpuTime": 0.0367,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/1 arena=1\nFAIL decl 0 name=inductLevelParam kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.037671,
+   "testHash":
+   "ff14a4e714e586726a6537e6171e894cc9ece0279ca9cf42e1bacdc02943b36f",
+   "test": "tutorial/046_inductTooFewParams",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8417280,
+   "instructions": 0,
+   "cpuTime": 0.036393,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/1 arena=2\nFAIL decl 0 name=inductTooFewParams kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.045716,
+   "testHash":
+   "6fb9d2b1a02dead8868c3911cfa3f2e773408500d730f263765d52d8750a1fbd",
+   "test": "tutorial/047_inductWrongCtorParams",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.044433,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/4 arena=7\nFAIL decl 3 name=inductWrongCtorParams kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.043753,
+   "testHash":
+   "b23f215e9ee3f271436f3fd5f8ab0233603921bdfcc91c9547ec285685db0559",
+   "test": "tutorial/048_inductWrongCtorResParams",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.042419,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/3 arena=11\nFAIL decl 2 name=inductWrongCtorResParams kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.043428,
+   "testHash":
+   "771ed35e55437a35f8733538fc3e3071daa45d8e4612622c8775762339a86e11",
+   "test": "tutorial/049_inductWrongCtorResLevel",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.042118,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/3 arena=11\nFAIL decl 2 name=inductWrongCtorResLevel kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.045763,
+   "testHash":
+   "4b0882c1994a997c7cc59f79adf206fccb6c919b01fdecdb5f05bcb3149a7679",
+   "test": "tutorial/050_inductInIndex",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.044513,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/4 arena=6\nFAIL decl 3 name=inductInIndex kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.042874,
+   "testHash":
+   "d8df2fa38b8955f492aa8c94042776bf22a7f845259c76359f5a82216e67dffc",
+   "test": "tutorial/051_indNeg",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.041606,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/3 arena=5\nFAIL decl 2 name=indNeg kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.051627,
+   "testHash":
+   "f6bd2c9ae655703faff57dae829c54515ed2cb9ad847f44f632b112d69c63a77",
+   "test": "tutorial/052_reduceCtorParam.mk",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.050416,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=54\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.045448,
+   "testHash":
+   "b2664c4a1bdcf51b8cf21f728b3ebcc1635fc4899642ceb04cd3e2e1e1b35da1",
+   "test": "tutorial/053_reduceCtorType.mk",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.044178,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/4 arena=13\nFAIL decl 3 name=reduceCtorType kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.049373,
+   "testHash":
+   "3f199422717f3987ee067456b23baf79b60cdf234e1b815f8130ea5a67b11481",
+   "test": "tutorial/054_indNegReducible",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.048051,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/5 arena=14\nFAIL decl 4 name=indNegReducible kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.047999,
+   "testHash":
+   "f32bd27364044f967e59a1ae5973e0d986bc7850c66f603bba44bb4870154b57",
+   "test": "tutorial/055_predWithTypeField",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.046722,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=20\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.047998,
+   "testHash":
+   "476745e0a33933240e68b15262ede789db21fba9ff79632dd4fcb9c9d3798909",
+   "test": "tutorial/056_typeWithTypeField",
+   "runAt": "2026-08-13T23:30:32Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.046766,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=21\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.048304,
+   "testHash":
+   "e66624dff231e2a774846f7843c42615c8209487a15d22f7f98bbb791b4ad593",
+   "test": "tutorial/057_typeWithTypeFieldPoly",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.046997,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=21\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.043693,
+   "testHash":
+   "230cf7872ad10d636d3a297e5eb8c60efe98616f8fd60a33534c57ddeb11f6d3",
+   "test": "tutorial/058_typeWithTooHighTypeField.mk",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.042357,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/3 arena=4\nFAIL decl 2 name=typeWithTooHighTypeField kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.045455,
+   "testHash":
+   "edd9fe8dde69997bb4ce2a9402e953fca00600bdcc9221d4ee4793cd9b7a6dea",
+   "test": "tutorial/059_emptyRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.044102,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/3 arena=10\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.05409,
+   "testHash":
+   "1872d144e038899f0ed5a6cc3a09069f473deb7f1db67fee7db54bad34add9e5",
+   "test": "tutorial/060_boolRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.052731,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=32\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.058998,
+   "testHash":
+   "4d89fed6a8fbf32770f0734ea0f8951c39f90e075f4d579f5c1210188a622a23",
+   "test": "tutorial/061_twoBoolRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.057751,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=50\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.048714,
+   "testHash":
+   "0c384a0473a2f7b04639f3af75a3576f11997c101053c34e15f72892774226f1",
+   "test": "tutorial/062_andRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.047425,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=42\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.049368,
+   "testHash":
+   "e06fac4c4a81c73aea250bebb7da7a4372204e6066ba04113bb411fbbd7a0319",
+   "test": "tutorial/063_prodRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.048052,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=49\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.049073,
+   "testHash":
+   "869983c7b9b70c3f97dd52540b0a14f8a92b18c1bbdebc54df03e6764c1c82cc",
+   "test": "tutorial/064_pprodRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.047842,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=48\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.047654,
+   "testHash":
+   "a0959eae42fcbfe77dd08f2c35b3b4c82c7a28ce9d48b464c5f1499bd13a696a",
+   "test": "tutorial/065_punitRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.046388,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=18\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.048069,
+   "testHash":
+   "b64ce27198ba64ebc2aff367cae9da915558580b685da40ac713b9e5990c0038",
+   "test": "tutorial/066_eqRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.04679,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=43\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.051239,
+   "testHash":
+   "195779513a7988b86dcbb446b047c04cbbe263a6528420a00b62d7fcfff57cc0",
+   "test": "tutorial/067_nRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.050018,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=36\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.085034,
+   "testHash":
+   "0e0ccc56c0d33ba52bd32784660681cc0244161d8f8cbc10bbe30598fc53adcf",
+   "test": "tutorial/068_rbTreeRef",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8941568,
+   "instructions": 0,
+   "cpuTime": 0.083736,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/14 arena=254\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.050601,
+   "testHash":
+   "08c88cb6fdfa6e158f996b51a055df21e9773468fa3f0089208f5f1ea6fd2ba8",
+   "test": "tutorial/069_boolPropRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.049321,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=22\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.048656,
+   "testHash":
+   "da50162708d82a9128f4258b2900cdb1c0acaba525f7e2457ba449d73de4e331",
+   "test": "tutorial/070_existsRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.047436,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=45\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.060555,
+   "testHash":
+   "fdcb1f6d72894fbfc032e74875acdd0c7c06362e8c3ab506104234aaa9e375f1",
+   "test": "tutorial/071_sortElimPropRec",
+   "runAt": "2026-08-13T23:30:33Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.059232,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=69\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.063272,
+   "testHash":
+   "643e31d8be5610e52862ecc77f3546e1d9adc035b15e57510f0827d0e98a9efd",
+   "test": "tutorial/072_sortElimProp2Rec",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.062008,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/9 arena=83\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.070873,
+   "testHash":
+   "ae5a724a4c39396dd496e39d317b6b8643c0d1f26dd1228458973d55ef2ec0ce",
+   "test": "tutorial/073_boolRecEqns",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.069608,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/11 arena=133\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.060609,
+   "testHash":
+   "b7a5475de59aa4f01a62061b5c45d340b249acbcc3132f08a7d79f19d9b2fd16",
+   "test": "tutorial/074_prodRecEqns",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.059328,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/7 arena=127\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.077226,
+   "testHash":
+   "ffbad4b748313ec8cece6951470227b6c8a9086f555edbc6982765f66f340f41",
+   "test": "tutorial/075_nRecReduction",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.0759,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/13 arena=170\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.083923,
+   "testHash":
+   "83ef251e0223130e3f9a40e43adcd377ec6cec9c7c81d084d0006811454abcdb",
+   "test": "tutorial/076_listRecReduction",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 8679424,
+   "instructions": 0,
+   "cpuTime": 0.082623,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/14 arena=256\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.122774,
+   "testHash":
+   "6d79b84ec866e2864f8cbe4d3d9488b37f7d1ac0679a58637454c8e5155359f1",
+   "test": "tutorial/077_RBTree.id_spec",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 9334784,
+   "instructions": 0,
+   "cpuTime": 0.121429,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/19 arena=878\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.052495,
+   "testHash":
+   "816fd3b17663e3cf01e19af33a12063273c469a04d25335024bbf6df8069e83b",
+   "test": "tutorial/078_And.right",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.05119,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=55\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.052381,
+   "testHash":
+   "c354e09ec5a4d42d454577721198bd716f7d317bc6d88a5bf0241d962c735f0d",
+   "test": "tutorial/079_Prod.snd",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.051103,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=57\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.052768,
+   "testHash":
+   "9dd17baa676311b5931e5ea327e5a4244a5395bf1be200c1ef826aab8c55adce",
+   "test": "tutorial/080_PProd.snd",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.051445,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=57\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.052779,
+   "testHash":
+   "f7850b3456c472a5a8f73d3fb5e03a73f7ad6ddfaec73a454290dde0e1870d92",
+   "test": "tutorial/081_PSigma.snd",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.051492,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=65\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.047731,
+   "testHash":
+   "39861a0f5a06dc560bd69ba36b5c4d790fca8cf9586f1829852881529b266620",
+   "test": "tutorial/082_projOutOfRange",
+   "runAt": "2026-08-13T23:30:34Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.046465,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/4 arena=48\nFAIL decl 3 name=projOutOfRange kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.050397,
+   "testHash":
+   "da689648e368e9463d1aa387c61de8b60f690a9a2a3d0943df41f921d70e12f1",
+   "test": "tutorial/083_projNotStruct",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.049053,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/5 arena=38\nFAIL decl 4 name=projNotStruct kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.066769,
+   "testHash":
+   "daec5faf9346a59480a09fae68ee6dddf0b17c2c5196f294ab2e208bc383421a",
+   "test": "tutorial/084_projProp1",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.065499,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/10 arena=103\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.06615,
+   "testHash":
+   "fd648e2fb0c904b62b17369289f732bb9a6b99bd784397ca2f1366d8daf59a5a",
+   "test": "tutorial/085_projProp2",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.064745,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/10 arena=103\nFAIL decl 9 name=projProp2 kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.067599,
+   "testHash":
+   "08ab389c47971af67e9aece73b9a38c65a45960efbffc31287fa7500f699158a",
+   "test": "tutorial/086_projProp3",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.066233,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/10 arena=103\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.065918,
+   "testHash":
+   "fb3c7bd7c94c68d2c824445a2449ab8b461284999db129e0c3591e30bbaed787",
+   "test": "tutorial/087_projProp4",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.064582,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/10 arena=103\nFAIL decl 9 name=projProp4 kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.075178,
+   "testHash":
+   "b10e32c455900b4245c600cb83457cb3136eed1e0cd16bbf4e448d56d4de18b2",
+   "test": "tutorial/088_projProp5",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8417280,
+   "instructions": 0,
+   "cpuTime": 0.064903,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/10 arena=108\nFAIL decl 9 name=projProp5 kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.066385,
+   "testHash":
+   "2fb380b9d4634983d6259b1e7777e4a2385e6c96ce6f088f85e14f6c7b19a1da",
+   "test": "tutorial/089_projProp6",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.065022,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/10 arena=103\nFAIL decl 9 name=projProp6 kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.068138,
+   "testHash":
+   "a7fc349a61b879b6e500bc267c04fdb37aab598b4cbe37eb3ff2906877db3a2c",
+   "test": "tutorial/090_projDataIndexRec",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.066843,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/11 arena=72\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.067169,
+   "testHash":
+   "bae14a3a4b083fb76d540394399f7b73e0f06d02600a9bf3eb16d44d7c94a9ef",
+   "test": "tutorial/091_projIndexData",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.065872,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/11 arena=72\nFAIL decl 10 name=projIndexData kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.066922,
+   "testHash":
+   "3b20d5b38828c897c0f158c45ebc8dd0c2717c9357ebcd91b3c44acc0af42633",
+   "test": "tutorial/092_projIndexData2",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.065611,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/11 arena=72\nFAIL decl 10 name=projIndexData2 kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.075269,
+   "testHash":
+   "dcde4705f5e725d29c29727f607a655d708301bd8b95aa07fe1be2c3566d1e4d",
+   "test": "tutorial/093_projRed",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.074011,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/13 arena=131\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.06129,
+   "testHash":
+   "9099eedc1eaf6249f6520bcbe37132f192f46b882b3ee24b00a79fea4a2d4f72",
+   "test": "tutorial/094_ruleK",
+   "runAt": "2026-08-13T23:30:35Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.059904,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=83\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.059949,
+   "testHash":
+   "4993ecb719ee39c687fc744432813169a72376af4ae1f74bb138f78601f43eb0",
+   "test": "tutorial/095_ruleKbad",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.058571,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=83\nFAIL decl 7 name=ruleKbad kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.072455,
+   "testHash":
+   "2e767c41662cbffadfdc09b03f43a17519d99020c6c1b08ab5a21bec38846973",
+   "test": "tutorial/096_ruleKAcc",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.071003,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/11 arena=180\nFAIL decl 10 name=ruleKAcc kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.051359,
+   "testHash":
+   "4d45203e545d1851179a88ac7e8d9615597d59ac95e881a59f1c9a1fec5a2f3b",
+   "test": "tutorial/097_aNatLit",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.050034,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=37\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.060679,
+   "testHash":
+   "3bcc6a8707d8e8f5196fe05a5c529fdc08573b3d3f98df918bb1664d280fa965",
+   "test": "tutorial/098_natLitEq",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.059438,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=84\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.05206,
+   "testHash":
+   "15c9e3201b2054008fb336ec7f861d09529a15daff7a81d0dbd81381fc054e34",
+   "test": "tutorial/099_proofIrrelevance",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.050853,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=66\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.050385,
+   "testHash":
+   "8b2fb79631781d7727ec0c19e6bcea5e424846668246780e42177698b09879aa",
+   "test": "tutorial/100_proofIrrelevanceBad",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.04914,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/5 arena=67\nFAIL decl 4 name=proofIrrelevanceBad kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.054799,
+   "testHash":
+   "8a20d5c89d082411ad0c0a9873d3d2c2f867bd6e4ae973c898b11e8fbaadf383",
+   "test": "tutorial/101_proofIrrelevanceWhnf",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.053577,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/6 arena=74\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.07334,
+   "testHash":
+   "d25f7fd6e651ae523d9f98b1510a938b13030e698f1612a70011ec54e02f43c9",
+   "test": "tutorial/102_unitEta1",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.061646,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/9 arena=77\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.06021,
+   "testHash":
+   "72aed1db8c9c30b32bb0fc97db4e2eadfe42068646fde72c286a3a606273f0c9",
+   "test": "tutorial/103_unitEta2",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.058947,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=73\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.060493,
+   "testHash":
+   "4aa5359a46ff775ceefca10bf976f2d2bde1a0a43804903b7d95752b83c9bfc8",
+   "test": "tutorial/104_unitEta3",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.059226,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=75\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.077752,
+   "testHash":
+   "00aab3d02b33905d6a04f96cf599e5bebf42df7060ae21bdbfc95641d370528a",
+   "test": "tutorial/105_structEta",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.07653,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/13 arena=173\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.052377,
+   "testHash":
+   "9db5f705f222d1a6d11bc939b0a8a0ebea0c56b95f055de64181e427e55270a4",
+   "test": "tutorial/106_funEta",
+   "runAt": "2026-08-13T23:30:36Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.051157,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=71\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.052593,
+   "testHash":
+   "1fbc8156dc13eb0cc55cf82bdfac4ec6c113152a644f7a053db096cccbcecbe0",
+   "test": "tutorial/107_funEtaDep",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.051284,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=73\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.049401,
+   "testHash":
+   "7b83baa4990e537283ff5fdf48e29a933451a3fa04c1efe3cbef4daf20db49d7",
+   "test": "tutorial/108_funEtaBad",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.048074,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/4 arena=64\nFAIL decl 3 name=funEtaBad kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.060129,
+   "testHash":
+   "051bd3bfaf1ed4bf087b555e47fca226b3e3d9f4a51e6d44a38c50be214e8fc5",
+   "test": "tutorial/109_etaRuleK",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.058734,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=85\nFAIL decl 7 name=etaRuleK kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.077613,
+   "testHash":
+   "18dbd91b1b31cf31ac9a7567d518b4a05c80ae3e9acdbde7e235494c0cad2f87",
+   "test": "tutorial/110_etaCtor",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.076333,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/15 arena=104\nFAIL decl 14 name=etaCtor kind=1\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.055561,
+   "testHash":
+   "085b4d12540c2443e05737d61d35d525d1b77acc26590ea8ecdb98a03a1e9264",
+   "test": "tutorial/111_reflOccLeft",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.054258,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/7 arena=41\nFAIL decl 6 name=reflOccLeft kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.055396,
+   "testHash":
+   "ad28fe77b69634dd175e7ef14806ff163231682c4a50511fd7839bd53ebf0a13",
+   "test": "tutorial/112_reflOccInIndex",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.054035,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/7 arena=45\nFAIL decl 6 name=reflOccInIndex kind=5\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.052354,
+   "testHash":
+   "667d5576fee6ad3c1e2d1a10c17d32e4e4c6ce507ccfdb1eea18f9ceb5f37f3a",
+   "test": "tutorial/113_reduceCtorParamRefl.mk",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.051097,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=62\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.052173,
+   "testHash":
+   "74f14920fb538c4a82bb26de1cbb6419532bde44adfa4ffdff1d03573c30b9e6",
+   "test": "tutorial/114_reduceCtorParamRefl2.mk",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.050944,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/5 arena=62\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.062559,
+   "testHash":
+   "fe8f0ae247f2335b297fae502aeb90389365b8a36957de1a1d5c15abee87f6c8",
+   "test": "tutorial/115_rTreeRec",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.06127,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/9 arena=60\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.078855,
+   "testHash":
+   "7182ca520a6e748a77b18b3a89563016c6bad8ae6b71b776a6a65cb56e70f94e",
+   "test": "tutorial/116_rtreeRecReduction",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.07742,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/14 arena=134\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.052542,
+   "testHash":
+   "d005e5c8553aa9dec969d57c8fe11571f1afa01a02503cd74b4035d702da90de",
+   "test": "tutorial/117_accRecType",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.051205,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/4 arena=124\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.073836,
+   "testHash":
+   "0771ea6066a9f2cc8e0da8afb05d4a08dafaf824f7f271d460a65c66f980807b",
+   "test": "tutorial/118_accRecReduction",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8679424,
+   "instructions": 0,
+   "cpuTime": 0.072549,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/11 arena=193\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.072267,
+   "testHash":
+   "8e8701197117507aee75ab471d6646b4eda62175765b22bf39deaf3bb5c52349",
+   "test": "tutorial/119_accRecNoEta",
+   "runAt": "2026-08-13T23:30:37Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.070866,
+   "attempt":
+   {"ran":
+    {"stdout":
+     "Checking decl 0/11 arena=186\nFAIL decl 10 name=accRecNoEta kind=2\n",
+     "stderr": "",
+     "exitCode": 1}}},
+  {"wallTime": 0.06035,
+   "testHash":
+   "78e223734d9bc029066557de2c59e1f7c07853d079f15c83da9e0dbdb6cdf10b",
+   "test": "tutorial/120_quotMkType",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.059,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=87\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.060754,
+   "testHash":
+   "9bb95ecda565cbeb86dd02af9a6f97ed4473b758770c3128bb8d12e44093f989",
+   "test": "tutorial/121_quotIndType",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.059426,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=88\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.060705,
+   "testHash":
+   "e6fa185b3b9d8a4b705bde742843503b7d48d93f6ed840abd84d92a335d1337b",
+   "test": "tutorial/122_quotLiftType",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.059327,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=88\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.063311,
+   "testHash":
+   "e3bf86a52a2bd0af74954b6697c8272925bff7bc897506d6f5e5b3bd285ad356",
+   "test": "tutorial/123_quotSoundType",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.062031,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/9 arena=103\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.062405,
+   "testHash":
+   "8f50aec5908894bc31417ea8bba04c4cf134d1e2baad9618faf4fec6ad86c49d",
+   "test": "tutorial/124_quotLiftReduction",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.061071,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=116\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.062169,
+   "testHash":
+   "22832bbe4b1ba04b3e6b14d4a66dc9b14a0cfa5026dbf16fdeb4ac1f7d8261e7",
+   "test": "tutorial/125_quotIndReduction",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8548352,
+   "instructions": 0,
+   "cpuTime": 0.06087,
+   "attempt":
+   {"ran":
+    {"stdout": "Checking decl 0/8 arena=115\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038222,
+   "testHash":
+   "cbbf2da76b53c6ce5aa483e0718bb281d3dbb069831f952ba5af9106e0c95e44",
+   "test": "tutorial/126_dup_defs",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8232960,
+   "instructions": 0,
+   "cpuTime": 0.036873,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "error: duplicate or invalid declaration metadata\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.03894,
+   "testHash":
+   "30d3de7a522544af09336b9542a07e52ffad061fd0ec1768a34cb6e4274eb7f2",
+   "test": "tutorial/127_dup_ind_def",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8232960,
+   "instructions": 0,
+   "cpuTime": 0.03756,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "error: duplicate or invalid declaration metadata\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038708,
+   "testHash":
+   "a8ecafeec2d05bddc73ea43cb24839084bef92cd2a27e193ec226e7ae4a5c4d2",
+   "test": "tutorial/128_dup_ctor_def",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8232960,
+   "instructions": 0,
+   "cpuTime": 0.037445,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "error: duplicate or invalid declaration metadata\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038716,
+   "testHash":
+   "2da5e23f99b9373624dc2991e22e9e48b536953c94950c8433f6c134c3bf0ab0",
+   "test": "tutorial/129_dup_rec_def",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8232960,
+   "instructions": 0,
+   "cpuTime": 0.03747,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "error: duplicate or invalid declaration metadata\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038789,
+   "testHash":
+   "b8303345c6bfc735e3b90d65c2ccb0a7c985804f559e20d7167a95e7b77c7a1c",
+   "test": "tutorial/130_misnamed_rec_user",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8232960,
+   "instructions": 0,
+   "cpuTime": 0.037523,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "error: duplicate or invalid declaration metadata\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038843,
+   "testHash":
+   "70e8da9988afacdf82438d5d6be3309cb5fc52f87d0a38a31d5c3e3fde8e4a14",
+   "test": "tutorial/131_dup_rec_def2",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8232960,
+   "instructions": 0,
+   "cpuTime": 0.037537,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "error: duplicate or invalid declaration metadata\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038977,
+   "testHash":
+   "d5f472e0819f3fbb060e78061260435cd4ffbae118feb7017247cfe69b990567",
+   "test": "tutorial/132_dup_ctor_rec",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8232960,
+   "instructions": 0,
+   "cpuTime": 0.037647,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "error: duplicate or invalid declaration metadata\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.03924,
+   "testHash":
+   "aca3992a0067b8c24422ee1d3e70362defd1f2a5f46e15a8244a961c67ade4c0",
+   "test": "tutorial/133_DupConCon",
+   "runAt": "2026-08-13T23:30:38Z",
+   "maxRss": 8232960,
+   "instructions": 0,
+   "cpuTime": 0.03794,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "error: duplicate or invalid declaration metadata\n",
+     "exitCode": 1}}}],
+ "checker": "vow-lean-kernel"}
