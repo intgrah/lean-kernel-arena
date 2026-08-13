@@ -1,0 +1,1981 @@
+{"runner": "github-Linux",
+ "revision": "v4.32.2",
+ "recipeHash": "dd3fe91ff7ff8f9c",
+ "entries":
+ [{"wallTime": 5.049354,
+   "testHash":
+   "1e8955573ebf50103a568e511f08105fe113030cfae99443e7eb5b5847a5a2b5",
+   "test": "Perf/app-lam",
+   "runAt": "2026-08-13T23:23:49Z",
+   "maxRss": 1495609344,
+   "instructions": 0,
+   "cpuTime": 5.036461,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 35 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 2.199213,
+   "testHash":
+   "4289c668fe85a9752b83aad6efd8732dc91936ffdba0844ca5832fe09aaea471",
+   "test": "Perf/grind-ring-5",
+   "runAt": "2026-08-13T23:23:54Z",
+   "maxRss": 241471488,
+   "instructions": 0,
+   "cpuTime": 2.196262,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 2519 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.051746,
+   "testHash":
+   "82b18d3d18d80eadb23cdb7bdd36258d8d4612c33f48cd6e31d334022f6800dc",
+   "test": "Perf/shift-cascade",
+   "runAt": "2026-08-13T23:23:56Z",
+   "maxRss": 69537792,
+   "instructions": 0,
+   "cpuTime": 0.050226,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 10 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.044991,
+   "testHash":
+   "5483cd552ced28c2d47b8a547106c2ac7105a19d5907707d3b122799a3f30124",
+   "test": "Undecidability/alg-conv-trans-acc",
+   "runAt": "2026-08-13T23:23:56Z",
+   "maxRss": 70062080,
+   "instructions": 0,
+   "cpuTime": 0.043283,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'trans':\n(kernel) declaration type mismatch, 'trans' has type\n  (a : @Acc Nat (fun x1 x2 => @LT.lt Nat instLTNat x1 x2) 1) → @Eq Bool (f 1 a) (f 1 a)\nbut it is expected to have type\n  (a : @Acc Nat (fun x1 x2 => @LT.lt Nat instLTNat x1 x2) 1) →\n    @Eq Bool (f 1 a) (f 0 (@Acc.inv Nat (fun x1 x2 => @LT.lt Nat instLTNat x1 x2) 1 0 a (Nat.lt_succ_self 0)))\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.043593,
+   "testHash":
+   "779794c039f547b664649545d89c1edda69d5f30241426d87f43b5b49e12b532",
+   "test": "Undecidability/alg-conv-trans-acc-left",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 69406720,
+   "instructions": 0,
+   "cpuTime": 0.041951,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 68 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.043757,
+   "testHash":
+   "5d288ef357e8f9138a9dc6c2b5c07d13231d1185d69d76b9629f3b1f3f47002a",
+   "test": "Undecidability/alg-conv-trans-acc-right",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 69394432,
+   "instructions": 0,
+   "cpuTime": 0.042239,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 68 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.041374,
+   "testHash":
+   "8c7230f54c8e24313abfa5099807eb022c370bfe6263eede53cff81e76603ae7",
+   "test": "Undecidability/alg-conv-trans-quot",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 67944448,
+   "instructions": 0,
+   "cpuTime": 0.039745,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'trans':\n(kernel) declaration type mismatch, 'trans' has type\n  {P : Prop} →\n    {r : P → P → Prop} →\n      {α : Type} →\n        (f : P → α) →\n          (h : (x y : P) → r x y → @Eq α (f x) (f y)) →\n            (q : @Quot P r) → P → @Eq α (@Quot.lift P r α f h q) (@Quot.lift P r α f h q)\nbut it is expected to have type\n  {P : Prop} →\n    {r : P → P → Prop} →\n      {α : Type} →\n        (f : P → α) →\n          (h : (x y : P) → r x y → @Eq α (f x) (f y)) → (q : @Quot P r) → (z : P) → @Eq α (@Quot.lift P r α f h q) (f z)\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.041452,
+   "testHash":
+   "c8387a3afed2e56f02c6fa72842ffae229e746ddd56c43d5f187f326931c63f2",
+   "test": "Undecidability/alg-conv-trans-quot-left",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 67923968,
+   "instructions": 0,
+   "cpuTime": 0.039702,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'left':\n(kernel) declaration type mismatch, 'left' has type\n  {P : Prop} →\n    {r : P → P → Prop} →\n      {α : Type} →\n        (f : P → α) →\n          (h : (x y : P) → r x y → @Eq α (f x) (f y)) →\n            (q : @Quot P r) → P → @Eq α (@Quot.lift P r α f h q) (@Quot.lift P r α f h q)\nbut it is expected to have type\n  {P : Prop} →\n    {r : P → P → Prop} →\n      {α : Type} →\n        (f : P → α) →\n          (h : (x y : P) → r x y → @Eq α (f x) (f y)) →\n            (q : @Quot P r) → (z : P) → @Eq α (@Quot.lift P r α f h q) (@Quot.lift P r α f h (@Quot.mk P r z))\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039427,
+   "testHash":
+   "e6d064a86aaa294f74b6ff1e1f497e2d733a785d7f63b56e62e089ce282bba5c",
+   "test": "Undecidability/alg-conv-trans-quot-left-def",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037851,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 10 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039164,
+   "testHash":
+   "3a204b87f313c03608cc7d60ac30393e7e9e6cbd12ba06aae42f2095cb63e7e1",
+   "test": "Undecidability/alg-conv-trans-quot-right",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037596,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 9 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.04372,
+   "testHash":
+   "a4a8857b94ca5408d7f946fd884e37659e4a42b9fa596edb932f179b4b16174d",
+   "test": "Undecidability/subject-reduction-redex",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 69406720,
+   "instructions": 0,
+   "cpuTime": 0.041984,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 67 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.044,
+   "testHash":
+   "d90c378b8ebc8f724b1f3a98123f764dba67803fffc0c1fc3725c4485b7b0297",
+   "test": "Undecidability/subject-reduction-reduct",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 69918720,
+   "instructions": 0,
+   "cpuTime": 0.042455,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'reduct':\n(kernel) application type mismatch\n  k x0\nargument has type\n  D (f 1 a)\nbut function has type\n  D (f 0 (redex._proof_1 a)) → Unit\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039986,
+   "testHash":
+   "3afa5781609d1cb0bb4e5f546b90afdea70746546d64b67c75c14f5327ca303f",
+   "test": "bogus1",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.03837,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'thm':\n(kernel) declaration type mismatch, 'thm' has type\n  True\nbut it is expected to have type\n  @Eq Nat 0 1\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039483,
+   "testHash":
+   "2fa6a967f15f76cfdcea3ef1992ff31a4cc4aa647b0f8fabf0ff61eedb3afbf1",
+   "test": "constlevels",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.038032,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration '_test':\n(kernel) let-declaration type mismatch 'x'\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.040691,
+   "testHash":
+   "60107ed47bb826ca6589b49ca9b5c4bc53cdf064296c5439f380c6f174606963",
+   "test": "ctor-num-fields",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.039147,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration '_private.CtorNumFields.0.h':\n(kernel) declaration type mismatch, '_private.CtorNumFields.0.h' has type\n  @Eq _private.CtorNumFields.0.S (_private.CtorNumFields.0.S.mk Bool.true) (_private.CtorNumFields.0.S.mk Bool.true)\nbut it is expected to have type\n  @Eq _private.CtorNumFields.0.S (_private.CtorNumFields.0.S.mk Bool.true) (_private.CtorNumFields.0.S.mk Bool.false)\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.309963,
+   "testHash":
+   "31607aa90bae215efc3ffc8844454aaedd637ea9151e6810a72d917512e225cd",
+   "test": "init-prelude",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 75722752,
+   "instructions": 0,
+   "cpuTime": 0.308159,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 2096 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.04939,
+   "testHash":
+   "284cc4699109e9248a7f7a24eb4be57165f2b7a68d779564fff19d79b5dd5b53",
+   "test": "k-rec-conv",
+   "runAt": "2026-08-13T23:23:57Z",
+   "maxRss": 67792896,
+   "instructions": 0,
+   "cpuTime": 0.047558,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  @Eq T t1 t1\nbut it is expected to have type\n  @Eq T t1 t2\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038895,
+   "testHash":
+   "67e1483b38199e3860ffa19932d963d1b77a8931bbb028e88fa4f8efad8039d6",
+   "test": "large-elim-param",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.037421,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'false_proof':\n(kernel) incorrect number of universe levels parameters for 'MyBool.rec', #1 expected, #2 provided\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.047096,
+   "testHash":
+   "497eaa80a214386c679356c33a72c8beab5019c4938494b1608e3772a2756191",
+   "test": "level-imax-leq",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67891200,
+   "instructions": 0,
+   "cpuTime": 0.045472,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'down':\n(kernel) declaration type mismatch, 'down' has type\n  Type (imax u v) → Type (imax u v)\nbut it is expected to have type\n  Type (imax u v) → Sort (imax u v)\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.044029,
+   "testHash":
+   "d368d5569321b717b7ec95bd1f4fa5bbd7d6e1f8d6ebdf1a0644dc8bc76bc2ec",
+   "test": "level-imax-normalization",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67977216,
+   "instructions": 0,
+   "cpuTime": 0.042389,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'down':\n(kernel) declaration type mismatch, 'down' has type\n  Type (imax 0 v) → Type (imax 0 v)\nbut it is expected to have type\n  Type (imax 0 v) → Sort (imax 0 v)\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039196,
+   "testHash":
+   "7db8148079e2e8160a1a4c71258ad11b17ce18edfa84ab1e12eae937ec9538d1",
+   "test": "level-index-out-of-order",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.036757,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040018,
+   "testHash":
+   "5a49d132bb0c7dca091baa481333f5e97e390fde72c8ec18c6124a690ec47d7c",
+   "test": "nat-rec-k-lie",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67813376,
+   "instructions": 0,
+   "cpuTime": 0.038528,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'k1':\n(kernel) declaration type mismatch, 'k1' has type\n  Nat → True\nbut it is expected to have type\n  (n : Nat) → g n\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.040943,
+   "testHash":
+   "934e59fdc4f2a978605c4a44e90b94b57e9940f3828620c0db337b7125cdd169",
+   "test": "nat-rec-rules",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67944448,
+   "instructions": 0,
+   "cpuTime": 0.039501,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'proof_of_false':\n(kernel) application type mismatch\n  @Nat.rec (fun n => @Bool.rec (fun x => Prop) False True (Nat.beq n 0)) True.intro fun n ih => True.intro\nargument has type\n  (n : Nat) → (@fun n => @Bool.rec (fun x => Prop) False True (Nat.beq n 0)) n → True\nbut function has type\n  ((n : Nat) →\n      (@fun n => @Bool.rec (fun x => Prop) False True (Nat.beq n 0)) n →\n        (@fun n => @Bool.rec (fun x => Prop) False True (Nat.beq n 0)) (Nat.succ n)) →\n    (t : Nat) → (@fun n => @Bool.rec (fun x => Prop) False True (Nat.beq n 0)) t\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039302,
+   "testHash":
+   "c6d241f55538da39ba94de889adb580fe2ec09e48d84d2cfcce432438c1b57c8",
+   "test": "nested-nonuniform-param",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037792,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 14 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.042282,
+   "testHash":
+   "459d2ebe68a15cefa7e7954284838f359228aed2e1712fcc5026958e3dd5d5f1",
+   "test": "nested-unused-param",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 69406720,
+   "instructions": 0,
+   "cpuTime": 0.040598,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 65 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039348,
+   "testHash":
+   "5d6999d3a780379e6401549e6d4f8d930a0768bb789d1a7f827acfea59b2e4b7",
+   "test": "proj-no-constructors",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037813,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'd':\n(kernel) invalid projection\n  x.1\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039012,
+   "testHash":
+   "9b5d03924f6130db36eb1c271ed522951d193357e9a911cedc23fda570d8bbe5",
+   "test": "proj-non-structure",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037544,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'bad':\n(kernel) invalid projection\n  (Bad.mk2 True.intro).1\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038697,
+   "testHash":
+   "737a4d14b57adf37c7eb59c94018e453300b87c0625ee32e910d49e552d5ec8f",
+   "test": "proj-of-prop",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037236,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'badFalse':\n(kernel) application type mismatch\n  Wrapper.mk True.intro\nargument has type\n  True\nbut function has type\n  False → Wrapper\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.045705,
+   "testHash":
+   "ef67b9f2297fc2e246f7d60cfdb684104c6d5bf81a464c96d97ed2af13e7f618",
+   "test": "proof-irrel",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.044089,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 7 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.044463,
+   "testHash":
+   "bcf607c99f228e1e7a7f13e4393640bd514cf1b753ad7f7a8385df481700a44f",
+   "test": "rec-k-lie",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67923968,
+   "instructions": 0,
+   "cpuTime": 0.042943,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  True\nbut it is expected to have type\n  disc MyBool.true\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038886,
+   "testHash":
+   "3279c9c8ae24d5b3a8433ddee5d4a421c4e15e3cd84117fb4873d1284112b96d",
+   "test": "sparse-name-index",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67403776,
+   "instructions": 0,
+   "cpuTime": 0.036894,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038033,
+   "testHash":
+   "9b4720411de75cf2f1984b41b7efa3f61b5dddd2b18117d754595e11045b2dcd",
+   "test": "tutorial/001_basicDef",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.036617,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038524,
+   "testHash":
+   "4fa02b3f6d6d268b83d29d296813706490a067b5a51ecd82b5b97084dd78b3ef",
+   "test": "tutorial/002_badDef",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037057,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'badDef':\n(kernel) declaration type mismatch, 'badDef' has type\n  Type 1\nbut it is expected to have type\n  Prop\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.0395,
+   "testHash":
+   "c65bb7b5b1dd02ccead20d7778eb6a39118af6bf32fb78657aa2f1a1dda19fc0",
+   "test": "tutorial/003_arrowType",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037946,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038466,
+   "testHash":
+   "a532338b0f77acce5199a2ddf45602e02cb7df55b87c34b58b9f2053708f96ad",
+   "test": "tutorial/004_dependentType",
+   "runAt": "2026-08-13T23:23:58Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037006,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038641,
+   "testHash":
+   "f9302f8a939ab86641aadeabc65daadb70510496539f414ca4092d07721107d4",
+   "test": "tutorial/005_constType",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.03693,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.03863,
+   "testHash":
+   "917ad6ed04a6d2ec21d8918074cc3733cd4e0fefdf63c91ba38ea9f496b7c7b6",
+   "test": "tutorial/006_betaReduction",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.036937,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 2 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038737,
+   "testHash":
+   "87feff94585d32a342a8c7626a72ffc1de7afb339b390b1daade86473b7f6ff7",
+   "test": "tutorial/007_betaReduction2",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.03724,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 2 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038569,
+   "testHash":
+   "455555a7ca3428357fd4b9497a09ef5f5f788024b2af1ecb78e62a838719fe81",
+   "test": "tutorial/008_forallSortWhnf",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037141,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 2 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039143,
+   "testHash":
+   "be8a3309d6afe002961bc7ad5e5f709155a8985d79c285dbc5293c3a9c5555d0",
+   "test": "tutorial/009_forallSortBad",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.037646,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'forallSortBad':\n(kernel) type expected\n  x\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.041382,
+   "testHash":
+   "cd0246d4e804febefc482d4839132f230fabd2667521078ffdee6a1a78e7c9ae",
+   "test": "tutorial/010_nonTypeType",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67813376,
+   "instructions": 0,
+   "cpuTime": 0.039787,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'nonTypeType':\n(kernel) type expected\n  constType\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039455,
+   "testHash":
+   "2fa5b4ccebdf32dec5ecfcf123c66bb3ec2388e1143d8fb0cbb736cf7ece4677",
+   "test": "tutorial/011_nonPropThm",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037814,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'nonPropThm':\n(kernel) type of theorem 'nonPropThm' is not a proposition\n  Prop\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039199,
+   "testHash":
+   "3e1934fc665dae8fe955e2e61a7b6f5abded0e4cd7978be713a0fadfeb1dfd8d",
+   "test": "tutorial/012_levelComp1",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037535,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039169,
+   "testHash":
+   "d8c794c6b7ca062141336eca1c03a96915f4fecc7c9d12540029f5ea1b416af3",
+   "test": "tutorial/013_levelComp2",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037665,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.03895,
+   "testHash":
+   "3a174f4f56f6386f1f9da2af081be50bba164bbfecec7ea5c3ea55129c8a81ca",
+   "test": "tutorial/014_levelComp3",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037458,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038437,
+   "testHash":
+   "b19c61df8a139ca0dd34076c8dfc6046cfdce8eae1ffaf95032b0cd932fa046d",
+   "test": "tutorial/015_levelParams",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.036917,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 2 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040521,
+   "testHash":
+   "2d57940c408e7f9fe1fe4698ef416a4529c2bbf35226cdfc382fb1fd72018a81",
+   "test": "tutorial/016_tut06_bad01",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.03895,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'tut06_bad01':\n(kernel) failed to add declaration to environment, duplicate universe level parameter: 'u'\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039313,
+   "testHash":
+   "d456a54bed6b47a3610f464ac841464b056a3cfcca00d890abf56238a23f2f49",
+   "test": "tutorial/017_levelComp4",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037711,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038901,
+   "testHash":
+   "6f18d0eb2f622168f9574b8626df08ab1452a4b37d5261a4179cc91f1d3b9dd6",
+   "test": "tutorial/018_levelComp5",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037387,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.03908,
+   "testHash":
+   "dccf830f3f535843d6fc5457798fe2e71567dce08ffea502690bb3caec1f90da",
+   "test": "tutorial/019_imax1",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.037531,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038412,
+   "testHash":
+   "d18695678726f8faea3965cf292e3b22bc55f19253cfad3841e0e41afb5e9811",
+   "test": "tutorial/020_imax2",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.036881,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038351,
+   "testHash":
+   "ef5cf69b0e07509f8c929fd0d36ed56ddd713ae9057db3845c89061bf605735f",
+   "test": "tutorial/021_levelMaxComm",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.036567,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.0389,
+   "testHash":
+   "1905fce871a1c0c6f3ed06045e9ea8e858ce95219fed7a92c0ce3ebbd8460bb2",
+   "test": "tutorial/022_levelMaxAssoc",
+   "runAt": "2026-08-13T23:23:59Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037445,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.052914,
+   "testHash":
+   "35d42b0d640b72b675fd58ce303a8d77165d0f9f175f52a0facd3ab6ad5a529b",
+   "test": "tutorial/023_levelMaxIdem",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.048715,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.045636,
+   "testHash":
+   "0105973893d99d77a4a75400221fb11f94d8155756f364dad21992c443f3b54e",
+   "test": "tutorial/024_levelMaxAbsorb",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67104768,
+   "instructions": 0,
+   "cpuTime": 0.044037,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038479,
+   "testHash":
+   "8a50aae9e78654da18f53c22e8e526c0592467c4646206dd86d574685da833ca",
+   "test": "tutorial/025_inferVar",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67158016,
+   "instructions": 0,
+   "cpuTime": 0.03699,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.047332,
+   "testHash":
+   "3c9ace5c0707b3f88b3e2eee1c8e7dbf1f3cee3d0f136788af18dc6616946fa6",
+   "test": "tutorial/026_defEqLambda",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67321856,
+   "instructions": 0,
+   "cpuTime": 0.045514,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039304,
+   "testHash":
+   "d1679688a7bc1d17190b7278610cac251f883d3d67b9cc25c28ca90a7d56bb13",
+   "test": "tutorial/027_peano1",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67289088,
+   "instructions": 0,
+   "cpuTime": 0.037638,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 7 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038891,
+   "testHash":
+   "44265e719dd1ac1e2b820bc811a6e8b86b8bb5db9dddc5dff70e1d5ac95d360c",
+   "test": "tutorial/028_peano2",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67289088,
+   "instructions": 0,
+   "cpuTime": 0.037426,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039436,
+   "testHash":
+   "ddd2b20690e42090512c4009f0600e9d4bfb2375117424f5ae13368c1bd12095",
+   "test": "tutorial/029_peano3",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.03786,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 10 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038722,
+   "testHash":
+   "95af90f61a0cdd1cd11c4fcefdf6dcf8c7f65012f32ff96ddb4ca67586d32d92",
+   "test": "tutorial/030_letType",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.03707,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 1 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.044343,
+   "testHash":
+   "935322137edf7df798477f519b431066a78bb4ee9435ab40f77b1a39298bee7f",
+   "test": "tutorial/031_letTypeDep",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.042767,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 3 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.043551,
+   "testHash":
+   "72ff543dfca0b565fd33e572eab9dbac712f0781a948a042c483be4a3d22a85d",
+   "test": "tutorial/032_letRed",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67137536,
+   "instructions": 0,
+   "cpuTime": 0.042175,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 2 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.043563,
+   "testHash":
+   "aeca21d99fd23ba54e402ff893193a9af5d97e40c10abc91b049cf1db84b182d",
+   "test": "tutorial/033_empty",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67137536,
+   "instructions": 0,
+   "cpuTime": 0.042097,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 3 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038723,
+   "testHash":
+   "4bcb0446f106e02779d705c2aefc5377c482761dd24b18ed91078635e7f7a2a5",
+   "test": "tutorial/034_boolType",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67289088,
+   "instructions": 0,
+   "cpuTime": 0.037184,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038262,
+   "testHash":
+   "597db81df0c5fc9543cfee5ffaef92858de74a387554be9f972f6981759ebafd",
+   "test": "tutorial/035_twoBool",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.036743,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038363,
+   "testHash":
+   "2352361f19889fabc7b37aa54427b59f195c7326d457d7a3a4b6feb7259ee88b",
+   "test": "tutorial/036_andType",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67289088,
+   "instructions": 0,
+   "cpuTime": 0.036659,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.03807,
+   "testHash":
+   "cf0f8fbd53e3445e0648abc8ad9bc04890581fd60e556ca4bb6e8f259c141784",
+   "test": "tutorial/037_prodType",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.036514,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.049686,
+   "testHash":
+   "41b9469ff2506f3eeb1301a4235e709eff9dede604a81cd0a5979113880ca368",
+   "test": "tutorial/038_pprodType",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.048047,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038847,
+   "testHash":
+   "f7de9b8ea31b1d13dd88bc99684d7bda7a602a85d2d81864ba12ba1cd2cf5bbe",
+   "test": "tutorial/039_pUnitType",
+   "runAt": "2026-08-13T23:24:00Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037273,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038434,
+   "testHash":
+   "5b6a2af4b38f04d7bb6f131fe5da25398bf36736511c9b1ab057df53bd6a2978",
+   "test": "tutorial/040_eqType",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.0369,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039058,
+   "testHash":
+   "f5106e58cf3a7f3d9ce09ab6abae929216b27e8eb93759bf0f20be51dca2238f",
+   "test": "tutorial/041_natDef",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037072,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.046558,
+   "testHash":
+   "250db1ea3ca118bd37bcde714d5ef806675f6d92cbeefbbd10c7d70dc84c6175",
+   "test": "tutorial/042_rbTreeDef",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.038361,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 14 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.0393,
+   "testHash":
+   "5f8045064c59efbea868584ef45a87a6e3cd04082505f81b6fcc53c730084e21",
+   "test": "tutorial/043_inductBadNonSort",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037594,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'inductBadNonSort':\n(kernel) type expected\n  fun x y => x\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038894,
+   "testHash":
+   "5cd812862732a3497e5c1b243a10da52bd3c54dde659dc955b39181aef94bdd0",
+   "test": "tutorial/044_inductBadNonSort2",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.037277,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'inductBadNonSort2':\n(kernel) type expected\n  aType\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038397,
+   "testHash":
+   "2e75a37b9c0660606341f38c2cea53242c3070fe9ec09a5454d07487cbdbb6b3",
+   "test": "tutorial/045_inductLevelParam",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.036836,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'inductLevelParam':\n(kernel) failed to add declaration to environment, duplicate universe level parameter: 'u'\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038863,
+   "testHash":
+   "ff14a4e714e586726a6537e6171e894cc9ece0279ca9cf42e1bacdc02943b36f",
+   "test": "tutorial/046_inductTooFewParams",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037315,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'inductTooFewParams':\n(kernel) invalid inductive datatype declaration, incorrect number of parameters\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039588,
+   "testHash":
+   "6fb9d2b1a02dead8868c3911cfa3f2e773408500d730f263765d52d8750a1fbd",
+   "test": "tutorial/047_inductWrongCtorParams",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67932160,
+   "instructions": 0,
+   "cpuTime": 0.037226,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'inductWrongCtorParams':\n(kernel) arg #1 of 'inductWrongCtorParams.mk' does not match inductive datatypes parameters'\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039494,
+   "testHash":
+   "b23f215e9ee3f271436f3fd5f8ab0233603921bdfcc91c9547ec285685db0559",
+   "test": "tutorial/048_inductWrongCtorResParams",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67801088,
+   "instructions": 0,
+   "cpuTime": 0.036922,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'inductWrongCtorResParams':\n(kernel) invalid return type for 'inductWrongCtorResParams.mk'\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038523,
+   "testHash":
+   "771ed35e55437a35f8733538fc3e3071daa45d8e4612622c8775762339a86e11",
+   "test": "tutorial/049_inductWrongCtorResLevel",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.036888,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'inductWrongCtorResLevel':\n(kernel) invalid return type for 'inductWrongCtorResLevel.mk'\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038598,
+   "testHash":
+   "4b0882c1994a997c7cc59f79adf206fccb6c919b01fdecdb5f05bcb3149a7679",
+   "test": "tutorial/050_inductInIndex",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037104,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'inductInIndex':\n(kernel) invalid return type for 'inductInIndex.mk'\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039186,
+   "testHash":
+   "d8df2fa38b8955f492aa8c94042776bf22a7f845259c76359f5a82216e67dffc",
+   "test": "tutorial/051_indNeg",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037425,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'indNeg':\n(kernel) arg #1 of 'indNeg.mk' has a non positive occurrence of the datatypes being declared\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039795,
+   "testHash":
+   "f6bd2c9ae655703faff57dae829c54515ed2cb9ad847f44f632b112d69c63a77",
+   "test": "tutorial/052_reduceCtorParam.mk",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.038063,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039417,
+   "testHash":
+   "b2664c4a1bdcf51b8cf21f728b3ebcc1635fc4899642ceb04cd3e2e1e1b35da1",
+   "test": "tutorial/053_reduceCtorType.mk",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037609,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'reduceCtorType':\n(kernel) invalid return type for 'reduceCtorType.mk'\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.040101,
+   "testHash":
+   "3f199422717f3987ee067456b23baf79b60cdf234e1b815f8130ea5a67b11481",
+   "test": "tutorial/054_indNegReducible",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 68075520,
+   "instructions": 0,
+   "cpuTime": 0.038294,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'indNegReducible':\n(kernel) arg #1 of 'indNegReducible.mk' has a non positive occurrence of the datatypes being declared\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.040167,
+   "testHash":
+   "f32bd27364044f967e59a1ae5973e0d986bc7850c66f603bba44bb4870154b57",
+   "test": "tutorial/055_predWithTypeField",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.038481,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039437,
+   "testHash":
+   "476745e0a33933240e68b15262ede789db21fba9ff79632dd4fcb9c9d3798909",
+   "test": "tutorial/056_typeWithTypeField",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037857,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040085,
+   "testHash":
+   "e66624dff231e2a774846f7843c42615c8209487a15d22f7f98bbb791b4ad593",
+   "test": "tutorial/057_typeWithTypeFieldPoly",
+   "runAt": "2026-08-13T23:24:01Z",
+   "maxRss": 67407872,
+   "instructions": 0,
+   "cpuTime": 0.038332,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039642,
+   "testHash":
+   "230cf7872ad10d636d3a297e5eb8c60efe98616f8fd60a33534c57ddeb11f6d3",
+   "test": "tutorial/058_typeWithTooHighTypeField.mk",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037979,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'typeWithTooHighTypeField':\n(kernel) universe level of type_of(arg #1) of 'typeWithTooHighTypeField.mk' is too big for the corresponding inductive datatype\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039942,
+   "testHash":
+   "edd9fe8dde69997bb4ce2a9402e953fca00600bdcc9221d4ee4793cd9b7a6dea",
+   "test": "tutorial/059_emptyRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.038391,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 3 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039775,
+   "testHash":
+   "1872d144e038899f0ed5a6cc3a09069f473deb7f1db67fee7db54bad34add9e5",
+   "test": "tutorial/060_boolRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.038146,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.048359,
+   "testHash":
+   "4d89fed6a8fbf32770f0734ea0f8951c39f90e075f4d579f5c1210188a622a23",
+   "test": "tutorial/061_twoBoolRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.038293,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.049047,
+   "testHash":
+   "0c384a0473a2f7b04639f3af75a3576f11997c101053c34e15f72892774226f1",
+   "test": "tutorial/062_andRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67006464,
+   "instructions": 0,
+   "cpuTime": 0.047435,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.046198,
+   "testHash":
+   "e06fac4c4a81c73aea250bebb7da7a4372204e6066ba04113bb411fbbd7a0319",
+   "test": "tutorial/063_prodRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.044643,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.045096,
+   "testHash":
+   "869983c7b9b70c3f97dd52540b0a14f8a92b18c1bbdebc54df03e6764c1c82cc",
+   "test": "tutorial/064_pprodRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.043475,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039351,
+   "testHash":
+   "a0959eae42fcbfe77dd08f2c35b3b4c82c7a28ce9d48b464c5f1499bd13a696a",
+   "test": "tutorial/065_punitRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037651,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.046797,
+   "testHash":
+   "b64ce27198ba64ebc2aff367cae9da915558580b685da40ac713b9e5990c0038",
+   "test": "tutorial/066_eqRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67321856,
+   "instructions": 0,
+   "cpuTime": 0.045126,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.045714,
+   "testHash":
+   "195779513a7988b86dcbb446b047c04cbbe263a6528420a00b62d7fcfff57cc0",
+   "test": "tutorial/067_nRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67321856,
+   "instructions": 0,
+   "cpuTime": 0.044156,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040517,
+   "testHash":
+   "0e0ccc56c0d33ba52bd32784660681cc0244161d8f8cbc10bbe30598fc53adcf",
+   "test": "tutorial/068_rbTreeRef",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.038822,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 14 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039514,
+   "testHash":
+   "08c88cb6fdfa6e158f996b51a055df21e9773468fa3f0089208f5f1ea6fd2ba8",
+   "test": "tutorial/069_boolPropRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037923,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039963,
+   "testHash":
+   "da50162708d82a9128f4258b2900cdb1c0acaba525f7e2457ba449d73de4e331",
+   "test": "tutorial/070_existsRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.038403,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.03969,
+   "testHash":
+   "fdcb1f6d72894fbfc032e74875acdd0c7c06362e8c3ab506104234aaa9e375f1",
+   "test": "tutorial/071_sortElimPropRec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.038206,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.047398,
+   "testHash":
+   "643e31d8be5610e52862ecc77f3546e1d9adc035b15e57510f0827d0e98a9efd",
+   "test": "tutorial/072_sortElimProp2Rec",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67321856,
+   "instructions": 0,
+   "cpuTime": 0.04595,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 9 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039109,
+   "testHash":
+   "ae5a724a4c39396dd496e39d317b6b8643c0d1f26dd1228458973d55ef2ec0ce",
+   "test": "tutorial/073_boolRecEqns",
+   "runAt": "2026-08-13T23:24:02Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037653,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 11 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.041013,
+   "testHash":
+   "b7a5475de59aa4f01a62061b5c45d340b249acbcc3132f08a7d79f19d9b2fd16",
+   "test": "tutorial/074_prodRecEqns",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.039375,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 7 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039639,
+   "testHash":
+   "ffbad4b748313ec8cece6951470227b6c8a9086f555edbc6982765f66f340f41",
+   "test": "tutorial/075_nRecReduction",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.038097,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 13 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040086,
+   "testHash":
+   "83ef251e0223130e3f9a40e43adcd377ec6cec9c7c81d084d0006811454abcdb",
+   "test": "tutorial/076_listRecReduction",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.038478,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 14 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.042488,
+   "testHash":
+   "6d79b84ec866e2864f8cbe4d3d9488b37f7d1ac0679a58637454c8e5155359f1",
+   "test": "tutorial/077_RBTree.id_spec",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 69406720,
+   "instructions": 0,
+   "cpuTime": 0.040984,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 19 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039185,
+   "testHash":
+   "816fd3b17663e3cf01e19af33a12063273c469a04d25335024bbf6df8069e83b",
+   "test": "tutorial/078_And.right",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037483,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.054051,
+   "testHash":
+   "c354e09ec5a4d42d454577721198bd716f7d317bc6d88a5bf0241d962c735f0d",
+   "test": "tutorial/079_Prod.snd",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.03768,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038965,
+   "testHash":
+   "9dd17baa676311b5931e5ea327e5a4244a5395bf1be200c1ef826aab8c55adce",
+   "test": "tutorial/080_PProd.snd",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037409,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039042,
+   "testHash":
+   "f7850b3456c472a5a8f73d3fb5e03a73f7ad6ddfaec73a454290dde0e1870d92",
+   "test": "tutorial/081_PSigma.snd",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037539,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040029,
+   "testHash":
+   "39861a0f5a06dc560bd69ba36b5c4d790fca8cf9586f1829852881529b266620",
+   "test": "tutorial/082_projOutOfRange",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67928064,
+   "instructions": 0,
+   "cpuTime": 0.03776,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'projOutOfRange':\n(kernel) invalid projection\n  z.3\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.03966,
+   "testHash":
+   "da689648e368e9463d1aa387c61de8b60f690a9a2a3d0943df41f921d70e12f1",
+   "test": "tutorial/083_projNotStruct",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037952,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'projNotStruct':\n(kernel) invalid projection\n  x.1\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.040096,
+   "testHash":
+   "daec5faf9346a59480a09fae68ee6dddf0b17c2c5196f294ab2e208bc383421a",
+   "test": "tutorial/084_projProp1",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.038336,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 10 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040651,
+   "testHash":
+   "fd648e2fb0c904b62b17369289f732bb9a6b99bd784397ca2f1366d8daf59a5a",
+   "test": "tutorial/085_projProp2",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.03881,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'projProp2':\n(kernel) invalid projection\n  x.2\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039688,
+   "testHash":
+   "08ab389c47971af67e9aece73b9a38c65a45960efbffc31287fa7500f699158a",
+   "test": "tutorial/086_projProp3",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.038058,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 10 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039741,
+   "testHash":
+   "fb3c7bd7c94c68d2c824445a2449ab8b461284999db129e0c3591e30bbaed787",
+   "test": "tutorial/087_projProp4",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.038185,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'projProp4':\n(kernel) invalid projection\n  x.4\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.044107,
+   "testHash":
+   "b10e32c455900b4245c600cb83457cb3136eed1e0cd16bbf4e448d56d4de18b2",
+   "test": "tutorial/088_projProp5",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67846144,
+   "instructions": 0,
+   "cpuTime": 0.042564,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'projProp5':\n(kernel) invalid projection\n  x.4\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.044897,
+   "testHash":
+   "2fb380b9d4634983d6259b1e7777e4a2385e6c96ce6f088f85e14f6c7b19a1da",
+   "test": "tutorial/089_projProp6",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67923968,
+   "instructions": 0,
+   "cpuTime": 0.043172,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'projProp6':\n(kernel) invalid projection\n  x.6\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.03913,
+   "testHash":
+   "a7fc349a61b879b6e500bc267c04fdb37aab598b4cbe37eb3ff2906877db3a2c",
+   "test": "tutorial/090_projDataIndexRec",
+   "runAt": "2026-08-13T23:24:03Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037491,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 11 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039897,
+   "testHash":
+   "bae14a3a4b083fb76d540394399f7b73e0f06d02600a9bf3eb16d44d7c94a9ef",
+   "test": "tutorial/091_projIndexData",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67944448,
+   "instructions": 0,
+   "cpuTime": 0.038321,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'projIndexData':\n(kernel) invalid projection\n  x.1\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039567,
+   "testHash":
+   "3b20d5b38828c897c0f158c45ebc8dd0c2717c9357ebcd91b3c44acc0af42633",
+   "test": "tutorial/092_projIndexData2",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.037935,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'projIndexData2':\n(kernel) invalid projection\n  x.2\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039896,
+   "testHash":
+   "dcde4705f5e725d29c29727f607a655d708301bd8b95aa07fe1be2c3566d1e4d",
+   "test": "tutorial/093_projRed",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.038211,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 13 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039174,
+   "testHash":
+   "9099eedc1eaf6249f6520bcbe37132f192f46b882b3ee24b00a79fea4a2d4f72",
+   "test": "tutorial/094_ruleK",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037595,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040408,
+   "testHash":
+   "4993ecb719ee39c687fc744432813169a72376af4ae1f74bb138f78601f43eb0",
+   "test": "tutorial/095_ruleKbad",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.038867,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'ruleKbad':\n(kernel) declaration type mismatch, 'ruleKbad' has type\n  @Eq Bool Bool.true Bool.false → (a : Bool) → @Eq Bool a a\nbut it is expected to have type\n  (h : @Eq Bool Bool.true Bool.false) →\n    (a : Bool) → @Eq Bool (@Eq.rec Bool Bool.true (fun x x_1 => Bool) a Bool.false h) a\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.040812,
+   "testHash":
+   "2e767c41662cbffadfdc09b03f43a17519d99020c6c1b08ab5a21bec38846973",
+   "test": "tutorial/096_ruleKAcc",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.039348,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'ruleKAcc':\n(kernel) declaration type mismatch, 'ruleKAcc' has type\n  (α : Sort u) → (p : α → α → Prop) → (x : α) → @Acc α p x → (a : Bool) → @Eq Bool a a\nbut it is expected to have type\n  (α : Sort u) →\n    (p : α → α → Prop) →\n      (x : α) → (h : @Acc α p x) → (a : Bool) → @Eq Bool (@Acc.rec α p (fun x x_1 => Bool) (fun x x_1 x_2 => a) x h) a\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038719,
+   "testHash":
+   "4d45203e545d1851179a88ac7e8d9615597d59ac95e881a59f1c9a1fec5a2f3b",
+   "test": "tutorial/097_aNatLit",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67158016,
+   "instructions": 0,
+   "cpuTime": 0.037131,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040051,
+   "testHash":
+   "3bcc6a8707d8e8f5196fe05a5c529fdc08573b3d3f98df918bb1664d280fa965",
+   "test": "tutorial/098_natLitEq",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67137536,
+   "instructions": 0,
+   "cpuTime": 0.038456,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039791,
+   "testHash":
+   "15c9e3201b2054008fb336ec7f861d09529a15daff7a81d0dbd81381fc054e34",
+   "test": "tutorial/099_proofIrrelevance",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.038142,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039301,
+   "testHash":
+   "8b2fb79631781d7727ec0c19e6bcea5e424846668246780e42177698b09879aa",
+   "test": "tutorial/100_proofIrrelevanceBad",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 68087808,
+   "instructions": 0,
+   "cpuTime": 0.037801,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'proofIrrelevanceBad':\n(kernel) declaration type mismatch, 'proofIrrelevanceBad' has type\n  (p : Type) → (h1 : p) → p → @Eq p h1 h1\nbut it is expected to have type\n  (p : Type) → (h1 h2 : p) → @Eq p h1 h2\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039076,
+   "testHash":
+   "8a20d5c89d082411ad0c0a9873d3d2c2f867bd6e4ae973c898b11e8fbaadf383",
+   "test": "tutorial/101_proofIrrelevanceWhnf",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.037588,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 6 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039045,
+   "testHash":
+   "d25f7fd6e651ae523d9f98b1510a938b13030e698f1612a70011ec54e02f43c9",
+   "test": "tutorial/102_unitEta1",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.03746,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 9 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040275,
+   "testHash":
+   "72aed1db8c9c30b32bb0fc97db4e2eadfe42068646fde72c286a3a606273f0c9",
+   "test": "tutorial/103_unitEta2",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.038633,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040005,
+   "testHash":
+   "4aa5359a46ff775ceefca10bf976f2d2bde1a0a43804903b7d95752b83c9bfc8",
+   "test": "tutorial/104_unitEta3",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67137536,
+   "instructions": 0,
+   "cpuTime": 0.03837,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039861,
+   "testHash":
+   "00aab3d02b33905d6a04f96cf599e5bebf42df7060ae21bdbfc95641d370528a",
+   "test": "tutorial/105_structEta",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.038314,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 13 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038487,
+   "testHash":
+   "9db5f705f222d1a6d11bc939b0a8a0ebea0c56b95f055de64181e427e55270a4",
+   "test": "tutorial/106_funEta",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67289088,
+   "instructions": 0,
+   "cpuTime": 0.037038,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039058,
+   "testHash":
+   "1fbc8156dc13eb0cc55cf82bdfac4ec6c113152a644f7a053db096cccbcecbe0",
+   "test": "tutorial/107_funEtaDep",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.0376,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.040194,
+   "testHash":
+   "7b83baa4990e537283ff5fdf48e29a933451a3fa04c1efe3cbef4daf20db49d7",
+   "test": "tutorial/108_funEtaBad",
+   "runAt": "2026-08-13T23:24:04Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.038681,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'funEtaBad':\n(kernel) declaration type mismatch, 'funEtaBad' has type\n  (x x_1 : Type) → (x → x) → (f : x → x_1) → @Eq (x → x_1) f f\nbut it is expected to have type\n  (α β : Type) → (g : α → α) → (f : α → β) → @Eq (α → β) (fun x => f (g x)) f\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.040652,
+   "testHash":
+   "051bd3bfaf1ed4bf087b555e47fca226b3e3d9f4a51e6d44a38c50be214e8fc5",
+   "test": "tutorial/109_etaRuleK",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67792896,
+   "instructions": 0,
+   "cpuTime": 0.038923,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'etaRuleK':\n(kernel) declaration type mismatch, 'etaRuleK' has type\n  (a : @Eq Bool Bool.true Bool.true → Bool) → @Eq (@Eq Bool Bool.true Bool.true → Bool) a a\nbut it is expected to have type\n  (a : @Eq Bool Bool.true Bool.true → Bool) →\n    @Eq (@Eq Bool Bool.true Bool.true → Bool)\n      (@Eq.rec Bool Bool.true (fun x x_1 => Bool) (a (@Eq.refl Bool Bool.true)) Bool.true) a\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.046,
+   "testHash":
+   "18dbd91b1b31cf31ac9a7567d518b4a05c80ae3e9acdbde7e235494c0cad2f87",
+   "test": "tutorial/110_etaCtor",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67792896,
+   "instructions": 0,
+   "cpuTime": 0.04426,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'etaCtor':\n(kernel) declaration type mismatch, 'etaCtor' has type\n  (x : True → T) → @Eq (True → T) x x\nbut it is expected to have type\n  (x : True → T) → @Eq (True → T) (T.mk (T.val (x True.intro))) x\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038604,
+   "testHash":
+   "085b4d12540c2443e05737d61d35d525d1b77acc26590ea8ecdb98a03a1e9264",
+   "test": "tutorial/111_reflOccLeft",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.036765,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'reflOccLeft':\n(kernel) arg #1 of 'reflOccLeft.mk' has a non positive occurrence of the datatypes being declared\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039506,
+   "testHash":
+   "ad28fe77b69634dd175e7ef14806ff163231682c4a50511fd7839bd53ebf0a13",
+   "test": "tutorial/112_reflOccInIndex",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037772,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'reflOccInIndex':\n(kernel) application type mismatch\n  reflOccInIndex x\nargument has type\n  Nat\nbut function has type\n  Type → Type\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039222,
+   "testHash":
+   "667d5576fee6ad3c1e2d1a10c17d32e4e4c6ce507ccfdb1eea18f9ceb5f37f3a",
+   "test": "tutorial/113_reduceCtorParamRefl.mk",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037697,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.03915,
+   "testHash":
+   "74f14920fb538c4a82bb26de1cbb6419532bde44adfa4ffdff1d03573c30b9e6",
+   "test": "tutorial/114_reduceCtorParamRefl2.mk",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037594,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 5 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039473,
+   "testHash":
+   "fe8f0ae247f2335b297fae502aeb90389365b8a36957de1a1d5c15abee87f6c8",
+   "test": "tutorial/115_rTreeRec",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037805,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 9 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039324,
+   "testHash":
+   "7182ca520a6e748a77b18b3a89563016c6bad8ae6b71b776a6a65cb56e70f94e",
+   "test": "tutorial/116_rtreeRecReduction",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037604,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 14 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039809,
+   "testHash":
+   "d005e5c8553aa9dec969d57c8fe11571f1afa01a02503cd74b4035d702da90de",
+   "test": "tutorial/117_accRecType",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67289088,
+   "instructions": 0,
+   "cpuTime": 0.038235,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 4 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039527,
+   "testHash":
+   "0771ea6066a9f2cc8e0da8afb05d4a08dafaf824f7f271d460a65c66f980807b",
+   "test": "tutorial/118_accRecReduction",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67158016,
+   "instructions": 0,
+   "cpuTime": 0.037872,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 11 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.041083,
+   "testHash":
+   "8e8701197117507aee75ab471d6646b4eda62175765b22bf39deaf3bb5c52349",
+   "test": "tutorial/119_accRecNoEta",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67813376,
+   "instructions": 0,
+   "cpuTime": 0.039237,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'accRecNoEta':\n(kernel) declaration type mismatch, 'accRecNoEta' has type\n  (α : Type) → (r : α → α → Prop) → (a : α) → @Acc α r a → (p : Bool) → @Eq Bool p p\nbut it is expected to have type\n  {α : Type} →\n    (r : α → α → Prop) →\n      (a : α) → (h : @Acc α r a) → (p : Bool) → @Eq Bool (@Acc.rec α r (fun x x_1 => Bool) (fun x x_1 x_2 => p) a h) p\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.039386,
+   "testHash":
+   "78e223734d9bc029066557de2c59e1f7c07853d079f15c83da9e0dbdb6cdf10b",
+   "test": "tutorial/120_quotMkType",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.03793,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.039148,
+   "testHash":
+   "9bb95ecda565cbeb86dd02af9a6f97ed4473b758770c3128bb8d12e44093f989",
+   "test": "tutorial/121_quotIndType",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.037656,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.044795,
+   "testHash":
+   "e6fa185b3b9d8a4b705bde742843503b7d48d93f6ed840abd84d92a335d1337b",
+   "test": "tutorial/122_quotLiftType",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.043209,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038767,
+   "testHash":
+   "e3bf86a52a2bd0af74954b6697c8272925bff7bc897506d6f5e5b3bd285ad356",
+   "test": "tutorial/123_quotSoundType",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67158016,
+   "instructions": 0,
+   "cpuTime": 0.037194,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 9 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038952,
+   "testHash":
+   "8f50aec5908894bc31417ea8bba04c4cf134d1e2baad9618faf4fec6ad86c49d",
+   "test": "tutorial/124_quotLiftReduction",
+   "runAt": "2026-08-13T23:24:05Z",
+   "maxRss": 67432448,
+   "instructions": 0,
+   "cpuTime": 0.037507,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.03979,
+   "testHash":
+   "22832bbe4b1ba04b3e6b14d4a66dc9b14a0cfa5026dbf16fdeb4ac1f7d8261e7",
+   "test": "tutorial/125_quotIndReduction",
+   "runAt": "2026-08-13T23:24:06Z",
+   "maxRss": 67301376,
+   "instructions": 0,
+   "cpuTime": 0.038174,
+   "attempt":
+   {"ran":
+    {"stdout": "Accepted 8 declarations.\n", "stderr": "", "exitCode": 0}}},
+  {"wallTime": 0.038545,
+   "testHash":
+   "cbbf2da76b53c6ce5aa483e0718bb281d3dbb069831f952ba5af9106e0c95e44",
+   "test": "tutorial/126_dup_defs",
+   "runAt": "2026-08-13T23:24:06Z",
+   "maxRss": 67137536,
+   "instructions": 0,
+   "cpuTime": 0.036821,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "uncaught exception: Duplicate declaration: dup_defs\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.037771,
+   "testHash":
+   "30d3de7a522544af09336b9542a07e52ffad061fd0ec1768a34cb6e4274eb7f2",
+   "test": "tutorial/127_dup_ind_def",
+   "runAt": "2026-08-13T23:24:06Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.036285,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "uncaught exception: Duplicate declaration: dup_ind_def\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038458,
+   "testHash":
+   "a8ecafeec2d05bddc73ea43cb24839084bef92cd2a27e193ec226e7ae4a5c4d2",
+   "test": "tutorial/128_dup_ctor_def",
+   "runAt": "2026-08-13T23:24:06Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.036986,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "uncaught exception: Duplicate declaration: dup_ctor_def.mk\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.043401,
+   "testHash":
+   "2da5e23f99b9373624dc2991e22e9e48b536953c94950c8433f6c134c3bf0ab0",
+   "test": "tutorial/129_dup_rec_def",
+   "runAt": "2026-08-13T23:24:06Z",
+   "maxRss": 67178496,
+   "instructions": 0,
+   "cpuTime": 0.041969,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "uncaught exception: Duplicate declaration: dup_rec_def.rec\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.03871,
+   "testHash":
+   "b8303345c6bfc735e3b90d65c2ccb0a7c985804f559e20d7167a95e7b77c7a1c",
+   "test": "tutorial/130_misnamed_rec_user",
+   "runAt": "2026-08-13T23:24:06Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037103,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'misnamed_rec_user':\n(kernel) unknown constant 'misnamed_rec.not_rec'\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038718,
+   "testHash":
+   "70e8da9988afacdf82438d5d6be3309cb5fc52f87d0a38a31d5c3e3fde8e4a14",
+   "test": "tutorial/131_dup_rec_def2",
+   "runAt": "2026-08-13T23:24:06Z",
+   "maxRss": 67956736,
+   "instructions": 0,
+   "cpuTime": 0.037101,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: while replaying declaration 'dup_rec_def2':\n(kernel) constant has already been declared 'dup_rec_def2.rec'\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.037767,
+   "testHash":
+   "d5f472e0819f3fbb060e78061260435cd4ffbae118feb7017247cfe69b990567",
+   "test": "tutorial/132_dup_ctor_rec",
+   "runAt": "2026-08-13T23:24:06Z",
+   "maxRss": 67268608,
+   "instructions": 0,
+   "cpuTime": 0.036154,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "uncaught exception: Duplicate declaration: dup_ctor_rec.rec\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.038605,
+   "testHash":
+   "aca3992a0067b8c24422ee1d3e70362defd1f2a5f46e15a8244a961c67ade4c0",
+   "test": "tutorial/133_DupConCon",
+   "runAt": "2026-08-13T23:24:06Z",
+   "maxRss": 67137536,
+   "instructions": 0,
+   "cpuTime": 0.037015,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "uncaught exception: Duplicate declaration: dup_ind_con_con.mk\n",
+     "exitCode": 1}}}],
+ "checker": "official"}
