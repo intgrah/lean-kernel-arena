@@ -1,0 +1,2160 @@
+{"runner": "github-Linux",
+ "revision": "055a6b9",
+ "recipeHash": "968fbb1056095681",
+ "entries":
+ [{"wallTime": 0.37833,
+   "testHash":
+   "1e8955573ebf50103a568e511f08105fe113030cfae99443e7eb5b5847a5a2b5",
+   "test": "Perf/app-lam",
+   "runAt": "2026-08-13T23:18:33Z",
+   "maxRss": 110338048,
+   "instructions": 0,
+   "cpuTime": 0.473382,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: export is 1276862 bytes, above EVMLEAN_MAX_BYTES=128000; declining\n",
+     "exitCode": 2}}},
+  {"wallTime": 0.298698,
+   "testHash":
+   "4289c668fe85a9752b83aad6efd8732dc91936ffdba0844ca5832fe09aaea471",
+   "test": "Perf/grind-ring-5",
+   "runAt": "2026-08-13T23:18:33Z",
+   "maxRss": 112427008,
+   "instructions": 0,
+   "cpuTime": 0.383992,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: export is 10206211 bytes, above EVMLEAN_MAX_BYTES=128000; declining\n",
+     "exitCode": 2}}},
+  {"wallTime": 0.297309,
+   "testHash":
+   "82b18d3d18d80eadb23cdb7bdd36258d8d4612c33f48cd6e31d334022f6800dc",
+   "test": "Perf/shift-cascade",
+   "runAt": "2026-08-13T23:18:34Z",
+   "maxRss": 112234496,
+   "instructions": 0,
+   "cpuTime": 0.374665,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: export is 262410 bytes, above EVMLEAN_MAX_BYTES=128000; declining\n",
+     "exitCode": 2}}},
+  {"wallTime": 11.01955,
+   "testHash":
+   "5483cd552ced28c2d47b8a547106c2ac7105a19d5907707d3b122799a3f30124",
+   "test": "Undecidability/alg-conv-trans-acc",
+   "runAt": "2026-08-13T23:18:34Z",
+   "maxRss": 216838144,
+   "instructions": 0,
+   "cpuTime": 11.322336,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 78, value/type mismatch); gas=120294989\n",
+     "exitCode": 1}}},
+  {"wallTime": 11.114274,
+   "testHash":
+   "779794c039f547b664649545d89c1edda69d5f30241426d87f43b5b49e12b532",
+   "test": "Undecidability/alg-conv-trans-acc-left",
+   "runAt": "2026-08-13T23:18:45Z",
+   "maxRss": 215261184,
+   "instructions": 0,
+   "cpuTime": 11.402865,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 79, value/type mismatch); gas=125075718\n",
+     "exitCode": 1}}},
+  {"wallTime": 11.394463,
+   "testHash":
+   "5d288ef357e8f9138a9dc6c2b5c07d13231d1185d69d76b9629f3b1f3f47002a",
+   "test": "Undecidability/alg-conv-trans-acc-right",
+   "runAt": "2026-08-13T23:18:56Z",
+   "maxRss": 196591616,
+   "instructions": 0,
+   "cpuTime": 11.708024,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 80, ok); gas=122411676\n",
+     "exitCode": 0}}},
+  {"wallTime": 1.227908,
+   "testHash":
+   "8c7230f54c8e24313abfa5099807eb022c370bfe6263eede53cff81e76603ae7",
+   "test": "Undecidability/alg-conv-trans-quot",
+   "runAt": "2026-08-13T23:19:07Z",
+   "maxRss": 130453504,
+   "instructions": 0,
+   "cpuTime": 1.440202,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 8, value/type mismatch); gas=8536369\n",
+     "exitCode": 1}}},
+  {"wallTime": 1.282633,
+   "testHash":
+   "c8387a3afed2e56f02c6fa72842ffae229e746ddd56c43d5f187f326931c63f2",
+   "test": "Undecidability/alg-conv-trans-quot-left",
+   "runAt": "2026-08-13T23:19:09Z",
+   "maxRss": 130449408,
+   "instructions": 0,
+   "cpuTime": 1.496412,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 8, value/type mismatch); gas=8890993\n",
+     "exitCode": 1}}},
+  {"wallTime": 1.502728,
+   "testHash":
+   "e6d064a86aaa294f74b6ff1e1f497e2d733a785d7f63b56e62e089ce282bba5c",
+   "test": "Undecidability/alg-conv-trans-quot-left-def",
+   "runAt": "2026-08-13T23:19:10Z",
+   "maxRss": 131645440,
+   "instructions": 0,
+   "cpuTime": 1.713178,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 10, value/type mismatch); gas=11328375\n",
+     "exitCode": 1}}},
+  {"wallTime": 1.041704,
+   "testHash":
+   "3a204b87f313c03608cc7d60ac30393e7e9e6cbd12ba06aae42f2095cb63e7e1",
+   "test": "Undecidability/alg-conv-trans-quot-right",
+   "runAt": "2026-08-13T23:19:12Z",
+   "maxRss": 130293760,
+   "instructions": 0,
+   "cpuTime": 1.245586,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 10, ok); gas=6593306\n",
+     "exitCode": 0}}},
+  {"wallTime": 10.967296,
+   "testHash":
+   "a4a8857b94ca5408d7f946fd884e37659e4a42b9fa596edb932f179b4b16174d",
+   "test": "Undecidability/subject-reduction-redex",
+   "runAt": "2026-08-13T23:19:13Z",
+   "maxRss": 215588864,
+   "instructions": 0,
+   "cpuTime": 11.263522,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 77, application argument type mismatch); gas=121617532\n",
+     "exitCode": 1}}},
+  {"wallTime": 10.951475,
+   "testHash":
+   "d90c378b8ebc8f724b1f3a98123f764dba67803fffc0c1fc3725c4485b7b0297",
+   "test": "Undecidability/subject-reduction-reduct",
+   "runAt": "2026-08-13T23:19:24Z",
+   "maxRss": 215318528,
+   "instructions": 0,
+   "cpuTime": 11.246037,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 76, application argument type mismatch); gas=119517473\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.888514,
+   "testHash":
+   "3afa5781609d1cb0bb4e5f546b90afdea70746546d64b67c75c14f5327ca303f",
+   "test": "bogus1",
+   "runAt": "2026-08-13T23:19:35Z",
+   "maxRss": 135516160,
+   "instructions": 0,
+   "cpuTime": 1.106655,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 19, value/type mismatch); gas=4671869\n",
+     "exitCode": 1}}},
+  {"wallTime": 1.037011,
+   "testHash":
+   "2fa6a967f15f76cfdcea3ef1992ff31a4cc4aa647b0f8fabf0ff61eedb3afbf1",
+   "test": "constlevels",
+   "runAt": "2026-08-13T23:19:35Z",
+   "maxRss": 131346432,
+   "instructions": 0,
+   "cpuTime": 1.258917,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 23, universe count mismatch); gas=6381225\n",
+     "exitCode": 1}}},
+  {"wallTime": 1.019733,
+   "testHash":
+   "60107ed47bb826ca6589b49ca9b5c4bc53cdf064296c5439f380c6f174606963",
+   "test": "ctor-num-fields",
+   "runAt": "2026-08-13T23:19:36Z",
+   "maxRss": 137576448,
+   "instructions": 0,
+   "cpuTime": 1.249162,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 20, constructor result type); gas=6074258\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.301707,
+   "testHash":
+   "31607aa90bae215efc3ffc8844454aaedd637ea9151e6810a72d917512e225cd",
+   "test": "init-prelude",
+   "runAt": "2026-08-13T23:19:38Z",
+   "maxRss": 112128000,
+   "instructions": 0,
+   "cpuTime": 0.384056,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: export is 3728074 bytes, above EVMLEAN_MAX_BYTES=128000; declining\n",
+     "exitCode": 2}}},
+  {"wallTime": 1.056082,
+   "testHash":
+   "284cc4699109e9248a7f7a24eb4be57165f2b7a68d779564fff19d79b5dd5b53",
+   "test": "k-rec-conv",
+   "runAt": "2026-08-13T23:19:38Z",
+   "maxRss": 129966080,
+   "instructions": 0,
+   "cpuTime": 1.278268,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 18, value/type mismatch); gas=6400631\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.45409,
+   "testHash":
+   "67e1483b38199e3860ffa19932d963d1b77a8931bbb028e88fa4f8efad8039d6",
+   "test": "large-elim-param",
+   "runAt": "2026-08-13T23:19:39Z",
+   "maxRss": 130514944,
+   "instructions": 0,
+   "cpuTime": 0.603535,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 10, unknown constant); gas=472096\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.512275,
+   "testHash":
+   "497eaa80a214386c679356c33a72c8beab5019c4938494b1608e3772a2756191",
+   "test": "level-imax-leq",
+   "runAt": "2026-08-13T23:19:39Z",
+   "maxRss": 131178496,
+   "instructions": 0,
+   "cpuTime": 0.694836,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 12, value/type mismatch); gas=989529\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.504366,
+   "testHash":
+   "d368d5569321b717b7ec95bd1f4fa5bbd7d6e1f8d6ebdf1a0644dc8bc76bc2ec",
+   "test": "level-imax-normalization",
+   "runAt": "2026-08-13T23:19:40Z",
+   "maxRss": 130826240,
+   "instructions": 0,
+   "cpuTime": 0.680273,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 12, value/type mismatch); gas=986829\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.404996,
+   "testHash":
+   "7db8148079e2e8160a1a4c71258ad11b17ce18edfa84ab1e12eae937ec9538d1",
+   "test": "level-index-out-of-order",
+   "runAt": "2026-08-13T23:19:40Z",
+   "maxRss": 131112960,
+   "instructions": 0,
+   "cpuTime": 0.523858,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=161061\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.482121,
+   "testHash":
+   "5a49d132bb0c7dca091baa481333f5e97e390fde72c8ec18c6124a690ec47d7c",
+   "test": "nat-rec-k-lie",
+   "runAt": "2026-08-13T23:19:41Z",
+   "maxRss": 131215360,
+   "instructions": 0,
+   "cpuTime": 0.644726,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 3, invalid K flag); gas=649080\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.551415,
+   "testHash":
+   "934e59fdc4f2a978605c4a44e90b94b57e9940f3828620c0db337b7125cdd169",
+   "test": "nat-rec-rules",
+   "runAt": "2026-08-13T23:19:41Z",
+   "maxRss": 130338816,
+   "instructions": 0,
+   "cpuTime": 0.736979,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 12, recursor rule invalid); gas=1539825\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.563634,
+   "testHash":
+   "c6d241f55538da39ba94de889adb580fe2ec09e48d84d2cfcce432438c1b57c8",
+   "test": "nested-nonuniform-param",
+   "runAt": "2026-08-13T23:19:42Z",
+   "maxRss": 130273280,
+   "instructions": 0,
+   "cpuTime": 0.744806,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: decline (decl 13, unsupported feature); gas=1446501\n",
+     "exitCode": 2}}},
+  {"wallTime": 4.731734,
+   "testHash":
+   "459d2ebe68a15cefa7e7954284838f359228aed2e1712fcc5026958e3dd5d5f1",
+   "test": "nested-unused-param",
+   "runAt": "2026-08-13T23:19:42Z",
+   "maxRss": 146833408,
+   "instructions": 0,
+   "cpuTime": 4.997278,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 49, application argument type mismatch); gas=47796700\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.411509,
+   "testHash":
+   "5d6999d3a780379e6401549e6d4f8d930a0768bb789d1a7f827acfea59b2e4b7",
+   "test": "proj-no-constructors",
+   "runAt": "2026-08-13T23:19:47Z",
+   "maxRss": 131325952,
+   "instructions": 0,
+   "cpuTime": 0.550518,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 3, projection violation); gas=287850\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.497092,
+   "testHash":
+   "9b5d03924f6130db36eb1c271ed522951d193357e9a911cedc23fda570d8bbe5",
+   "test": "proj-non-structure",
+   "runAt": "2026-08-13T23:19:48Z",
+   "maxRss": 131497984,
+   "instructions": 0,
+   "cpuTime": 0.675057,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 12, projection violation); gas=960174\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.476304,
+   "testHash":
+   "737a4d14b57adf37c7eb59c94018e453300b87c0625ee32e910d49e552d5ec8f",
+   "test": "proj-of-prop",
+   "runAt": "2026-08-13T23:19:48Z",
+   "maxRss": 131538944,
+   "instructions": 0,
+   "cpuTime": 0.637002,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 11, application argument type mismatch); gas=780909\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.441348,
+   "testHash":
+   "ef67b9f2297fc2e246f7d60cfdb684104c6d5bf81a464c96d97ed2af13e7f618",
+   "test": "proof-irrel",
+   "runAt": "2026-08-13T23:19:49Z",
+   "maxRss": 129880064,
+   "instructions": 0,
+   "cpuTime": 0.595981,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 7, ok); gas=412553\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.481398,
+   "testHash":
+   "bcf607c99f228e1e7a7f13e4393640bd514cf1b753ad7f7a8385df481700a44f",
+   "test": "rec-k-lie",
+   "runAt": "2026-08-13T23:19:49Z",
+   "maxRss": 130748416,
+   "instructions": 0,
+   "cpuTime": 0.629917,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 0, invalid K flag); gas=545472\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.414833,
+   "testHash":
+   "3279c9c8ae24d5b3a8433ddee5d4a421c4e15e3cd84117fb4873d1284112b96d",
+   "test": "sparse-name-index",
+   "runAt": "2026-08-13T23:19:50Z",
+   "maxRss": 131039232,
+   "instructions": 0,
+   "cpuTime": 0.52922,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=162502\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.398685,
+   "testHash":
+   "9b4720411de75cf2f1984b41b7efa3f61b5dddd2b18117d754595e11045b2dcd",
+   "test": "tutorial/001_basicDef",
+   "runAt": "2026-08-13T23:19:50Z",
+   "maxRss": 131706880,
+   "instructions": 0,
+   "cpuTime": 0.528103,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=165610\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.399406,
+   "testHash":
+   "4fa02b3f6d6d268b83d29d296813706490a067b5a51ecd82b5b97084dd78b3ef",
+   "test": "tutorial/002_badDef",
+   "runAt": "2026-08-13T23:19:50Z",
+   "maxRss": 130519040,
+   "instructions": 0,
+   "cpuTime": 0.521774,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 0, value/type mismatch); gas=171329\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.421775,
+   "testHash":
+   "c65bb7b5b1dd02ccead20d7778eb6a39118af6bf32fb78657aa2f1a1dda19fc0",
+   "test": "tutorial/003_arrowType",
+   "runAt": "2026-08-13T23:19:51Z",
+   "maxRss": 130793472,
+   "instructions": 0,
+   "cpuTime": 0.550769,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=186926\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.404013,
+   "testHash":
+   "a532338b0f77acce5199a2ddf45602e02cb7df55b87c34b58b9f2053708f96ad",
+   "test": "tutorial/004_dependentType",
+   "runAt": "2026-08-13T23:19:51Z",
+   "maxRss": 130510848,
+   "instructions": 0,
+   "cpuTime": 0.522366,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=175877\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.414263,
+   "testHash":
+   "f9302f8a939ab86641aadeabc65daadb70510496539f414ca4092d07721107d4",
+   "test": "tutorial/005_constType",
+   "runAt": "2026-08-13T23:19:52Z",
+   "maxRss": 129798144,
+   "instructions": 0,
+   "cpuTime": 0.553251,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=214726\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.432538,
+   "testHash":
+   "917ad6ed04a6d2ec21d8918074cc3733cd4e0fefdf63c91ba38ea9f496b7c7b6",
+   "test": "tutorial/006_betaReduction",
+   "runAt": "2026-08-13T23:19:52Z",
+   "maxRss": 131235840,
+   "instructions": 0,
+   "cpuTime": 0.57485,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 2, ok); gas=288883\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.42287,
+   "testHash":
+   "87feff94585d32a342a8c7626a72ffc1de7afb339b390b1daade86473b7f6ff7",
+   "test": "tutorial/007_betaReduction2",
+   "runAt": "2026-08-13T23:19:53Z",
+   "maxRss": 129818624,
+   "instructions": 0,
+   "cpuTime": 0.574596,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 2, ok); gas=301271\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.424634,
+   "testHash":
+   "455555a7ca3428357fd4b9497a09ef5f5f788024b2af1ecb78e62a838719fe81",
+   "test": "tutorial/008_forallSortWhnf",
+   "runAt": "2026-08-13T23:19:53Z",
+   "maxRss": 130940928,
+   "instructions": 0,
+   "cpuTime": 0.560581,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 2, ok); gas=309201\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.437576,
+   "testHash":
+   "be8a3309d6afe002961bc7ad5e5f709155a8985d79c285dbc5293c3a9c5555d0",
+   "test": "tutorial/009_forallSortBad",
+   "runAt": "2026-08-13T23:19:53Z",
+   "maxRss": 131166208,
+   "instructions": 0,
+   "cpuTime": 0.590406,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 1, binder domain is not a sort); gas=280789\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.413008,
+   "testHash":
+   "cd0246d4e804febefc482d4839132f230fabd2667521078ffdee6a1a78e7c9ae",
+   "test": "tutorial/010_nonTypeType",
+   "runAt": "2026-08-13T23:19:54Z",
+   "maxRss": 130232320,
+   "instructions": 0,
+   "cpuTime": 0.545882,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 1, type is not a sort); gas=226175\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.407942,
+   "testHash":
+   "2fa5b4ccebdf32dec5ecfcf123c66bb3ec2388e1143d8fb0cbb736cf7ece4677",
+   "test": "tutorial/011_nonPropThm",
+   "runAt": "2026-08-13T23:19:54Z",
+   "maxRss": 134139904,
+   "instructions": 0,
+   "cpuTime": 0.536679,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 0, theorem type not a Prop); gas=167426\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.411381,
+   "testHash":
+   "3e1934fc665dae8fe955e2e61a7b6f5abded0e4cd7978be713a0fadfeb1dfd8d",
+   "test": "tutorial/012_levelComp1",
+   "runAt": "2026-08-13T23:19:55Z",
+   "maxRss": 130457600,
+   "instructions": 0,
+   "cpuTime": 0.540966,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=183484\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.421927,
+   "testHash":
+   "d8c794c6b7ca062141336eca1c03a96915f4fecc7c9d12540029f5ea1b416af3",
+   "test": "tutorial/013_levelComp2",
+   "runAt": "2026-08-13T23:19:55Z",
+   "maxRss": 129937408,
+   "instructions": 0,
+   "cpuTime": 0.555085,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=190027\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.428056,
+   "testHash":
+   "3a174f4f56f6386f1f9da2af081be50bba164bbfecec7ea5c3ea55129c8a81ca",
+   "test": "tutorial/014_levelComp3",
+   "runAt": "2026-08-13T23:19:56Z",
+   "maxRss": 137613312,
+   "instructions": 0,
+   "cpuTime": 0.571143,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=203541\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.43054,
+   "testHash":
+   "b19c61df8a139ca0dd34076c8dfc6046cfdce8eae1ffaf95032b0cd932fa046d",
+   "test": "tutorial/015_levelParams",
+   "runAt": "2026-08-13T23:19:56Z",
+   "maxRss": 130916352,
+   "instructions": 0,
+   "cpuTime": 0.58578,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 2, ok); gas=305780\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.409614,
+   "testHash":
+   "2d57940c408e7f9fe1fe4698ef416a4529c2bbf35226cdfc382fb1fd72018a81",
+   "test": "tutorial/016_tut06_bad01",
+   "runAt": "2026-08-13T23:19:57Z",
+   "maxRss": 130781184,
+   "instructions": 0,
+   "cpuTime": 0.529352,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 0, duplicate universe param); gas=161139\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.398403,
+   "testHash":
+   "d456a54bed6b47a3610f464ac841464b056a3cfcca00d890abf56238a23f2f49",
+   "test": "tutorial/017_levelComp4",
+   "runAt": "2026-08-13T23:19:57Z",
+   "maxRss": 130007040,
+   "instructions": 0,
+   "cpuTime": 0.526894,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=168675\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.409175,
+   "testHash":
+   "6f18d0eb2f622168f9574b8626df08ab1452a4b37d5261a4179cc91f1d3b9dd6",
+   "test": "tutorial/018_levelComp5",
+   "runAt": "2026-08-13T23:19:57Z",
+   "maxRss": 131067904,
+   "instructions": 0,
+   "cpuTime": 0.526563,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=169799\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.419901,
+   "testHash":
+   "dccf830f3f535843d6fc5457798fe2e71567dce08ffea502690bb3caec1f90da",
+   "test": "tutorial/019_imax1",
+   "runAt": "2026-08-13T23:19:58Z",
+   "maxRss": 130949120,
+   "instructions": 0,
+   "cpuTime": 0.558425,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=203928\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.406282,
+   "testHash":
+   "d18695678726f8faea3965cf292e3b22bc55f19253cfad3841e0e41afb5e9811",
+   "test": "tutorial/020_imax2",
+   "runAt": "2026-08-13T23:19:58Z",
+   "maxRss": 130768896,
+   "instructions": 0,
+   "cpuTime": 0.541147,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=243153\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.411487,
+   "testHash":
+   "ef5cf69b0e07509f8c929fd0d36ed56ddd713ae9057db3845c89061bf605735f",
+   "test": "tutorial/021_levelMaxComm",
+   "runAt": "2026-08-13T23:19:59Z",
+   "maxRss": 131346432,
+   "instructions": 0,
+   "cpuTime": 0.549039,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=214851\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.41613,
+   "testHash":
+   "1905fce871a1c0c6f3ed06045e9ea8e858ce95219fed7a92c0ce3ebbd8460bb2",
+   "test": "tutorial/022_levelMaxAssoc",
+   "runAt": "2026-08-13T23:19:59Z",
+   "maxRss": 130396160,
+   "instructions": 0,
+   "cpuTime": 0.555688,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=245538\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.408233,
+   "testHash":
+   "35d42b0d640b72b675fd58ce303a8d77165d0f9f175f52a0facd3ab6ad5a529b",
+   "test": "tutorial/023_levelMaxIdem",
+   "runAt": "2026-08-13T23:20:00Z",
+   "maxRss": 134569984,
+   "instructions": 0,
+   "cpuTime": 0.537742,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=188143\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.412943,
+   "testHash":
+   "0105973893d99d77a4a75400221fb11f94d8155756f364dad21992c443f3b54e",
+   "test": "tutorial/024_levelMaxAbsorb",
+   "runAt": "2026-08-13T23:20:00Z",
+   "maxRss": 131575808,
+   "instructions": 0,
+   "cpuTime": 0.547852,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=225251\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.413225,
+   "testHash":
+   "8a50aae9e78654da18f53c22e8e526c0592467c4646206dd86d574685da833ca",
+   "test": "tutorial/025_inferVar",
+   "runAt": "2026-08-13T23:20:00Z",
+   "maxRss": 131178496,
+   "instructions": 0,
+   "cpuTime": 0.550422,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=199389\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.43639,
+   "testHash":
+   "3c9ace5c0707b3f88b3e2eee1c8e7dbf1f3cee3d0f136788af18dc6616946fa6",
+   "test": "tutorial/026_defEqLambda",
+   "runAt": "2026-08-13T23:20:01Z",
+   "maxRss": 131203072,
+   "instructions": 0,
+   "cpuTime": 0.579195,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=352731\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.467354,
+   "testHash":
+   "d1679688a7bc1d17190b7278610cac251f883d3d67b9cc25c28ca90a7d56bb13",
+   "test": "tutorial/027_peano1",
+   "runAt": "2026-08-13T23:20:01Z",
+   "maxRss": 131166208,
+   "instructions": 0,
+   "cpuTime": 0.620741,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 7, ok); gas=704799\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.580946,
+   "testHash":
+   "44265e719dd1ac1e2b820bc811a6e8b86b8bb5db9dddc5dff70e1d5ac95d360c",
+   "test": "tutorial/028_peano2",
+   "runAt": "2026-08-13T23:20:02Z",
+   "maxRss": 130424832,
+   "instructions": 0,
+   "cpuTime": 0.770711,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 8, ok); gas=1702604\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.682731,
+   "testHash":
+   "ddd2b20690e42090512c4009f0600e9d4bfb2375117424f5ae13368c1bd12095",
+   "test": "tutorial/029_peano3",
+   "runAt": "2026-08-13T23:20:02Z",
+   "maxRss": 130379776,
+   "instructions": 0,
+   "cpuTime": 0.876174,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 10, ok); gas=2836620\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.400631,
+   "testHash":
+   "95af90f61a0cdd1cd11c4fcefdf6dcf8c7f65012f32ff96ddb4ca67586d32d92",
+   "test": "tutorial/030_letType",
+   "runAt": "2026-08-13T23:20:03Z",
+   "maxRss": 134156288,
+   "instructions": 0,
+   "cpuTime": 0.520321,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 1, ok); gas=176778\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.425061,
+   "testHash":
+   "935322137edf7df798477f519b431066a78bb4ee9435ab40f77b1a39298bee7f",
+   "test": "tutorial/031_letTypeDep",
+   "runAt": "2026-08-13T23:20:03Z",
+   "maxRss": 130236416,
+   "instructions": 0,
+   "cpuTime": 0.559357,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 3, ok); gas=259315\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.409308,
+   "testHash":
+   "72ff543dfca0b565fd33e572eab9dbac712f0781a948a042c483be4a3d22a85d",
+   "test": "tutorial/032_letRed",
+   "runAt": "2026-08-13T23:20:04Z",
+   "maxRss": 130670592,
+   "instructions": 0,
+   "cpuTime": 0.546766,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 2, ok); gas=187860\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.431417,
+   "testHash":
+   "aeca21d99fd23ba54e402ff893193a9af5d97e40c10abc91b049cf1db84b182d",
+   "test": "tutorial/033_empty",
+   "runAt": "2026-08-13T23:20:04Z",
+   "maxRss": 131022848,
+   "instructions": 0,
+   "cpuTime": 0.577574,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 4, ok); gas=283703\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.452839,
+   "testHash":
+   "4bcb0446f106e02779d705c2aefc5377c482761dd24b18ed91078635e7f7a2a5",
+   "test": "tutorial/034_boolType",
+   "runAt": "2026-08-13T23:20:05Z",
+   "maxRss": 131514368,
+   "instructions": 0,
+   "cpuTime": 0.610051,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=597017\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.522988,
+   "testHash":
+   "597db81df0c5fc9543cfee5ffaef92858de74a387554be9f972f6981759ebafd",
+   "test": "tutorial/035_twoBool",
+   "runAt": "2026-08-13T23:20:05Z",
+   "maxRss": 130437120,
+   "instructions": 0,
+   "cpuTime": 0.704243,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 10, ok); gas=1012021\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.503891,
+   "testHash":
+   "2352361f19889fabc7b37aa54427b59f195c7326d457d7a3a4b6feb7259ee88b",
+   "test": "tutorial/036_andType",
+   "runAt": "2026-08-13T23:20:06Z",
+   "maxRss": 131174400,
+   "instructions": 0,
+   "cpuTime": 0.680852,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=1061965\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.714473,
+   "testHash":
+   "cf0f8fbd53e3445e0648abc8ad9bc04890581fd60e556ca4bb6e8f259c141784",
+   "test": "tutorial/037_prodType",
+   "runAt": "2026-08-13T23:20:06Z",
+   "maxRss": 130576384,
+   "instructions": 0,
+   "cpuTime": 0.902337,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=3202417\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.742498,
+   "testHash":
+   "41b9469ff2506f3eeb1301a4235e709eff9dede604a81cd0a5979113880ca368",
+   "test": "tutorial/038_pprodType",
+   "runAt": "2026-08-13T23:20:07Z",
+   "maxRss": 130867200,
+   "instructions": 0,
+   "cpuTime": 0.921791,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=3457261\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.441589,
+   "testHash":
+   "f7de9b8ea31b1d13dd88bc99684d7bda7a602a85d2d81864ba12ba1cd2cf5bbe",
+   "test": "tutorial/039_pUnitType",
+   "runAt": "2026-08-13T23:20:08Z",
+   "maxRss": 130072576,
+   "instructions": 0,
+   "cpuTime": 0.591847,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=437652\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.636538,
+   "testHash":
+   "5b6a2af4b38f04d7bb6f131fe5da25398bf36736511c9b1ab057df53bd6a2978",
+   "test": "tutorial/040_eqType",
+   "runAt": "2026-08-13T23:20:08Z",
+   "maxRss": 131145728,
+   "instructions": 0,
+   "cpuTime": 0.827379,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=2398419\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.504574,
+   "testHash":
+   "f5106e58cf3a7f3d9ce09ab6abae929216b27e8eb93759bf0f20be51dca2238f",
+   "test": "tutorial/041_natDef",
+   "runAt": "2026-08-13T23:20:09Z",
+   "maxRss": 130940928,
+   "instructions": 0,
+   "cpuTime": 0.665463,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=817788\n",
+     "exitCode": 0}}},
+  {"wallTime": 3.428624,
+   "testHash":
+   "250db1ea3ca118bd37bcde714d5ef806675f6d92cbeefbbd10c7d70dc84c6175",
+   "test": "tutorial/042_rbTreeDef",
+   "runAt": "2026-08-13T23:20:09Z",
+   "maxRss": 135503872,
+   "instructions": 0,
+   "cpuTime": 3.67543,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 17, ok); gas=32625643\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.418439,
+   "testHash":
+   "5f8045064c59efbea868584ef45a87a6e3cd04082505f81b6fcc53c730084e21",
+   "test": "tutorial/043_inductBadNonSort",
+   "runAt": "2026-08-13T23:20:13Z",
+   "maxRss": 130621440,
+   "instructions": 0,
+   "cpuTime": 0.558486,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 1, inductive shape); gas=229831\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.409564,
+   "testHash":
+   "5cd812862732a3497e5c1b243a10da52bd3c54dde659dc955b39181aef94bdd0",
+   "test": "tutorial/044_inductBadNonSort2",
+   "runAt": "2026-08-13T23:20:13Z",
+   "maxRss": 130367488,
+   "instructions": 0,
+   "cpuTime": 0.5335,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 1, inductive shape); gas=177815\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.399917,
+   "testHash":
+   "2e75a37b9c0660606341f38c2cea53242c3070fe9ec09a5454d07487cbdbb6b3",
+   "test": "tutorial/045_inductLevelParam",
+   "runAt": "2026-08-13T23:20:14Z",
+   "maxRss": 131194880,
+   "instructions": 0,
+   "cpuTime": 0.520968,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 0, duplicate universe param); gas=165661\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.414536,
+   "testHash":
+   "ff14a4e714e586726a6537e6171e894cc9ece0279ca9cf42e1bacdc02943b36f",
+   "test": "tutorial/046_inductTooFewParams",
+   "runAt": "2026-08-13T23:20:14Z",
+   "maxRss": 130854912,
+   "instructions": 0,
+   "cpuTime": 0.536254,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 0, inductive shape); gas=180384\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.423704,
+   "testHash":
+   "6fb9d2b1a02dead8868c3911cfa3f2e773408500d730f263765d52d8750a1fbd",
+   "test": "tutorial/047_inductWrongCtorParams",
+   "runAt": "2026-08-13T23:20:15Z",
+   "maxRss": 133386240,
+   "instructions": 0,
+   "cpuTime": 0.562764,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 1, constructor shape); gas=234585\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.42652,
+   "testHash":
+   "b23f215e9ee3f271436f3fd5f8ab0233603921bdfcc91c9547ec285685db0559",
+   "test": "tutorial/048_inductWrongCtorResParams",
+   "runAt": "2026-08-13T23:20:15Z",
+   "maxRss": 130052096,
+   "instructions": 0,
+   "cpuTime": 0.571155,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 0, constructor result type); gas=275652\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.428947,
+   "testHash":
+   "771ed35e55437a35f8733538fc3e3071daa45d8e4612622c8775762339a86e11",
+   "test": "tutorial/049_inductWrongCtorResLevel",
+   "runAt": "2026-08-13T23:20:15Z",
+   "maxRss": 129921024,
+   "instructions": 0,
+   "cpuTime": 0.570039,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 0, constructor result levels); gas=291058\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.400732,
+   "testHash":
+   "4b0882c1994a997c7cc59f79adf206fccb6c919b01fdecdb5f05bcb3149a7679",
+   "test": "tutorial/050_inductInIndex",
+   "runAt": "2026-08-13T23:20:16Z",
+   "maxRss": 131457024,
+   "instructions": 0,
+   "cpuTime": 0.531026,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 1, constructor result type); gas=219594\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.435119,
+   "testHash":
+   "d8df2fa38b8955f492aa8c94042776bf22a7f845259c76359f5a82216e67dffc",
+   "test": "tutorial/051_indNeg",
+   "runAt": "2026-08-13T23:20:16Z",
+   "maxRss": 130703360,
+   "instructions": 0,
+   "cpuTime": 0.575799,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 0, positivity violation); gas=207656\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.568705,
+   "testHash":
+   "f6bd2c9ae655703faff57dae829c54515ed2cb9ad847f44f632b112d69c63a77",
+   "test": "tutorial/052_reduceCtorParam.mk",
+   "runAt": "2026-08-13T23:20:17Z",
+   "maxRss": 131338240,
+   "instructions": 0,
+   "cpuTime": 0.745029,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=1564651\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.408204,
+   "testHash":
+   "b2664c4a1bdcf51b8cf21f728b3ebcc1635fc4899642ceb04cd3e2e1e1b35da1",
+   "test": "tutorial/053_reduceCtorType.mk",
+   "runAt": "2026-08-13T23:20:17Z",
+   "maxRss": 130781184,
+   "instructions": 0,
+   "cpuTime": 0.537877,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 1, constructor result type); gas=260540\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.418866,
+   "testHash":
+   "3f199422717f3987ee067456b23baf79b60cdf234e1b815f8130ea5a67b11481",
+   "test": "tutorial/054_indNegReducible",
+   "runAt": "2026-08-13T23:20:18Z",
+   "maxRss": 130928640,
+   "instructions": 0,
+   "cpuTime": 0.559306,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 2, positivity violation); gas=303029\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.443916,
+   "testHash":
+   "f32bd27364044f967e59a1ae5973e0d986bc7850c66f603bba44bb4870154b57",
+   "test": "tutorial/055_predWithTypeField",
+   "runAt": "2026-08-13T23:20:18Z",
+   "maxRss": 130838528,
+   "instructions": 0,
+   "cpuTime": 0.599592,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=421634\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.450669,
+   "testHash":
+   "476745e0a33933240e68b15262ede789db21fba9ff79632dd4fcb9c9d3798909",
+   "test": "tutorial/056_typeWithTypeField",
+   "runAt": "2026-08-13T23:20:19Z",
+   "maxRss": 130273280,
+   "instructions": 0,
+   "cpuTime": 0.605847,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=481932\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.447244,
+   "testHash":
+   "e66624dff231e2a774846f7843c42615c8209487a15d22f7f98bbb791b4ad593",
+   "test": "tutorial/057_typeWithTypeFieldPoly",
+   "runAt": "2026-08-13T23:20:19Z",
+   "maxRss": 130285568,
+   "instructions": 0,
+   "cpuTime": 0.597413,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=531660\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.424652,
+   "testHash":
+   "230cf7872ad10d636d3a297e5eb8c60efe98616f8fd60a33534c57ddeb11f6d3",
+   "test": "tutorial/058_typeWithTooHighTypeField.mk",
+   "runAt": "2026-08-13T23:20:20Z",
+   "maxRss": 131817472,
+   "instructions": 0,
+   "cpuTime": 0.552758,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 0, field universe too large); gas=212947\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.436723,
+   "testHash":
+   "edd9fe8dde69997bb4ce2a9402e953fca00600bdcc9221d4ee4793cd9b7a6dea",
+   "test": "tutorial/059_emptyRec",
+   "runAt": "2026-08-13T23:20:20Z",
+   "maxRss": 129712128,
+   "instructions": 0,
+   "cpuTime": 0.588756,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 4, ok); gas=357577\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.492646,
+   "testHash":
+   "1872d144e038899f0ed5a6cc3a09069f473deb7f1db67fee7db54bad34add9e5",
+   "test": "tutorial/060_boolRec",
+   "runAt": "2026-08-13T23:20:20Z",
+   "maxRss": 131022848,
+   "instructions": 0,
+   "cpuTime": 0.661899,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=941715\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.530718,
+   "testHash":
+   "4d89fed6a8fbf32770f0734ea0f8951c39f90e075f4d579f5c1210188a622a23",
+   "test": "tutorial/061_twoBoolRec",
+   "runAt": "2026-08-13T23:20:21Z",
+   "maxRss": 131325952,
+   "instructions": 0,
+   "cpuTime": 0.704304,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 10, ok); gas=1308965\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.56753,
+   "testHash":
+   "0c384a0473a2f7b04639f3af75a3576f11997c101053c34e15f72892774226f1",
+   "test": "tutorial/062_andRec",
+   "runAt": "2026-08-13T23:20:22Z",
+   "maxRss": 130998272,
+   "instructions": 0,
+   "cpuTime": 0.751252,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=1506816\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.865039,
+   "testHash":
+   "e06fac4c4a81c73aea250bebb7da7a4372204e6066ba04113bb411fbbd7a0319",
+   "test": "tutorial/063_prodRec",
+   "runAt": "2026-08-13T23:20:22Z",
+   "maxRss": 130727936,
+   "instructions": 0,
+   "cpuTime": 1.053803,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=4860299\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.886369,
+   "testHash":
+   "869983c7b9b70c3f97dd52540b0a14f8a92b18c1bbdebc54df03e6764c1c82cc",
+   "test": "tutorial/064_pprodRec",
+   "runAt": "2026-08-13T23:20:23Z",
+   "maxRss": 130813952,
+   "instructions": 0,
+   "cpuTime": 1.085428,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=4950261\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.450917,
+   "testHash":
+   "a0959eae42fcbfe77dd08f2c35b3b4c82c7a28ce9d48b464c5f1499bd13a696a",
+   "test": "tutorial/065_punitRec",
+   "runAt": "2026-08-13T23:20:24Z",
+   "maxRss": 131751936,
+   "instructions": 0,
+   "cpuTime": 0.60693,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=595573\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.784615,
+   "testHash":
+   "b64ce27198ba64ebc2aff367cae9da915558580b685da40ac713b9e5990c0038",
+   "test": "tutorial/066_eqRec",
+   "runAt": "2026-08-13T23:20:24Z",
+   "maxRss": 132132864,
+   "instructions": 0,
+   "cpuTime": 0.976282,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=4042663\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.511236,
+   "testHash":
+   "195779513a7988b86dcbb446b047c04cbbe263a6528420a00b62d7fcfff57cc0",
+   "test": "tutorial/067_nRec",
+   "runAt": "2026-08-13T23:20:25Z",
+   "maxRss": 131682304,
+   "instructions": 0,
+   "cpuTime": 0.686381,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=1016620\n",
+     "exitCode": 0}}},
+  {"wallTime": 4.953622,
+   "testHash":
+   "0e0ccc56c0d33ba52bd32784660681cc0244161d8f8cbc10bbe30598fc53adcf",
+   "test": "tutorial/068_rbTreeRef",
+   "runAt": "2026-08-13T23:20:26Z",
+   "maxRss": 130924544,
+   "instructions": 0,
+   "cpuTime": 5.21194,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 17, ok); gas=48690916\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.444502,
+   "testHash":
+   "08c88cb6fdfa6e158f996b51a055df21e9773468fa3f0089208f5f1ea6fd2ba8",
+   "test": "tutorial/069_boolPropRec",
+   "runAt": "2026-08-13T23:20:31Z",
+   "maxRss": 130437120,
+   "instructions": 0,
+   "cpuTime": 0.59785,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=513377\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.535576,
+   "testHash":
+   "da50162708d82a9128f4258b2900cdb1c0acaba525f7e2457ba449d73de4e331",
+   "test": "tutorial/070_existsRec",
+   "runAt": "2026-08-13T23:20:31Z",
+   "maxRss": 130953216,
+   "instructions": 0,
+   "cpuTime": 0.714276,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=1342188\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.814387,
+   "testHash":
+   "fdcb1f6d72894fbfc032e74875acdd0c7c06362e8c3ab506104234aaa9e375f1",
+   "test": "tutorial/071_sortElimPropRec",
+   "runAt": "2026-08-13T23:20:32Z",
+   "maxRss": 130535424,
+   "instructions": 0,
+   "cpuTime": 1.001102,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 10, ok); gas=4232746\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.615174,
+   "testHash":
+   "643e31d8be5610e52862ecc77f3546e1d9adc035b15e57510f0827d0e98a9efd",
+   "test": "tutorial/072_sortElimProp2Rec",
+   "runAt": "2026-08-13T23:20:32Z",
+   "maxRss": 129839104,
+   "instructions": 0,
+   "cpuTime": 0.809106,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 11, ok); gas=2056036\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.969324,
+   "testHash":
+   "ae5a724a4c39396dd496e39d317b6b8643c0d1f26dd1228458973d55ef2ec0ce",
+   "test": "tutorial/073_boolRecEqns",
+   "runAt": "2026-08-13T23:20:33Z",
+   "maxRss": 130908160,
+   "instructions": 0,
+   "cpuTime": 1.181163,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 14, ok); gas=5671377\n",
+     "exitCode": 0}}},
+  {"wallTime": 1.152042,
+   "testHash":
+   "b7a5475de59aa4f01a62061b5c45d340b249acbcc3132f08a7d79f19d9b2fd16",
+   "test": "tutorial/074_prodRecEqns",
+   "runAt": "2026-08-13T23:20:34Z",
+   "maxRss": 130187264,
+   "instructions": 0,
+   "cpuTime": 1.365489,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 9, ok); gas=7439513\n",
+     "exitCode": 0}}},
+  {"wallTime": 1.180617,
+   "testHash":
+   "ffbad4b748313ec8cece6951470227b6c8a9086f555edbc6982765f66f340f41",
+   "test": "tutorial/075_nRecReduction",
+   "runAt": "2026-08-13T23:20:35Z",
+   "maxRss": 130285568,
+   "instructions": 0,
+   "cpuTime": 1.394042,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 16, ok); gas=7840686\n",
+     "exitCode": 0}}},
+  {"wallTime": 2.2922,
+   "testHash":
+   "83ef251e0223130e3f9a40e43adcd377ec6cec9c7c81d084d0006811454abcdb",
+   "test": "tutorial/076_listRecReduction",
+   "runAt": "2026-08-13T23:20:36Z",
+   "maxRss": 145907712,
+   "instructions": 0,
+   "cpuTime": 2.553724,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 17, ok); gas=19692220\n",
+     "exitCode": 0}}},
+  {"wallTime": 9.979327,
+   "testHash":
+   "6d79b84ec866e2864f8cbe4d3d9488b37f7d1ac0679a58637454c8e5155359f1",
+   "test": "tutorial/077_RBTree.id_spec",
+   "runAt": "2026-08-13T23:20:39Z",
+   "maxRss": 247664640,
+   "instructions": 0,
+   "cpuTime": 10.264661,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 23, ok); gas=127963632\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.549589,
+   "testHash":
+   "816fd3b17663e3cf01e19af33a12063273c469a04d25335024bbf6df8069e83b",
+   "test": "tutorial/078_And.right",
+   "runAt": "2026-08-13T23:20:49Z",
+   "maxRss": 130539520,
+   "instructions": 0,
+   "cpuTime": 0.725979,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=1315288\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.790292,
+   "testHash":
+   "c354e09ec5a4d42d454577721198bd716f7d317bc6d88a5bf0241d962c735f0d",
+   "test": "tutorial/079_Prod.snd",
+   "runAt": "2026-08-13T23:20:49Z",
+   "maxRss": 131698688,
+   "instructions": 0,
+   "cpuTime": 0.986759,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=4046573\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.769231,
+   "testHash":
+   "9dd17baa676311b5931e5ea327e5a4244a5395bf1be200c1ef826aab8c55adce",
+   "test": "tutorial/080_PProd.snd",
+   "runAt": "2026-08-13T23:20:50Z",
+   "maxRss": 131088384,
+   "instructions": 0,
+   "cpuTime": 0.955781,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=3974812\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.882769,
+   "testHash":
+   "f7850b3456c472a5a8f73d3fb5e03a73f7ad6ddfaec73a454290dde0e1870d92",
+   "test": "tutorial/081_PSigma.snd",
+   "runAt": "2026-08-13T23:20:51Z",
+   "maxRss": 130027520,
+   "instructions": 0,
+   "cpuTime": 1.085089,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=4728349\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.529269,
+   "testHash":
+   "39861a0f5a06dc560bd69ba36b5c4d790fca8cf9586f1829852881529b266620",
+   "test": "tutorial/082_projOutOfRange",
+   "runAt": "2026-08-13T23:20:52Z",
+   "maxRss": 129998848,
+   "instructions": 0,
+   "cpuTime": 0.714582,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 4, projection violation); gas=1189030\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.479769,
+   "testHash":
+   "da689648e368e9463d1aa387c61de8b60f690a9a2a3d0943df41f921d70e12f1",
+   "test": "tutorial/083_projNotStruct",
+   "runAt": "2026-08-13T23:20:52Z",
+   "maxRss": 131190784,
+   "instructions": 0,
+   "cpuTime": 0.635168,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 5, projection violation); gas=839847\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.793205,
+   "testHash":
+   "daec5faf9346a59480a09fae68ee6dddf0b17c2c5196f294ab2e208bc383421a",
+   "test": "tutorial/084_projProp1",
+   "runAt": "2026-08-13T23:20:53Z",
+   "maxRss": 130990080,
+   "instructions": 0,
+   "cpuTime": 1.003297,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 13, ok); gas=3830409\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.792853,
+   "testHash":
+   "fd648e2fb0c904b62b17369289f732bb9a6b99bd784397ca2f1366d8daf59a5a",
+   "test": "tutorial/085_projProp2",
+   "runAt": "2026-08-13T23:20:54Z",
+   "maxRss": 134512640,
+   "instructions": 0,
+   "cpuTime": 0.993401,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 12, projection violation); gas=3850407\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.785867,
+   "testHash":
+   "08ab389c47971af67e9aece73b9a38c65a45960efbffc31287fa7500f699158a",
+   "test": "tutorial/086_projProp3",
+   "runAt": "2026-08-13T23:20:55Z",
+   "maxRss": 131170304,
+   "instructions": 0,
+   "cpuTime": 0.988827,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 13, ok); gas=3870813\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.774613,
+   "testHash":
+   "fb3c7bd7c94c68d2c824445a2449ab8b461284999db129e0c3591e30bbaed787",
+   "test": "tutorial/087_projProp4",
+   "runAt": "2026-08-13T23:20:55Z",
+   "maxRss": 130289664,
+   "instructions": 0,
+   "cpuTime": 0.972782,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 12, projection violation); gas=3885955\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.794328,
+   "testHash":
+   "b10e32c455900b4245c600cb83457cb3136eed1e0cd16bbf4e448d56d4de18b2",
+   "test": "tutorial/088_projProp5",
+   "runAt": "2026-08-13T23:20:56Z",
+   "maxRss": 130703360,
+   "instructions": 0,
+   "cpuTime": 1.004538,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 12, projection violation); gas=3902786\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.786533,
+   "testHash":
+   "2fb380b9d4634983d6259b1e7777e4a2385e6c96ce6f088f85e14f6c7b19a1da",
+   "test": "tutorial/089_projProp6",
+   "runAt": "2026-08-13T23:20:57Z",
+   "maxRss": 130711552,
+   "instructions": 0,
+   "cpuTime": 0.98534,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 12, projection violation); gas=3887463\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.602535,
+   "testHash":
+   "a7fc349a61b879b6e500bc267c04fdb37aab598b4cbe37eb3ff2906877db3a2c",
+   "test": "tutorial/090_projDataIndexRec",
+   "runAt": "2026-08-13T23:20:58Z",
+   "maxRss": 134553600,
+   "instructions": 0,
+   "cpuTime": 0.792213,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 14, ok); gas=1709691\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.578426,
+   "testHash":
+   "bae14a3a4b083fb76d540394399f7b73e0f06d02600a9bf3eb16d44d7c94a9ef",
+   "test": "tutorial/091_projIndexData",
+   "runAt": "2026-08-13T23:20:58Z",
+   "maxRss": 131129344,
+   "instructions": 0,
+   "cpuTime": 0.766768,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 13, unknown constant); gas=1499358\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.563396,
+   "testHash":
+   "3b20d5b38828c897c0f158c45ebc8dd0c2717c9357ebcd91b3c44acc0af42633",
+   "test": "tutorial/092_projIndexData2",
+   "runAt": "2026-08-13T23:20:59Z",
+   "maxRss": 130433024,
+   "instructions": 0,
+   "cpuTime": 0.760404,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 13, unknown constant); gas=1500687\n",
+     "exitCode": 1}}},
+  {"wallTime": 1.048232,
+   "testHash":
+   "dcde4705f5e725d29c29727f607a655d708301bd8b95aa07fe1be2c3566d1e4d",
+   "test": "tutorial/093_projRed",
+   "runAt": "2026-08-13T23:21:00Z",
+   "maxRss": 130039808,
+   "instructions": 0,
+   "cpuTime": 1.252983,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 16, ok); gas=6734060\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.768033,
+   "testHash":
+   "9099eedc1eaf6249f6520bcbe37132f192f46b882b3ee24b00a79fea4a2d4f72",
+   "test": "tutorial/094_ruleK",
+   "runAt": "2026-08-13T23:21:01Z",
+   "maxRss": 130600960,
+   "instructions": 0,
+   "cpuTime": 0.97479,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 10, ok); gas=3510701\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.768069,
+   "testHash":
+   "4993ecb719ee39c687fc744432813169a72376af4ae1f74bb138f78601f43eb0",
+   "test": "tutorial/095_ruleKbad",
+   "runAt": "2026-08-13T23:21:01Z",
+   "maxRss": 131416064,
+   "instructions": 0,
+   "cpuTime": 0.964341,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 9, value/type mismatch); gas=3714117\n",
+     "exitCode": 1}}},
+  {"wallTime": 1.543112,
+   "testHash":
+   "2e767c41662cbffadfdc09b03f43a17519d99020c6c1b08ab5a21bec38846973",
+   "test": "tutorial/096_ruleKAcc",
+   "runAt": "2026-08-13T23:21:02Z",
+   "maxRss": 131076096,
+   "instructions": 0,
+   "cpuTime": 1.753549,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 13, value/type mismatch); gas=11690290\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.474958,
+   "testHash":
+   "4d45203e545d1851179a88ac7e8d9615597d59ac95e881a59f1c9a1fec5a2f3b",
+   "test": "tutorial/097_aNatLit",
+   "runAt": "2026-08-13T23:21:04Z",
+   "maxRss": 130310144,
+   "instructions": 0,
+   "cpuTime": 0.63055,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=801269\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.724321,
+   "testHash":
+   "3bcc6a8707d8e8f5196fe05a5c529fdc08573b3d3f98df918bb1664d280fa965",
+   "test": "tutorial/098_natLitEq",
+   "runAt": "2026-08-13T23:21:04Z",
+   "maxRss": 131080192,
+   "instructions": 0,
+   "cpuTime": 0.923933,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 10, ok); gas=3184310\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.685169,
+   "testHash":
+   "15c9e3201b2054008fb336ec7f861d09529a15daff7a81d0dbd81381fc054e34",
+   "test": "tutorial/099_proofIrrelevance",
+   "runAt": "2026-08-13T23:21:05Z",
+   "maxRss": 135127040,
+   "instructions": 0,
+   "cpuTime": 0.87462,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=2711062\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.683748,
+   "testHash":
+   "8b2fb79631781d7727ec0c19e6bcea5e424846668246780e42177698b09879aa",
+   "test": "tutorial/100_proofIrrelevanceBad",
+   "runAt": "2026-08-13T23:21:06Z",
+   "maxRss": 130392064,
+   "instructions": 0,
+   "cpuTime": 0.877491,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 5, value/type mismatch); gas=2765039\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.692389,
+   "testHash":
+   "8a20d5c89d082411ad0c0a9873d3d2c2f867bd6e4ae973c898b11e8fbaadf383",
+   "test": "tutorial/101_proofIrrelevanceWhnf",
+   "runAt": "2026-08-13T23:21:06Z",
+   "maxRss": 130576384,
+   "instructions": 0,
+   "cpuTime": 0.88542,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 7, ok); gas=2980677\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.703129,
+   "testHash":
+   "d25f7fd6e651ae523d9f98b1510a938b13030e698f1612a70011ec54e02f43c9",
+   "test": "tutorial/102_unitEta1",
+   "runAt": "2026-08-13T23:21:07Z",
+   "maxRss": 130801664,
+   "instructions": 0,
+   "cpuTime": 0.907164,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 11, ok); gas=2951074\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.698852,
+   "testHash":
+   "72aed1db8c9c30b32bb0fc97db4e2eadfe42068646fde72c286a3a606273f0c9",
+   "test": "tutorial/103_unitEta2",
+   "runAt": "2026-08-13T23:21:08Z",
+   "maxRss": 131063808,
+   "instructions": 0,
+   "cpuTime": 0.892931,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 10, ok); gas=2914815\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.695412,
+   "testHash":
+   "4aa5359a46ff775ceefca10bf976f2d2bde1a0a43804903b7d95752b83c9bfc8",
+   "test": "tutorial/104_unitEta3",
+   "runAt": "2026-08-13T23:21:08Z",
+   "maxRss": 130916352,
+   "instructions": 0,
+   "cpuTime": 0.88314,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 10, ok); gas=2940260\n",
+     "exitCode": 0}}},
+  {"wallTime": 1.407016,
+   "testHash":
+   "00aab3d02b33905d6a04f96cf599e5bebf42df7060ae21bdbfc95641d370528a",
+   "test": "tutorial/105_structEta",
+   "runAt": "2026-08-13T23:21:09Z",
+   "maxRss": 130650112,
+   "instructions": 0,
+   "cpuTime": 1.626748,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 16, ok); gas=10004099\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.703954,
+   "testHash":
+   "9db5f705f222d1a6d11bc939b0a8a0ebea0c56b95f055de64181e427e55270a4",
+   "test": "tutorial/106_funEta",
+   "runAt": "2026-08-13T23:21:11Z",
+   "maxRss": 130293760,
+   "instructions": 0,
+   "cpuTime": 0.893883,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=2794480\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.692194,
+   "testHash":
+   "1fbc8156dc13eb0cc55cf82bdfac4ec6c113152a644f7a053db096cccbcecbe0",
+   "test": "tutorial/107_funEtaDep",
+   "runAt": "2026-08-13T23:21:11Z",
+   "maxRss": 130203648,
+   "instructions": 0,
+   "cpuTime": 0.877428,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=2878102\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.732436,
+   "testHash":
+   "7b83baa4990e537283ff5fdf48e29a933451a3fa04c1efe3cbef4daf20db49d7",
+   "test": "tutorial/108_funEtaBad",
+   "runAt": "2026-08-13T23:21:12Z",
+   "maxRss": 131153920,
+   "instructions": 0,
+   "cpuTime": 0.925503,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 4, value/type mismatch); gas=3194318\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.786205,
+   "testHash":
+   "051bd3bfaf1ed4bf087b555e47fca226b3e3d9f4a51e6d44a38c50be214e8fc5",
+   "test": "tutorial/109_etaRuleK",
+   "runAt": "2026-08-13T23:21:13Z",
+   "maxRss": 130494464,
+   "instructions": 0,
+   "cpuTime": 0.978989,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 9, value/type mismatch); gas=3930760\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.794212,
+   "testHash":
+   "18dbd91b1b31cf31ac9a7567d518b4a05c80ae3e9acdbde7e235494c0cad2f87",
+   "test": "tutorial/110_etaCtor",
+   "runAt": "2026-08-13T23:21:14Z",
+   "maxRss": 132063232,
+   "instructions": 0,
+   "cpuTime": 0.995313,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 18, value/type mismatch); gas=4015857\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.488902,
+   "testHash":
+   "085b4d12540c2443e05737d61d35d525d1b77acc26590ea8ecdb98a03a1e9264",
+   "test": "tutorial/111_reflOccLeft",
+   "runAt": "2026-08-13T23:21:14Z",
+   "maxRss": 130949120,
+   "instructions": 0,
+   "cpuTime": 0.660718,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 5, positivity violation); gas=862059\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.493306,
+   "testHash":
+   "ad28fe77b69634dd175e7ef14806ff163231682c4a50511fd7839bd53ebf0a13",
+   "test": "tutorial/112_reflOccInIndex",
+   "runAt": "2026-08-13T23:21:15Z",
+   "maxRss": 131297280,
+   "instructions": 0,
+   "cpuTime": 0.664649,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr":
+     "evmlean: reject (decl 5, application argument type mismatch); gas=877471\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.623314,
+   "testHash":
+   "667d5576fee6ad3c1e2d1a10c17d32e4e4c6ce507ccfdb1eea18f9ceb5f37f3a",
+   "test": "tutorial/113_reduceCtorParamRefl.mk",
+   "runAt": "2026-08-13T23:21:15Z",
+   "maxRss": 130805760,
+   "instructions": 0,
+   "cpuTime": 0.811147,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=2186555\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.629598,
+   "testHash":
+   "74f14920fb538c4a82bb26de1cbb6419532bde44adfa4ffdff1d03573c30b9e6",
+   "test": "tutorial/114_reduceCtorParamRefl2.mk",
+   "runAt": "2026-08-13T23:21:16Z",
+   "maxRss": 131096576,
+   "instructions": 0,
+   "cpuTime": 0.815864,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 6, ok); gas=2125836\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.653315,
+   "testHash":
+   "fe8f0ae247f2335b297fae502aeb90389365b8a36957de1a1d5c15abee87f6c8",
+   "test": "tutorial/115_rTreeRec",
+   "runAt": "2026-08-13T23:21:17Z",
+   "maxRss": 131010560,
+   "instructions": 0,
+   "cpuTime": 0.839316,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 11, ok); gas=2309277\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.896486,
+   "testHash":
+   "7182ca520a6e748a77b18b3a89563016c6bad8ae6b71b776a6a65cb56e70f94e",
+   "test": "tutorial/116_rtreeRecReduction",
+   "runAt": "2026-08-13T23:21:17Z",
+   "maxRss": 130691072,
+   "instructions": 0,
+   "cpuTime": 1.102333,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 17, ok); gas=5030735\n",
+     "exitCode": 0}}},
+  {"wallTime": 1.612589,
+   "testHash":
+   "d005e5c8553aa9dec969d57c8fe11571f1afa01a02503cd74b4035d702da90de",
+   "test": "tutorial/117_accRecType",
+   "runAt": "2026-08-13T23:21:18Z",
+   "maxRss": 130461696,
+   "instructions": 0,
+   "cpuTime": 1.812366,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 5, ok); gas=13076413\n",
+     "exitCode": 0}}},
+  {"wallTime": 1.715206,
+   "testHash":
+   "0771ea6066a9f2cc8e0da8afb05d4a08dafaf824f7f271d460a65c66f980807b",
+   "test": "tutorial/118_accRecReduction",
+   "runAt": "2026-08-13T23:21:20Z",
+   "maxRss": 133312512,
+   "instructions": 0,
+   "cpuTime": 1.959527,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 14, ok); gas=13386376\n",
+     "exitCode": 0}}},
+  {"wallTime": 1.535927,
+   "testHash":
+   "8e8701197117507aee75ab471d6646b4eda62175765b22bf39deaf3bb5c52349",
+   "test": "tutorial/119_accRecNoEta",
+   "runAt": "2026-08-13T23:21:22Z",
+   "maxRss": 130830336,
+   "instructions": 0,
+   "cpuTime": 1.755942,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 13, value/type mismatch); gas=11691966\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.93184,
+   "testHash":
+   "78e223734d9bc029066557de2c59e1f7c07853d079f15c83da9e0dbdb6cdf10b",
+   "test": "tutorial/120_quotMkType",
+   "runAt": "2026-08-13T23:21:23Z",
+   "maxRss": 130977792,
+   "instructions": 0,
+   "cpuTime": 1.144105,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 9, ok); gas=5324486\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.932868,
+   "testHash":
+   "9bb95ecda565cbeb86dd02af9a6f97ed4473b758770c3128bb8d12e44093f989",
+   "test": "tutorial/121_quotIndType",
+   "runAt": "2026-08-13T23:21:24Z",
+   "maxRss": 131350528,
+   "instructions": 0,
+   "cpuTime": 1.141633,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 9, ok); gas=5480738\n",
+     "exitCode": 0}}},
+  {"wallTime": 1.120505,
+   "testHash":
+   "e6fa185b3b9d8a4b705bde742843503b7d48d93f6ed840abd84d92a335d1337b",
+   "test": "tutorial/122_quotLiftType",
+   "runAt": "2026-08-13T23:21:25Z",
+   "maxRss": 131174400,
+   "instructions": 0,
+   "cpuTime": 1.335864,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 9, ok); gas=7361785\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.979209,
+   "testHash":
+   "e3bf86a52a2bd0af74954b6697c8272925bff7bc897506d6f5e5b3bd285ad356",
+   "test": "tutorial/123_quotSoundType",
+   "runAt": "2026-08-13T23:21:26Z",
+   "maxRss": 131358720,
+   "instructions": 0,
+   "cpuTime": 1.193445,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 10, ok); gas=5834310\n",
+     "exitCode": 0}}},
+  {"wallTime": 1.038905,
+   "testHash":
+   "8f50aec5908894bc31417ea8bba04c4cf134d1e2baad9618faf4fec6ad86c49d",
+   "test": "tutorial/124_quotLiftReduction",
+   "runAt": "2026-08-13T23:21:27Z",
+   "maxRss": 130519040,
+   "instructions": 0,
+   "cpuTime": 1.245864,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 9, ok); gas=6471708\n",
+     "exitCode": 0}}},
+  {"wallTime": 1.069541,
+   "testHash":
+   "22832bbe4b1ba04b3e6b14d4a66dc9b14a0cfa5026dbf16fdeb4ac1f7d8261e7",
+   "test": "tutorial/125_quotIndReduction",
+   "runAt": "2026-08-13T23:21:28Z",
+   "maxRss": 131162112,
+   "instructions": 0,
+   "cpuTime": 1.274232,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: accept (decl 9, ok); gas=6620214\n",
+     "exitCode": 0}}},
+  {"wallTime": 0.403639,
+   "testHash":
+   "cbbf2da76b53c6ce5aa483e0718bb281d3dbb069831f952ba5af9106e0c95e44",
+   "test": "tutorial/126_dup_defs",
+   "runAt": "2026-08-13T23:21:29Z",
+   "maxRss": 130711552,
+   "instructions": 0,
+   "cpuTime": 0.528629,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 1, duplicate name); gas=166442\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.428403,
+   "testHash":
+   "30d3de7a522544af09336b9542a07e52ffad061fd0ec1768a34cb6e4274eb7f2",
+   "test": "tutorial/127_dup_ind_def",
+   "runAt": "2026-08-13T23:21:30Z",
+   "maxRss": 130830336,
+   "instructions": 0,
+   "cpuTime": 0.564515,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 1, duplicate name); gas=196861\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.427444,
+   "testHash":
+   "a8ecafeec2d05bddc73ea43cb24839084bef92cd2a27e193ec226e7ae4a5c4d2",
+   "test": "tutorial/128_dup_ctor_def",
+   "runAt": "2026-08-13T23:21:30Z",
+   "maxRss": 130777088,
+   "instructions": 0,
+   "cpuTime": 0.571824,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 1, duplicate name); gas=205220\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.415542,
+   "testHash":
+   "2da5e23f99b9373624dc2991e22e9e48b536953c94950c8433f6c134c3bf0ab0",
+   "test": "tutorial/129_dup_rec_def",
+   "runAt": "2026-08-13T23:21:31Z",
+   "maxRss": 130621440,
+   "instructions": 0,
+   "cpuTime": 0.551859,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 1, duplicate name); gas=222174\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.421962,
+   "testHash":
+   "b8303345c6bfc735e3b90d65c2ccb0a7c985804f559e20d7167a95e7b77c7a1c",
+   "test": "tutorial/130_misnamed_rec_user",
+   "runAt": "2026-08-13T23:21:31Z",
+   "maxRss": 134586368,
+   "instructions": 0,
+   "cpuTime": 0.563307,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 0, recursor shape); gas=223210\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.418899,
+   "testHash":
+   "70e8da9988afacdf82438d5d6be3309cb5fc52f87d0a38a31d5c3e3fde8e4a14",
+   "test": "tutorial/131_dup_rec_def2",
+   "runAt": "2026-08-13T23:21:32Z",
+   "maxRss": 131518464,
+   "instructions": 0,
+   "cpuTime": 0.549827,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 1, recursor shape); gas=225243\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.413775,
+   "testHash":
+   "d5f472e0819f3fbb060e78061260435cd4ffbae118feb7017247cfe69b990567",
+   "test": "tutorial/132_dup_ctor_rec",
+   "runAt": "2026-08-13T23:21:32Z",
+   "maxRss": 130850816,
+   "instructions": 0,
+   "cpuTime": 0.557976,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 0, duplicate name); gas=208901\n",
+     "exitCode": 1}}},
+  {"wallTime": 0.412152,
+   "testHash":
+   "aca3992a0067b8c24422ee1d3e70362defd1f2a5f46e15a8244a961c67ade4c0",
+   "test": "tutorial/133_DupConCon",
+   "runAt": "2026-08-13T23:21:32Z",
+   "maxRss": 134488064,
+   "instructions": 0,
+   "cpuTime": 0.543134,
+   "attempt":
+   {"ran":
+    {"stdout": "",
+     "stderr": "evmlean: reject (decl 0, duplicate name); gas=217252\n",
+     "exitCode": 1}}}],
+ "checker": "evmlean"}
