@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Lean Kernel Arena{% endblock %}</title>
-    <link rel="stylesheet" href="https://unpkg.com/chota@latest">
-    <link rel="stylesheet" href="{% block static_path %}{% endblock %}static/style.css">
-    <script async src="https://plausible.io/js/pa-RTua_4FfKHhfAvAc3liZd.js"></script>
-    <script>
-        window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-        plausible.init()
-    </script>
+    {# Chota is vendored rather than loaded from a CDN: archived rounds are
+       frozen artifacts that must still render years from now. #}
+    <link rel="stylesheet" href="{{ root_path }}static/chota.min.css">
+    <link rel="stylesheet" href="{{ root_path }}static/style.css">
+    {# The analytics snippet is deliberately not here; it is injected into the
+       deployed pages only, see .github/add-analytics.py. A round is archived
+       and cited as a frozen artifact, and must not carry a script that calls
+       out to a third party for as long as anyone keeps a copy of it. #}
     <style>
         {% block style %}{% endblock %}
     </style>
@@ -19,6 +20,12 @@
     <div class="container">
         <header class="is-center">
             <h1>{% block h1 %}Lean Kernel Arena{% endblock %}</h1>
+            {% block round_line %}
+            <p class="round-line">
+                {% if build_info.round %}Round {{ build_info.round }}{% else %}Round in progress{% endif %}
+                · <a href="{{ rounds_url }}">other rounds</a>
+            </p>
+            {% endblock %}
         </header>
 
         <main>
