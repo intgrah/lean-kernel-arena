@@ -18,6 +18,7 @@
           libffi
           libffi.dev
           pkg-config
+          cmake
           jq
           just
           pypy
