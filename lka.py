@@ -13,6 +13,7 @@ import argparse
 import datetime
 import filecmp
 import fnmatch
+import hashlib
 import json
 import os
 import shutil
@@ -899,16 +900,28 @@ name = "Test"'''
 
 
 def _gather_ndjson_stats(ndjson_file: Path) -> dict:
-    """Gather size, line count, and metadata from an NDJSON file."""
+    """Gather size, line count, hash, and metadata from an NDJSON file."""
     file_size = ndjson_file.stat().st_size
-    with open(ndjson_file, "r") as f:
-        line_count = sum(1 for _ in f)
+    # Line count and hash in one pass; exports can be large. The hash is
+    # only recorded in results.json, to pin down which export was checked.
+    line_count = 0
+    sha256 = hashlib.sha256()
+    last = b"\n"
+    with open(ndjson_file, "rb") as f:
+        while chunk := f.read(1 << 20):
+            line_count += chunk.count(b"\n")
+            sha256.update(chunk)
+            last = chunk[-1:]
+    if last != b"\n":
+        # A final line without a trailing newline counts as well
+        line_count += 1
     metadata = extract_ndjson_metadata(ndjson_file)
     return {
         "size": file_size,
         "size_str": format_memory(file_size),
         "lines": line_count,
         "lines_str": format_unitless(line_count),
+        "sha256": sha256.hexdigest(),
         **metadata,
     }
 
@@ -1743,8 +1756,8 @@ def get_build_metadata() -> dict:
         "github_action_url": None,
         # Round metadata, filled in by build-site from its --round/--doi/
         # --zenodo-deposition options. A build without a round name is the
-        # ongoing round ("Round in progress"); only a release build off a
-        # round-* tag names a round and carries a DOI.
+        # ongoing round ("Round in progress"); only the release-round
+        # workflow names a round and gives it a DOI.
         "round": None,
         "doi": None,
         "zenodo_deposition": None,

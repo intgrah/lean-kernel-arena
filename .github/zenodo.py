@@ -229,7 +229,7 @@ def main() -> int:
     parser.add_argument(
         "--sandbox",
         action="store_true",
-        help="Use sandbox.zenodo.org instead of zenodo.org (for test-round-* tags)",
+        help="Use sandbox.zenodo.org instead of zenodo.org (for test rounds)",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 

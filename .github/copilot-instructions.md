@@ -80,7 +80,8 @@ _out/                             # Generated website
 ```
 
 ### GitHub Actions Integration
-- Manual trigger workflow: `build-and-deploy.yml`
+- Workflow `build-and-deploy.yml`: builds on pull requests, pushes to master and manual dispatch; deploys from master
+- Workflow `release-round.yml`: dispatched manually, releases a round (and tags it) from the results of a master build
 - Nix environment setup via `cachix/install-nix-action`
 - GitHub Pages deployment from `_out/` directory
 
