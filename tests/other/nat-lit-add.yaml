@@ -1,0 +1,12 @@
+description: |
+  The kernel's Nat extension reduces `Nat.add` applied to two literals to a
+  literal, instead of unfolding the numerals to `Nat.succ` chains. The
+  arguments here are large enough that unfolding is not a practical
+  alternative, so a checker that only implements `natLitEq`-style
+  literal↔succ conversion will not get this for free.
+
+  Exported as `natAddLit : Nat.add 123456789 987654321 = 1111111110 := rfl`.
+  The application is `Nat.add` on `.lit`s (not `HAdd`/`OfNat`).
+leanfile: tests/other/nat-lit-arith.lean
+export-decls: ["natAddLit"]
+outcome: accept

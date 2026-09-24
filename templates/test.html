@@ -26,6 +26,9 @@
         {% if test.lean_version %}
         · <strong>Lean:</strong> {{ test.lean_version }}
         {% endif %}
+        {% if test.timeout %}
+        · <strong>Timeout:</strong> {{ format_duration(test.timeout) }}
+        {% endif %}
         {% if test_links.declaration_url or test_links.source_url %} · {% endif %}
         {% if test_links.declaration_url %}
         <a href="{{ test_links.declaration_url }}" target="_blank">📄 Declaration</a>
@@ -61,7 +64,7 @@
                 <td><a href="{{ root_path }}checker/{{ result.checker }}/#test-{{ test.name }}">{{ result.checker }}</a></td>
                 <td class="spacer-col"></td>
                 {{ result_status_cell(test.outcome, result.status) }}
-                {{ perf_cells(result, test.outcome, instructions_per_second, format_duration, format_memory, format_instructions, convert_instructions_to_time, test.get('compare-perf')) }}
+                {{ perf_cells(result, test.outcome, instructions_per_second, format_duration, format_memory, convert_instructions_to_time, test.get('compare-perf')) }}
             </tr>
             {% endfor %}
         </tbody>

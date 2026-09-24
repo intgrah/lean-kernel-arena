@@ -1,0 +1,7 @@
+description: |
+  `Nat.ble` on two literals reduces to a `Bool` constructor:
+  `Nat.ble 1000000 1000001 = true`. Same Nat-literal extension as
+  `nat-lit-add`; the result is `Bool` rather than `Nat`.
+leanfile: tests/other/nat-lit-arith.lean
+export-decls: ["natBleLit"]
+outcome: accept

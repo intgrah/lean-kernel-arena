@@ -1,0 +1,13 @@
+description: |
+  Proof of False via trusted `numFields` on a constructor.
+
+  Define a wrapper structure `S` with one field, and lie by saying it has 0 fields, making
+  it look unit-like. Then definitional eta means all inhabitants are equal.
+
+  Derive a contradiction from `S.mk false = S.mk true`.
+
+  Nanoda and its descendants accepted this until it was
+  [fixed](https://github.com/ammkrn/nanoda_lib/pull/22).
+leanfile: tests/bugs/ctor-num-fields.lean
+export-decls: ["bad"]
+outcome: reject

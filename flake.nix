@@ -18,6 +18,7 @@
           libffi
           libffi.dev
           pkg-config
+          cmake
           jq
           just
           pypy
@@ -28,6 +29,8 @@
           gmp
           zig
           ghc
+          texlive.combined.scheme-basic
+          dotnet-sdk_10
         ];
       };
     };

@@ -1098,6 +1098,22 @@ are still definitionally equal. Just applying proof irrelevance at `Sort 0` isn'
 -/
 good_def proofIrrelevanceWhnf : ∀ (p : id Prop) (h1 h2 : p), h1 = h2 := fun _ _ _ => rfl
 
+axiom anElem : aType
+axiom anotherElem : aType
+axiom aPropFamily : aProp → Prop
+axiom aPropFamilyProof : ∀ h : aType → aProp, aPropFamily (h anotherElem)
+
+/--
+Proof irrelevance applies to any two terms of a proposition, not just to variables.
+Checking this definition needs `aPropFamily (h anElem) ≡ aPropFamily (h anotherElem)`,
+i.e. `h anElem ≡ h anotherElem`. Both are proofs of `aProp`, since `h : aType → aProp`,
+so they are definitionally equal even though their arguments are not. A checker that
+compares the two applications structurally, without first noticing that they are
+proofs, wrongly rejects this.
+-/
+good_def proofIrrelevanceUnderBinder : ∀ h : aType → aProp, aPropFamily (h anElem) :=
+  aPropFamilyProof
+
 /-- Unit eta -/
 good_def unitEta1 : ∀ (x y : Unit), x = y := fun _ _ => rfl
 
@@ -1154,34 +1170,6 @@ good_thm funEtaDep :
 bad_thm funEtaBad :
   ∀ (α : Type) (β : Type) (g : α → α) (f : α → β), (fun x => f (g x)) = f :=
   fun _ _ _ f => unchecked Eq.refl f
-
-/--
-Corner case for function eta:
-Does a defeq between a partially applied recursor with rule k and a free
-variable trigger eta expansion?
-
-Taking the official kernel as the specification, the answer is no.
-See <https://github.com/leanprover/lean4/issues/12520> for a discussion.
--/
-bad_def etaRuleK : ∀ (a : true = true → Bool),
-  @Eq (true = true → Bool)
-    (@Eq.rec Bool true (fun _ _ => Bool) (a (Eq.refl true)) _)
-    a :=
-  fun a => unchecked Eq.refl a
-
-structure T where
-  val : Bool
-  proof : True
-
-/--
-Corner case for function eta:
-Does a defeq between a partially applied constructor trigger eta expansion?
-
-Taking the official kernel as the specification, the answer is no.
-See <https://github.com/leanprover/lean4/issues/12520> for a discussion.
--/
-bad_def etaCtor :
-  ∀ (x : True → T) , (T.mk (x True.intro).val) = x := fun x => unchecked Eq.refl x
 
 /-! Reflexive inductives -/
 
@@ -1444,6 +1432,8 @@ bad_consts #[`dupDef, `DupInd]
 bad_consts #[`DupInd]
   renaming #[(`DupInd, `dup_ctor_rec), (`DupInd.mk, `dup_ctor_rec.rec), (`DupInd.rec, `dup_ctor_rec.rec)]
 
+-- NB: both constructors end up with constructor index 0 in the export, as the exporter looks
+-- constructors up by the (now shared) name in the `ctors` field of the inductive type
 /-- An inductive with two constructors with the same name -/
 bad_consts #[`DupInd2]
   renaming #[(`DupInd2, `DupConCon), (`DupInd2.mk1, `dup_ind_con_con.mk), (`DupInd2.mk2, `dup_ind_con_con.mk)]

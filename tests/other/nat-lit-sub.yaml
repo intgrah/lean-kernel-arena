@@ -1,0 +1,7 @@
+description: |
+  `Nat.sub` on two literals truncates at zero: `Nat.sub 1000000 1000001 = 0`.
+  Same Nat-literal extension as `nat-lit-add`; the numerals are large enough
+  that unfolding `Nat.sub` to a `Nat.succ` recursor is not a practical path.
+leanfile: tests/other/nat-lit-arith.lean
+export-decls: ["natSubLit"]
+outcome: accept

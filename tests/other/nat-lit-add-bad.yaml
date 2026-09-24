@@ -1,0 +1,13 @@
+description: |
+  The claimed result of `Nat.add` on two literals does not match the
+  kernel's literal arithmetic:
+
+      natAddLitBad : Nat.add 123456789 987654321 = 1111111111
+        := Eq.refl (Nat.add 123456789 987654321)
+
+  The value is well-typed as `@Eq Nat (Nat.add …) (Nat.add …)` and is
+  injected with `debug.skipKernelTC`. A sound checker must reject the
+  declaration type mismatch against the claimed `= 1111111111`.
+leanfile: tests/other/nat-lit-add-bad.lean
+export-decls: ["natAddLitBad"]
+outcome: reject

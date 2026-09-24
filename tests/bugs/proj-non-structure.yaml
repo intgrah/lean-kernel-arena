@@ -1,0 +1,10 @@
+description: |
+  `Bad` has two constructors, so projections should not be allowed.
+  Prove false by using the second constructor, then projecting, hoping that the
+  first constructor is used when inferring the type of the projection.
+
+  Nanoda and its descendants accepted this until it was
+  [fixed](https://github.com/ammkrn/nanoda_lib/pull/22).
+leanfile: tests/bugs/proj-non-structure.lean
+export-decls: ["bad"]
+outcome: reject
