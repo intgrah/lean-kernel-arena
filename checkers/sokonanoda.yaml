@@ -7,7 +7,7 @@ description: |
   [smalltt](https://github.com/AndrasKovacs/smalltt).
 url: https://github.com/intgrah/sokonanoda
 ref: master
-rev: 3df293b8e24ae410afad81744d4b45699e09ce09
+rev: 9a021b66f804a1d1df68a981337c67413ef72f6b
 build: |
   ROOT=$(cd ../../../.. && pwd)
   "$ROOT/lka.py" build-test init-prelude
